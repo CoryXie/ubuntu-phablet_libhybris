@@ -37,6 +37,8 @@ bool setupGraphics();
 void hw_render(EGLDisplay, EGLSurface);
 void hw_step();
 
+double rotation_increment = 0.01;
+
 int main(int argc, char** argv)
 {
     SfClient* sf_client = sf_client_create();
@@ -47,15 +49,24 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    int x = argc > 1 ? atoi(argv[1]) : 200;
+    int y = argc > 2 ? atoi(argv[2]) : 200;
+
+    int w = argc > 3 ? atoi(argv[3]) : 500;
+    int h = argc > 4 ? atoi(argv[4]) : 500;
+
+    float opacity = argc > 5 ? atof(argv[5]) : 0.5;
+    rotation_increment = argc > 6 ? atof(argv[6]) : 0.01;
+    
     SfSurfaceCreationParameters params = 
     {
-        200,
-        200,
-        500,
-        500,
+        x,
+        y,
+        w,
+        h,
         -1, //PIXEL_FORMAT_RGBA_8888,
         INT_MAX,
-        0.5f,
+        opacity,
         "A test surface"
     };
     
@@ -226,6 +237,6 @@ void hw_render(EGLDisplay displ, EGLSurface surface) {
 }
 
 void hw_step() {
-    rotation_angle += 0.01;
+    rotation_angle += rotation_increment;
     return;
 }
