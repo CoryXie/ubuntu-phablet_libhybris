@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+%:
+	dh $@
+
+# Disabled or the test files would be executed and
+# they are not exactly unit tests
+override_dh_auto_test:
+	echo "Not testing"
+
+# Avoid calling install.sh
+override_dh_auto_install:
+	echo "Nothing"

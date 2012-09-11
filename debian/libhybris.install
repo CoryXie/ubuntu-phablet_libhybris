@@ -1,0 +1,9 @@
+libEGL.so.1.0 usr/lib
+libEGL.so.1 usr/lib
+libsf.so.1.0 usr/lib
+libsf.so.1 usr/lib
+libhardware.so.1.0 usr/lib
+libhardware.so.1 usr/lib
+libhybris_ics.so usr/lib
+libGLESv2.so.2 usr/lib
+libGLESv2.so.2.0 usr/lib
