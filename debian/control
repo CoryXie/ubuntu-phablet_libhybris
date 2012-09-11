@@ -1,26 +1,24 @@
 Source: libhybris
 Priority: extra
 Maintainer: Sergio Schvezov <sergio.schvezov@canonical.com>
-Build-Depends: debhelper (>= 8.0.0),
+Build-Depends: debhelper (>= 9.0.0),
                libgles2-mesa-dev
 Standards-Version: 3.9.3
 Section: libs
-Homepage: <insert the upstream URL, if relevant>
-#Vcs-Git: git://git.debian.org/collab-maint/libhybris.git
-#Vcs-Browser: http://git.debian.org/?p=collab-maint/libhybris.git;a=summary
+Vcs-Bzr: lp:lp:aal+
+Vcs-Browser: https://bazaar.launchpad.net/~rocket-scientists/aal+/trunk/files
 
 Package: libhybris-test
-Section: libdevel
+Section: devel
 Architecture: any
-Depends: libhybris1 (= ${binary:Version})
+Depends: libhybris (= ${binary:Version}), ${misc:Depends}
 Description: Allows to run bionic-based HW adaptations in glibc systems
- Test applications for libhybris
+ This package provides the test applications for libhybris
 
-Package: libhybris1
+Package: libhybris
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Allows to run bionic-based HW adaptations in glibc systems
- Hybris is a solution that commits hybris, by allowing us to use bionic-based HW adaptations in glibc systems
- .
- This is the development package
+ Hybris is a solution that commits hybris, by allowing us to use bionic-based
+ HW adaptations in glibc systems
