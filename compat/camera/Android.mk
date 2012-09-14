@@ -8,7 +8,7 @@ LOCAL_MODULE:= libcamera_compat_layer
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_C_INCLUDES := \
-	canonical/hybris_compatibility/surface_flinger
+	canonical/hybris/compat/surface_flinger
 
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
@@ -35,7 +35,7 @@ LOCAL_C_INCLUDES := \
 	external/gtest/include \
 	external/stlport/stlport \
 	external/skia/include/core \
-	canonical/hybris_compatibility/surface_flinger
+	canonical/hybris/compat/surface_flinger
 
 LOCAL_SHARED_LIBRARIES := \
 	libsf_compat_layer \

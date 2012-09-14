@@ -1,10 +1,6 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
-#LOCAL_SRC_FILES:=		\
-#    glcommon.cpp \
-#sf_render_demo.cpp
-
 LOCAL_SRC_FILES:= surface_flinger_compatibility_layer.cpp
 
 LOCAL_MODULE:= libsf_compat_layer
