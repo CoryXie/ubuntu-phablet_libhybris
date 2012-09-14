@@ -6,10 +6,6 @@
 %:
 	dh $@
 
-override_dh_auto_build:
-	cd hybris
-	make
-
 # Disabled or the test files would be executed and
 # they are not exactly unit tests
 override_dh_auto_test:
