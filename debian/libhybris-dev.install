@@ -1,3 +1,3 @@
-android/surface_flinger/surface_flinger_compatibility_layer.h usr/include/hybris/surface_flinger
-android/input/*.h usr/include/hybris/input
-android/camera/camera_compatibility_layer.h usr/include/hybris/camera
+compat/surface_flinger/surface_flinger_compatibility_layer.h usr/include/hybris/surface_flinger
+compat/input/*.h usr/include/hybris/input
+compat/camera/camera_compatibility_layer.h usr/include/hybris/camera

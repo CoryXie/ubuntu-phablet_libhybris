@@ -1,5 +1,5 @@
-test_egl usr/bin
-test_glesv2 usr/bin
-test_hw usr/bin
-test_sensors usr/bin
-test_sf usr/bin
+hybris/test_egl usr/bin
+hybris/test_glesv2 usr/bin
+hybris/test_hw usr/bin
+hybris/test_sensors usr/bin
+hybris/test_sf usr/bin
