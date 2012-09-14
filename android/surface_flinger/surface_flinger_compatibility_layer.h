@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Authored by: Michael Frey <michael.frey@canonical.com>
+ * Authored by: Thomas Voss <thomas.voss@canonical.com>
  */
 
 #ifndef SURFACE_FLINGER_COMPATIBILITY_LAYER_H_
@@ -27,27 +27,29 @@ extern "C" {
 #include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-  
-  
-  typedef struct SfClient;
-  typedef struct SfSurface;
-  
-  SfClient* sf_client_create(void);
-  EGLDisplay sf_client_get_egl_display(SfClient*);
-  void sf_client_begin_transaction(SfClient*);
-  void sf_client_end_transaction(SfClient*);
-  
-  typedef struct SfSurfaceCreationParameters
-  {
-    int x;
-    int y;
-    int w;
-    int h;
-    int format;
-    int layer;
-    float alpha;
-    const char* name;
-  };
+    
+    typedef struct SfClient;
+    typedef struct SfSurface;
+    
+    SfClient* sf_client_create();
+    EGLDisplay sf_client_get_egl_display(SfClient*);
+    EGLConfig sf_client_get_egl_config(SfClient* client);
+    void sf_client_begin_transaction(SfClient*);
+    void sf_client_end_transaction(SfClient*);
+    
+    typedef struct SfSurfaceCreationParameters
+    {
+        int x;
+        int y;
+        int w;
+        int h;
+        int format;
+        int layer;
+        float alpha;
+        bool create_egl_window_surface;
+        const char* name;
+    };
+    
     SfSurface* sf_surface_create(SfClient* client, SfSurfaceCreationParameters* params);
     EGLSurface sf_surface_get_egl_surface(SfSurface*);
     void sf_surface_make_current(SfSurface* surface);
@@ -55,7 +57,6 @@ extern "C" {
     void sf_surface_move_to(SfSurface* surface, int x, int y);
     void sf_surface_set_layer(SfSurface* surface, int layer);
     void sf_surface_set_alpha(SfSurface* surface, float alpha);
-    
     
 #ifdef __cplusplus
 }

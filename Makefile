@@ -33,7 +33,7 @@ libEGL.so.1.0: egl/egl.c
 	$(CC) -g -shared -o $@ -fPIC -Wl,-soname,libEGL.so.1 $< libhybris_ics.so
 
 libsf.so.1.0: sf/sf.cpp
-	$(CXX) -g -fpermissive -shared -o $@ -fPIC -Isf -Wl,-soname,libsf.so.1 $< libhybris_ics.so
+	$(CXX) -g -fpermissive -shared -o $@ -fPIC -Iandroid/surface_flinger -Wl,-soname,libsf.so.1 $< libhybris_ics.so
 
 libEGL.so.1: libEGL.so.1.0
 	ln -sf libEGL.so.1.0 libEGL.so.1
@@ -51,7 +51,7 @@ test_egl: libEGL.so.1 libGLESv2.so.2 egl/test.c libhybris_ics.so
 	$(CC) -g -o $@ egl/test.c libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I .
 
 test_sf: libsf.so.1 sf/test.cpp libhybris_ics.so
-	$(CXX) -g -o $@ sf/test.cpp libsf.so.1 libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I .
+	$(CXX) -g -o $@ sf/test.cpp libsf.so.1 libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -Iandroid/surface_flinger
 
 test_hw: libhardware.so.1 hardware/test.c libhybris_ics.so
 	$(CC) -g -o $@ hardware/test.c libhardware.so.1 libhybris_ics.so  -I .
@@ -60,7 +60,7 @@ test_sensors: libhardware.so.1 hardware/sensors.c libhybris_ics.so
 	$(CC) -g -o $@ hardware/sensors.c libhardware.so.1 libhybris_ics.so  -I .
 
 test_glesv2: libEGL.so.1 libGLESv2.so.2 egl/test.c libhybris_ics.so
-	$(CC) -g -o $@ glesv2/test.c -lm libEGL.so.1 libhybris_ics.so libGLESv2.so.2 
+	$(CC) -g -o $@ glesv2/test.c -lm libEGL.so.1 libhybris_ics.so libGLESv2.so.2
 
 clean:
 	rm -rf libhybris_ics.so test_ics
@@ -68,4 +68,3 @@ clean:
 	rm -rf libhardware*
 	rm -rf libsf*
 	rm -rf test_*
-

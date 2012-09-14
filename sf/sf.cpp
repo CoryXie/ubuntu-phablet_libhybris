@@ -20,7 +20,7 @@
 #include <dlfcn.h>
 #include <stddef.h>
 
-#include "surface_flinger_compatibility_layer.h"
+#include <surface_flinger_compatibility_layer.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,7 +34,7 @@ static SfSurface* (*_sf_surface_create)(SfClient* client, SfSurfaceCreationParam
 
 static EGLSurface (*_sf_surface_get_egl_surface)(SfSurface*) = NULL;
 static void (*_sf_surface_make_current)(SfSurface* surface) = NULL;
-    
+
 static void (*_sf_surface_move_to)(SfSurface* surface, int x, int y) = NULL;
 static void (*_sf_surface_set_layer)(SfSurface* surface, int layer) = NULL;
 static void (*_sf_surface_set_alpha)(SfSurface* surface, float alpha) = NULL;
@@ -51,7 +51,7 @@ static void _init_androidsf()
  _libsf = (void *) android_dlopen("/system/lib/libsf_compat_layer.so", RTLD_LAZY);
 }
 
-#define SF_DLSYM(fptr, sym) do { if (_libsf == NULL) { _init_androidsf(); }; if (*(fptr) == NULL) { *(fptr) = (void *) android_dlsym(_libsf, sym); } } while (0) 
+#define SF_DLSYM(fptr, sym) do { if (_libsf == NULL) { _init_androidsf(); }; if (*(fptr) == NULL) { *(fptr) = (void *) android_dlsym(_libsf, sym); } } while (0)
 
 SfSurface* sf_surface_create(SfClient* client, SfSurfaceCreationParameters* params)
 {
@@ -71,7 +71,7 @@ void sf_surface_make_current(SfSurface* surface)
   return (*_sf_surface_make_current)(surface);
 }
 
-void sf_surface_move_to(SfSurface* surface, int x, int y) 
+void sf_surface_move_to(SfSurface* surface, int x, int y)
 {
   SF_DLSYM(&_sf_surface_move_to, "sf_surface_move_to");
   return (*_sf_surface_move_to)(surface, x, y);
@@ -93,7 +93,7 @@ SfClient* sf_client_create(void)
 {
  SF_DLSYM(&_sf_client_create, "sf_client_create");
  return (*_sf_client_create)();
- 
+
 }
 
 EGLDisplay sf_client_get_egl_display(SfClient* client)
@@ -115,4 +115,3 @@ void sf_client_end_transaction(SfClient* client)
 }
 
 }
-
