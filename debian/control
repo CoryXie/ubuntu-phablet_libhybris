@@ -15,6 +15,17 @@ Depends: libhybris (= ${binary:Version}), ${misc:Depends}
 Description: Allows to run bionic-based HW adaptations in glibc systems
  This package provides the test applications for libhybris
 
+Package: libhybris-dev
+Section: devel
+Architecture: any
+Depends: libhybris (= ${binary:Version}), ${misc:Depends}
+Description: Development headers and libraries for libhybris
+ Contains the header files for use in developing applications that use
+ the libhybris library.
+ .
+ Hybris is a solution that commits hybris, by allowing us to use bionic-based
+ HW adaptations in glibc systems
+
 Package: libhybris
 Section: libs
 Architecture: any
