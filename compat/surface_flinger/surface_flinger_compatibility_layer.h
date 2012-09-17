@@ -31,6 +31,10 @@ extern "C" {
     typedef struct SfClient;
     typedef struct SfSurface;
     
+    size_t sf_get_number_of_displays();
+    size_t sf_get_display_width(size_t display_id);
+    size_t sf_get_display_height(size_t display_id);
+    
     SfClient* sf_client_create();
     EGLDisplay sf_client_get_egl_display(SfClient*);
     EGLConfig sf_client_get_egl_config(SfClient* client);

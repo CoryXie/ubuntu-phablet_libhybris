@@ -34,6 +34,62 @@ extern "C" {
         BACK_FACING_CAMERA_TYPE
     } CameraType;
 
+    typedef enum
+    {
+        FLASH_MODE_OFF,
+        FLASH_MODE_AUTO,
+        FLASH_MODE_ON,
+        FLASH_MODE_TORCH
+    } FlashMode;
+
+    typedef enum
+    {
+        WHITE_BALANCE_MODE_AUTO,
+        WHITE_BALANCE_MODE_DAYLIGHT,
+        WHITE_BALANCE_MODE_CLOUDY_DAYLIGHT,
+        WHITE_BALANCE_MODE_FLUORESCENT,
+        WHITE_BALANCE_MODE_INCANDESCENT        
+    } WhiteBalanceMode;
+
+    typedef enum
+    {
+        SCENE_MODE_AUTO,
+        SCENE_MODE_ACTION,
+        SCENE_MODE_NIGHT,
+        SCENE_MODE_PARTY,
+        SCENE_MODE_SUNSET
+    } SceneMode;
+
+    typedef enum
+    {
+        AUTO_FOCUS_MODE_OFF,
+        AUTO_FOCUS_MODE_CONTINUOUS_VIDEO,
+        AUTO_FOCUS_MODE_AUTO,
+        AUTO_FOCUS_MODE_MACRO,
+        AUTO_FOCUS_MODE_CONTINUOUS_PICTURE,
+        AUTO_FOCUS_MODE_INFINITY
+    } AutoFocusMode;
+
+    typedef enum
+    {
+        EFFECT_MODE_NONE,
+        EFFECT_MODE_MONO,
+        EFFECT_MODE_NEGATIVE,
+        EFFECT_MODE_SOLARIZE,
+        EFFECT_MODE_SEPIA,
+        EFFECT_MODE_POSTERIZE,
+        EFFECT_MODE_WHITEBOARD,
+        EFFECT_MODE_BLACKBOARD,
+        EFFECT_AQUA
+    } EffectMode;
+
+    typedef enum
+    {
+        PICTURE_SIZE_SMALL,
+        PICTURE_SIZE_MEDIUM,
+        PICTURE_SIZE_LARGE
+    } PictureSize;
+
     struct CameraControl;
     
     struct CameraControlListener
@@ -41,7 +97,7 @@ extern "C" {
         typedef void (*on_msg_error)(void* context);
         typedef void (*on_msg_shutter)(void* context);
         typedef void (*on_msg_focus)(void* context);
-        typedef void (*on_msg_zoom)(void* context);
+        typedef void (*on_msg_zoom)(void* context, int32_t new_zoom_level);
 
         typedef void (*on_data_raw_image)(void* data, uint32_t data_size, void* context);
         typedef void (*on_data_compressed_image)(void* data, uint32_t data_size, void* context);
@@ -59,6 +115,19 @@ extern "C" {
 
     CameraControl* android_camera_connect_to(CameraType camera_type, CameraControlListener* listener);
     
+    void android_camera_dump_parameters(CameraControl* control);
+    
+    void android_camera_set_effect_mode(CameraControl* control, EffectMode mode);
+    void android_camera_set_flash_mode(CameraControl* control, FlashMode mode);
+    void android_camera_set_white_balance_mode(CameraControl* control, WhiteBalanceMode mode);
+    void android_camera_set_scene_mode(CameraControl* control, SceneMode mode);
+    void android_camera_set_auto_focus_mode(CameraControl* control, AutoFocusMode mode);
+    void android_camera_set_picture_size(CameraControl* control, PictureSize size);
+    
+    void android_camera_set_display_orientation(CameraControl* control, int32_t clockwise_rotation_degree);
+
+    void android_camera_set_preview_texture(CameraControl* control, SfSurface* surface);
+
     void android_camera_set_preview_surface(CameraControl* control, SfSurface* surface);
 
     void android_camera_start_preview(CameraControl* control);
@@ -69,7 +138,7 @@ extern "C" {
     
     void android_camera_stop_autofocus(CameraControl* control);
 
-    void android_camera_start_zoom(CameraControl* control, float zoom);
+    void android_camera_start_zoom(CameraControl* control, int32_t zoom);
 
     void android_camera_stop_zoom(CameraControl* control);
     

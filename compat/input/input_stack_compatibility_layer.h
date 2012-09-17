@@ -23,7 +23,6 @@
 extern "C" {
 #endif
 
-    #include <stddef.h>
     #include <stdint.h>
 
     static const size_t MAX_POINTER_COUNT = 16;

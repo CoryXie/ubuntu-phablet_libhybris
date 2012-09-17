@@ -63,6 +63,21 @@ void report_surface_is_null_during_creation()
 
 }
 
+size_t sf_get_number_of_displays()
+{
+    return android::SurfaceComposerClient::getNumberOfDisplays();
+}
+
+size_t sf_get_display_width(size_t display_id)
+{
+    return android::SurfaceComposerClient::getDisplayWidth(display_id);
+}
+
+size_t sf_get_display_height(size_t display_id)
+{
+    return android::SurfaceComposerClient::getDisplayHeight(display_id);
+}
+
 SfClient* sf_client_create()
 {
     
