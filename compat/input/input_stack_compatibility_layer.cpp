@@ -6,38 +6,52 @@
 #include "SpriteController.h"
 #include <surfaceflinger/SurfaceComposerClient.h>
 
+#define LOG_TAG "InputStackCompatibilityLayer"
+#include <utils/Log.h>
+
+namespace
+{
+static bool enable_verbose_function_reporting = false;
+}
+
+#define REPORT_FUNCTION() LOGV("%s\n", __PRETTY_FUNCTION__);
+
 namespace
 {
 
 class DefaultPointerControllerPolicy : public android::PointerControllerPolicyInterface
 {
   public:
+
+    static const size_t bitmap_width = 64;
+    static const size_t bitmap_height = 64;
+
     DefaultPointerControllerPolicy()
     {
         bitmap.setConfig(
             SkBitmap::kARGB_8888_Config,
-            32,
-            32);
+            bitmap_width,
+            bitmap_height);
         bitmap.allocPixels();
         
         // Icon for spot touches
         bitmap.eraseARGB(125, 0, 255, 0);
         spotTouchIcon = android::SpriteIcon(
             bitmap, 
-            32/2, 
-            32/2);
+            bitmap_width/2, 
+            bitmap_height/2);
         // Icon for anchor touches
         bitmap.eraseARGB(125, 0, 0, 255);
         spotAnchorIcon = android::SpriteIcon(
             bitmap, 
-            32/2, 
-            32/2);
+            bitmap_width/2, 
+            bitmap_height/2);
         // Icon for hovering touches
         bitmap.eraseARGB(125, 255, 0, 0);
         spotHoverIcon = android::SpriteIcon(
             bitmap, 
-            32/2, 
-            32/2);
+            bitmap_width/2, 
+            bitmap_height/2);
     }
 
     void loadPointerResources(android::PointerResources* outResources)
@@ -133,14 +147,13 @@ class ExportedInputListener : public android::InputListenerInterface
     
     void notifyConfigurationChanged(const android::NotifyConfigurationChangedArgs* args)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        REPORT_FUNCTION();
         (void) args;
     }
 
     void notifyKey(const android::NotifyKeyArgs* args)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
-        (void) args;
+        REPORT_FUNCTION();
 
         current_event.type = KEY_EVENT_TYPE;
         current_event.device_id = args->deviceId;
@@ -161,8 +174,7 @@ class ExportedInputListener : public android::InputListenerInterface
 
     void notifyMotion(const android::NotifyMotionArgs* args)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
-        (void) args;
+        REPORT_FUNCTION();
         
         current_event.type = MOTION_EVENT_TYPE;
         current_event.device_id = args->deviceId;
@@ -206,8 +218,7 @@ class ExportedInputListener : public android::InputListenerInterface
 
     void notifySwitch(const android::NotifySwitchArgs* args)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
-        (void) args;
+        REPORT_FUNCTION();
         current_event.type = HW_SWITCH_EVENT_TYPE;
         
         current_event.details.hw_switch.event_time = args->eventTime;
@@ -220,7 +231,7 @@ class ExportedInputListener : public android::InputListenerInterface
 
     void notifyDeviceReset(const android::NotifyDeviceResetArgs* args)
     {
-        printf("%s \n", __PRETTY_FUNCTION__);
+        REPORT_FUNCTION();
         (void) args;
     }
 
