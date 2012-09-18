@@ -30,6 +30,7 @@ extern void *android_dlopen(const char *filename, int flag);
 extern void *android_dlsym(void *handle, const char *symbol);
 
     static void (*_android_input_stack_initialize)(AndroidEventListener* listener, InputStackConfiguration* config) = NULL;
+static void (*_android_input_stack_loop_once)() = NULL;
 static void (*_android_input_stack_start)() = NULL;
 static void (*_android_input_stack_stop)() = NULL;
 static void (*_android_input_stack_shutdown)() = NULL;
@@ -47,6 +48,12 @@ void _init_androidis()
 {
     IS_DLSYM(&_android_input_stack_initialize, "android_input_stack_initialize");
     _android_input_stack_initialize(listener, config);
+}
+
+void android_input_stack_loop_once()
+{
+    IS_DLSYM(&_android_input_stack_loop_once, "android_input_stack_loop_once");
+    _android_input_stack_loop_once();
 }
 
 void android_input_stack_start()
