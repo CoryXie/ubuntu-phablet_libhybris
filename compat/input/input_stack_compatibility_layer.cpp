@@ -6,12 +6,15 @@
 #include "SpriteController.h"
 #include <surfaceflinger/SurfaceComposerClient.h>
 
+#define LOG_TAG "InputStackCompatibilityLayer"
+#include <utils/Log.h>
+
 namespace
 {
 static bool enable_verbose_function_reporting = false;
 }
 
-#define REPORT_FUNCTION() if (enable_verbose_function_reporting) printf("%s\n", __PRETTY_FUNCTION__);
+#define REPORT_FUNCTION() LOGV("%s\n", __PRETTY_FUNCTION__);
 
 namespace
 {
