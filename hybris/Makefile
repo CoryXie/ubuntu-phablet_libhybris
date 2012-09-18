@@ -13,7 +13,7 @@ endif
 
 COMMON_SOURCES=common/strlcpy.c common/hooks.c common/properties.c
 
-ICS_SOURCES=ics/linker.c ics/dlfcn.c ics/rt.c ics/linker_environ.c ics/linker_format.c
+ICS_SOURCES=ics/linker.c ics/dlfcn.c ics/rt.c ics/linker_environ.c ics/linker_format.c ics/init.c
 
 all:  libhybris_ics.so libEGL.so.1 libGLESv2.so.2 libhardware.so.1 libis.so.1 libsf.so.1 test_sf test_egl test_hw test_sensors test_glesv2
 
