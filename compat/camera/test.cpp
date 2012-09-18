@@ -1,6 +1,10 @@
 #include "camera_compatibility_layer.h"
 
 #include <input_stack_compatibility_layer.h>
+#include <input_stack_compatibility_layer_codes_key.h>
+#include <input_stack_compatibility_layer_flags_key.h>
+#include <input_stack_compatibility_layer_flags_motion.h>
+
 #include <surface_flinger_compatibility_layer.h>
 
 #include <sys/stat.h>
@@ -101,7 +105,7 @@ void on_new_input_event(Event* event, void* context)
 {
     assert(context);
 
-    if (event->type == KEY_EVENT_TYPE)
+    if (event->type == KEY_EVENT_TYPE && event->action == ISCL_KEY_EVENT_ACTION_UP)
     {
         printf("We have got a key event: %d \n", event->details.key.key_code);
 
@@ -109,26 +113,39 @@ void on_new_input_event(Event* event, void* context)
         
         switch(event->details.key.key_code)
         {
-            case 24:
+            case ISCL_KEYCODE_VOLUME_UP:
                 printf("\tZooming in now.\n");
                 android_camera_start_zoom(cc, current_zoom_level+1);
                 break;
-            case 25:
+            case ISCL_KEYCODE_VOLUME_DOWN:
                 printf("\tZooming out now.\n");
                 android_camera_start_zoom(cc, current_zoom_level-1);
                 break;
-            case 26:
+            case ISCL_KEYCODE_POWER:
                 printf("\tTaking a photo now.\n");
                 android_camera_take_snapshot(cc);
                 break;
-            case 79:
+            case ISCL_KEYCODE_HEADSETHOOK:
                 printf("\tSwitching effect.\n");
                 android_camera_set_effect_mode(cc, next_effect());
                 
         }
-    } else if (event->type == MOTION_EVENT_TYPE)
+    } else if (event->type == MOTION_EVENT_TYPE &&
+               event->details.motion.pointer_count == 1)
     {
-        CameraControl* cc = static_cast<CameraControl*>(context);
+        if ((event->action & ISCL_MOTION_EVENT_ACTION_MASK) == ISCL_MOTION_EVENT_ACTION_UP)
+        {
+            printf("\tMotion event(Action up): (%f, %f) \n", 
+                   event->details.motion.pointer_coordinates[0].x,
+                   event->details.motion.pointer_coordinates[0].y);
+        }
+
+        if ((event->action & ISCL_MOTION_EVENT_ACTION_MASK) == ISCL_MOTION_EVENT_ACTION_DOWN)
+        {
+            printf("\tMotion event(Action down): (%f, %f) \n", 
+                   event->details.motion.pointer_coordinates[0].x,
+                   event->details.motion.pointer_coordinates[0].y);
+        }
     }
 }
 
