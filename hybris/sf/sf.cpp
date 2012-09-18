@@ -41,6 +41,7 @@ static void (*_sf_surface_set_alpha)(SfSurface* surface, float alpha) = NULL;
 
 static SfClient* (*_sf_client_create)(void) = NULL;
 static EGLDisplay (*_sf_client_get_egl_display)(SfClient* client) = NULL;
+static EGLConfig (*_sf_client_get_egl_config)(SfClient* client) = NULL;
 static void (*_sf_client_begin_transaction)(SfClient* client) = NULL;
 static void (*_sf_client_end_transaction)(SfClient* client) = NULL;
 
@@ -100,6 +101,12 @@ EGLDisplay sf_client_get_egl_display(SfClient* client)
 {
  SF_DLSYM(&_sf_client_get_egl_display, "sf_client_get_egl_display");
  return (*_sf_client_get_egl_display)(client);
+}
+
+EGLConfig sf_client_get_egl_config(SfClient* client)
+{
+ SF_DLSYM(&_sf_client_get_egl_config, "sf_client_get_egl_config");
+ return (*_sf_client_get_egl_config)(client);
 }
 
 void sf_client_begin_transaction(SfClient* client)
