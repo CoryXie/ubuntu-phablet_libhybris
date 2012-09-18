@@ -1,12 +1,7 @@
-libhybris (0.2+git) UNRELEASED; urgency=low
-
-  * Package only for armel, armhf and i386
-
- -- Sergio Schvezov <sergio.schvezov@canonical.com>  Mon, 17 Sep 2012 16:51:19 -0300
-
-libhybris (0.1+git) unstable; urgency=low
+libhybris (0.1+git) UNRELEASED; urgency=low
 
   * Adding dev package with headers
+  * Package only for armel, armhf and i386
 
  -- Sergio Schvezov <sergio.schvezov@canonical.com>  Fri, 14 Sep 2012 11:50:39 -0300
 
