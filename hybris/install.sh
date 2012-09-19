@@ -2,6 +2,8 @@ adb push libEGL.so.1.0 /data/ubuntu/usr/lib
 adb push libEGL.so.1 /data/ubuntu/usr/lib
 adb push libsf.so.1.0 /data/ubuntu/usr/lib
 adb push libsf.so.1 /data/ubuntu/usr/lib
+adb push libis.so.1.0 /data/ubuntu/usr/lib
+adb push libis.so.1 /data/ubuntu/usr/lib
 adb push libhardware.so.1.0 /data/ubuntu/usr/lib
 adb push libhardware.so.1 /data/ubuntu/usr/lib
 adb push libhybris_ics.so /data/ubuntu/usr/lib

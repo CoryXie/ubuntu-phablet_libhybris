@@ -44,31 +44,31 @@ void _init_androidis()
 
 #define IS_DLSYM(fptr, sym) do { if (_libis == NULL) { _init_androidis(); }; if (*(fptr) == NULL) { *(fptr) = (void *) android_dlsym(_libis, sym); } } while (0) 
 
-    void android_input_stack_initialize(AndroidEventListener* listener, InputStackConfiguration* config )
+static void android_input_stack_initialize(AndroidEventListener* listener, InputStackConfiguration* config )
 {
     IS_DLSYM(&_android_input_stack_initialize, "android_input_stack_initialize");
     _android_input_stack_initialize(listener, config);
 }
 
-void android_input_stack_loop_once()
+static void android_input_stack_loop_once()
 {
     IS_DLSYM(&_android_input_stack_loop_once, "android_input_stack_loop_once");
     _android_input_stack_loop_once();
 }
 
-void android_input_stack_start()
+static void android_input_stack_start()
 {
     IS_DLSYM(&_android_input_stack_start, "android_input_stack_start");
     _android_input_stack_start();
 }
 
-void android_input_stack_stop()
+static void android_input_stack_stop()
 {
     IS_DLSYM(&_android_input_stack_stop, "android_input_stack_stop");
     _android_input_stack_stop();
 }
 
-void android_input_stack_shutdown()
+static void android_input_stack_shutdown()
 {
     IS_DLSYM(&_android_input_stack_shutdown, "android_input_stack_shutdown");
     _android_input_stack_shutdown();
