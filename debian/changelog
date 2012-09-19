@@ -1,7 +1,9 @@
-libhybris (0.1+git) UNRELEASED; urgency=low
+libhybris (0.1+git) unstable; urgency=low
 
   * Adding dev package with headers
   * Package only for armel, armhf and i386
+  * Key codes for compatibility layer
+  * Compatibility hooks and functions added
 
  -- Sergio Schvezov <sergio.schvezov@canonical.com>  Fri, 14 Sep 2012 11:50:39 -0300
 
