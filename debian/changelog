@@ -1,5 +1,11 @@
 libhybris (0.3+git) unstable; urgency=low
 
+  * Packaging input library
+
+ -- Sergio Schvezov <sergio.schvezov@canonical.com>  Wed, 19 Sep 2012 16:46:31 -0300
+
+libhybris (0.3+git) unstable; urgency=low
+
   * Fix symbol visibility in InputStack compat layer
 
  -- Sergio Schvezov <sergio.schvezov@canonical.com>  Wed, 19 Sep 2012 12:29:49 -0300

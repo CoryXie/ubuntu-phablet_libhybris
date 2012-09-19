@@ -1,5 +1,7 @@
 hybris/libEGL.so.1.0 usr/lib
 hybris/libEGL.so.1 usr/lib
+hybris/libis.so.1 usr/lib
+hybris/libis.so.1.0 usr/lib
 hybris/libsf.so.1.0 usr/lib
 hybris/libsf.so.1 usr/lib
 hybris/libhardware.so.1.0 usr/lib
