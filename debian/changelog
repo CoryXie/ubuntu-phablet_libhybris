@@ -1,8 +1,9 @@
-libhybris (0.3+git) unstable; urgency=low
+libhybris (0.4+git) unstable; urgency=low
 
+  * Bumping package version
   * Packaging input library
 
- -- Sergio Schvezov <sergio.schvezov@canonical.com>  Wed, 19 Sep 2012 16:46:31 -0300
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Wed, 19 Sep 2012 17:35:39 -0300
 
 libhybris (0.3+git) unstable; urgency=low
 
