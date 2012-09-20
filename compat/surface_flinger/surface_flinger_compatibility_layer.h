@@ -28,8 +28,8 @@ extern "C" {
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
     
-    typedef struct SfClient;
-    typedef struct SfSurface;
+    struct SfClient;
+    struct SfSurface;
     
     size_t sf_get_number_of_displays();
     size_t sf_get_display_width(size_t display_id);
@@ -41,7 +41,7 @@ extern "C" {
     void sf_client_begin_transaction(SfClient*);
     void sf_client_end_transaction(SfClient*);
     
-    typedef struct SfSurfaceCreationParameters
+    typedef struct
     {
         int x;
         int y;
@@ -52,10 +52,11 @@ extern "C" {
         float alpha;
         bool create_egl_window_surface;
         const char* name;
-    };
+    } SfSurfaceCreationParameters;
     
     SfSurface* sf_surface_create(SfClient* client, SfSurfaceCreationParameters* params);
     EGLSurface sf_surface_get_egl_surface(SfSurface*);
+    EGLNativeWindowType sf_surface_get_egl_native_window(SfSurface*);
     void sf_surface_make_current(SfSurface* surface);
     
     void sf_surface_move_to(SfSurface* surface, int x, int y);
