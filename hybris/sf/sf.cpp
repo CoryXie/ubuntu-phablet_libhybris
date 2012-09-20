@@ -33,6 +33,7 @@ extern void *android_dlsym(void *handle, const char *symbol);
 static SfSurface* (*_sf_surface_create)(SfClient* client, SfSurfaceCreationParameters* params) = NULL;
 
 static EGLSurface (*_sf_surface_get_egl_surface)(SfSurface*) = NULL;
+static EGLNativeWindowType (*_sf_surface_get_egl_native_window)(SfSurface*) = NULL;
 static void (*_sf_surface_make_current)(SfSurface* surface) = NULL;
 
 static void (*_sf_surface_move_to)(SfSurface* surface, int x, int y) = NULL;
@@ -64,6 +65,12 @@ EGLSurface sf_surface_get_egl_surface(SfSurface* surface)
 {
   SF_DLSYM(&_sf_surface_get_egl_surface, "sf_surface_get_egl_surface");
   return (*_sf_surface_get_egl_surface)(surface);
+}
+
+EGLNativeWindowType sf_surface_get_egl_native_window(SfSurface* surface)
+{
+  SF_DLSYM(&_sf_surface_get_egl_native_window, "sf_surface_get_egl_native_window");
+  return (*_sf_surface_get_egl_native_window)(surface);
 }
 
 void sf_surface_make_current(SfSurface* surface)

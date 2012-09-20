@@ -219,6 +219,12 @@ EGLSurface sf_surface_get_egl_surface(SfSurface* surface)
     return surface->egl_surface;
 }
 
+EGLNativeWindowType sf_surface_get_egl_native_window(SfSurface* surface)
+{
+    assert(surface);
+    return surface->surface.get();
+}
+
 void sf_surface_make_current(SfSurface* surface)
 {
     assert(surface);
