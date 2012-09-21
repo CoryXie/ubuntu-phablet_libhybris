@@ -1,3 +1,9 @@
+libhybris (0.5+git) unstable; urgency=low
+
+  * Using update-alternatives for the GLES libraries (LP: #1051994)
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Fri, 21 Sep 2012 01:18:07 -0300
+
 libhybris (0.4+git) unstable; urgency=low
 
   * Bumping package version
