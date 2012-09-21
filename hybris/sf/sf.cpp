@@ -30,6 +30,10 @@ extern "C" {
 extern void *android_dlopen(const char *filename, int flag);
 extern void *android_dlsym(void *handle, const char *symbol);
 
+static size_t (*_sf_get_number_of_displays)() = NULL;
+static size_t (*_sf_get_display_width)(size_t display_id) = NULL;
+static size_t (*_sf_get_display_height)(size_t display_id) = NULL;
+
 static SfSurface* (*_sf_surface_create)(SfClient* client, SfSurfaceCreationParameters* params) = NULL;
 
 static EGLSurface (*_sf_surface_get_egl_surface)(SfSurface*) = NULL;
@@ -54,6 +58,24 @@ static void _init_androidsf()
 }
 
 #define SF_DLSYM(fptr, sym) do { if (_libsf == NULL) { _init_androidsf(); }; if (*(fptr) == NULL) { *(fptr) = (void *) android_dlsym(_libsf, sym); } } while (0)
+
+static size_t sf_get_number_of_displays()
+{
+    SF_DLSYM(&_sf_get_number_of_displays, "sf_get_number_of_displays");
+    return (*_sf_get_number_of_displays)();
+}
+
+size_t sf_get_display_width(size_t display_id)
+{
+    SF_DLSYM(&_sf_get_display_width, "sf_get_display_width");
+    return (*_sf_get_display_width)(display_id);
+}
+
+size_t sf_get_display_height(size_t display_id)
+{
+    SF_DLSYM(&_sf_get_display_height, "sf_get_display_height");
+    return (*_sf_get_display_height)(display_id);
+}
 
 SfSurface* sf_surface_create(SfClient* client, SfSurfaceCreationParameters* params)
 {
