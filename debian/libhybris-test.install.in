@@ -3,3 +3,4 @@ hybris/test_glesv2	#BINDIR#
 hybris/test_hw		#BINDIR#
 hybris/test_sensors	#BINDIR#
 hybris/test_sf		#BINDIR#
+hybris/test_camera	#BINDIR#

@@ -1,3 +1,9 @@
+libhybris (0.7) unstable; urgency=low
+
+  * test_camera added to test package
+
+ -- Sergio Schvezov <sergio.schvezov@canonical.com>  Tue, 25 Sep 2012 15:01:32 -0300
+
 libhybris (0.6) unstable; urgency=low
 
   * Dropping the +git version string as we're now using our own specific
