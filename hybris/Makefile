@@ -15,7 +15,7 @@ COMMON_SOURCES=common/strlcpy.c common/hooks.c common/properties.c
 
 ICS_SOURCES=ics/linker.c ics/dlfcn.c ics/rt.c ics/linker_environ.c ics/linker_format.c ics/init.c
 
-all:  libhybris_ics.so libEGL.so.1 libGLESv2.so.2 libcamera.so.1.0 libhardware.so.1 libis.so.1 libsf.so.1 test_camera test_sf test_egl test_hw test_sensors test_glesv2
+all:  libhybris_ics.so libEGL.so.1 libGLESv2.so.2 libcamera.so libhardware.so libis.so libsf.so test_camera test_sf test_egl test_hw test_sensors test_glesv2
 
 
 libhybris_ics.so: $(COMMON_SOURCES) $(ICS_SOURCES)
@@ -28,6 +28,9 @@ libhardware.so.1.0: hardware/hardware.c
 
 libhardware.so.1: libhardware.so.1.0
 	ln -sf libhardware.so.1.0 libhardware.so.1
+
+libhardware.so: libhardware.so.1
+	ln -sf libhardware.so.1.0 libhardware.so
 
 libEGL.so.1.0: egl/egl.c
 	$(CC) -g -shared -o $@ -fPIC -Wl,-soname,libEGL.so.1 $< libhybris_ics.so
@@ -53,23 +56,35 @@ libGLESv2.so.2: libGLESv2.so.2.0
 libis.so.1: libis.so.1.0
 	ln -sf libis.so.1.0 libis.so.1
 
+libis.so: libis.so.1
+	ln -sf libis.so.1.0 libis.so
+
 libsf.so.1: libsf.so.1.0
 	ln -sf libsf.so.1.0 libsf.so.1
+
+libsf.so: libsf.so.1
+	ln -sf libsf.so.1.0 libsf.so
+
+libcamera.so.1: libcamera.so.1.0
+	ln -sf libcamera.so.1.0 libcamera.so.1
+
+libcamera.so: libcamera.so.1
+	ln -sf libcamera.so.1.0 libcamera.so
 
 test_egl: libEGL.so.1 libGLESv2.so.2 egl/test.c libhybris_ics.so
 	$(CC) -g -o $@ egl/test.c libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I .
 
-test_sf: libsf.so.1 sf/test.cpp libhybris_ics.so
-	$(CXX) -g -o $@ sf/test.cpp libsf.so.1 libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/surface_flinger
+test_sf: libsf.so sf/test.cpp libhybris_ics.so
+	$(CXX) -g -o $@ sf/test.cpp libsf.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/surface_flinger
 
-test_camera: libcamera.so.1.0 libsf.so.1 libis.so.1 camera/test.cpp libhybris_ics.so
-	$(CXX) -g -o $@ camera/test.cpp libcamera.so.1.0 libsf.so.1 libis.so.1 libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/camera -I../compat/input -I../compat/surface_flinger
+test_camera: libcamera.so libsf.so libis.so camera/test.cpp libhybris_ics.so
+	$(CXX) -g -o $@ camera/test.cpp libcamera.so libsf.so libis.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/camera -I../compat/input -I../compat/surface_flinger
 
-test_hw: libhardware.so.1 hardware/test.c libhybris_ics.so
-	$(CC) -g -o $@ hardware/test.c libhardware.so.1 libhybris_ics.so  -I .
+test_hw: libhardware.so hardware/test.c libhybris_ics.so
+	$(CC) -g -o $@ hardware/test.c libhardware.so libhybris_ics.so  -I .
 
-test_sensors: libhardware.so.1 hardware/sensors.c libhybris_ics.so
-	$(CC) -g -o $@ hardware/sensors.c libhardware.so.1 libhybris_ics.so  -I .
+test_sensors: libhardware.so hardware/sensors.c libhybris_ics.so
+	$(CC) -g -o $@ hardware/sensors.c libhardware.so libhybris_ics.so  -I .
 
 test_glesv2: libEGL.so.1 libGLESv2.so.2 egl/test.c libhybris_ics.so
 	$(CC) -g -o $@ glesv2/test.c -lm libEGL.so.1 libhybris_ics.so libGLESv2.so.2
