@@ -1,3 +1,14 @@
+libhybris (0.6) unstable; urgency=low
+
+  * Dropping the +git version string as we're now using our own specific
+    versions
+  * Adding lib*.so files to libhybris-dev
+  * Installing the new libcamera library at libhybris
+  * hybris/Makefile:
+    - Adding rules to create the lib*.so links
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@linaro.org>  Tue, 25 Sep 2012 03:31:12 -0300
+
 libhybris (0.5+git) unstable; urgency=low
 
   * Using update-alternatives for the GLES libraries (LP: #1051994)

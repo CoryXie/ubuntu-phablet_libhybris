@@ -4,6 +4,8 @@ hybris/libsf.so.1.0		#LIBDIR#
 hybris/libsf.so.1		#LIBDIR#
 hybris/libhardware.so.1.0	#LIBDIR#
 hybris/libhardware.so.1		#LIBDIR#
+hybris/libcamera.so.1.0		#LIBDIR#
+hybris/libcamera.so.1		#LIBDIR#
 hybris/libhybris_ics.so		#LIBDIR#
 hybris/libEGL.so.1.0		#PKGLIBDIR#
 hybris/libEGL.so.1		#PKGLIBDIR#
