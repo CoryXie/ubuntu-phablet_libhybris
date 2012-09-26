@@ -1,3 +1,9 @@
+libhybris (0.8) unstable; urgency=low
+
+  * common/hooks.c stubbed out more functions needed.
+
+ -- Michael Frey <michael.frey@canonical.com>  Tue, 25 Sep 2012 22:28:14 -0400
+
 libhybris (0.7) unstable; urgency=low
 
   * test_camera added to test package

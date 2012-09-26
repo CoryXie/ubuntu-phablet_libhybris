@@ -231,6 +231,7 @@ static int my_pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mute
 static struct _hook hooks[] = {
     {"property_get", property_get },
     {"property_set", property_set },
+    {"getenv", getenv },
     {"printf", printf },
     {"malloc", malloc },
     {"free", free },
@@ -325,6 +326,7 @@ static struct _hook hooks[] = {
     {"pthread_cond_signal", my_pthread_cond_signal},
     {"pthread_cond_wait", my_pthread_cond_wait},
     {"pthread_cond_timedwait", my_pthread_cond_timedwait},
+    {"pthread_cond_timedwait_monotonic", my_pthread_cond_timedwait},
     {"pthread_cond_timedwait_relative_np", my_pthread_cond_timedwait},
     {"pthread_attr_setstacksize", my_pthread_attr_setstacksize},
     {"pthread_attr_destroy", my_pthread_attr_destroy},
