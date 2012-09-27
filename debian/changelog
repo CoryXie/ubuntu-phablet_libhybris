@@ -1,3 +1,10 @@
+libhybris (0.9) unstable; urgency=low
+
+  * Added support to create a surfaceflinger client without EGL setup.
+  * Fixed up some Makefile clean target.
+
+ -- Michael Frey <michael.frey@canonical.com>  Thu, 27 Sep 2012 09:58:19 -0400
+
 libhybris (0.8) unstable; urgency=low
 
   * common/hooks.c stubbed out more functions needed.

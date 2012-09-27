@@ -39,8 +39,16 @@ extern "C" {
     size_t sf_get_number_of_displays();
     size_t sf_get_display_width(size_t display_id);
     size_t sf_get_display_height(size_t display_id);
-    
+
+    // The egl_support parameter disables the use of EGL inside the
+    // library. sf_client_create() enables the use of EGL by default. When
+    // disabled, the functions sf_client_get_egl_display(),
+    // sf_client_get_egl_config(), sf_surface_get_egl_surface(),
+    // sf_surface_make_current() and the create_egl_window_surface feature are
+    // not supported anymore.
+    SfClient* sf_client_create_full(bool egl_support);
     SfClient* sf_client_create();
+
     EGLDisplay sf_client_get_egl_display(SfClient*);
     EGLConfig sf_client_get_egl_config(SfClient* client);
     void sf_client_begin_transaction(SfClient*);

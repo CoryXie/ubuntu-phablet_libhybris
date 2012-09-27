@@ -78,7 +78,7 @@ size_t sf_get_display_height(size_t display_id)
     return android::SurfaceComposerClient::getDisplayHeight(display_id);
 }
 
-SfClient* sf_client_create()
+SfClient* sf_client_create_full(bool egl_support)
 {
     
     SfClient* client = new SfClient();
@@ -90,63 +90,88 @@ SfClient* sf_client_create()
         delete client;
         return NULL;
     }
-    
-    client->egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (client->egl_display == EGL_NO_DISPLAY)
+
+    client->egl_support = egl_support;
+    if (egl_support)
     {
-        report_failed_to_get_egl_default_display_on_creation();
-        delete client;
-        return NULL;
-    }
-    
-    int major, minor;
-    int rc = eglInitialize(client->egl_display, &major, &minor);
-    if (rc == EGL_FALSE) {
-        report_failed_to_initialize_egl_on_creation();
-        delete client;
-        return NULL;
-    }
+        client->egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+        if (client->egl_display == EGL_NO_DISPLAY)
+        {
+            report_failed_to_get_egl_default_display_on_creation();
+            delete client;
+            return NULL;
+        }
 
-    EGLint attribs[] = {
-        EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
-        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-        EGL_NONE };
+        int major, minor;
+        int rc = eglInitialize(client->egl_display, &major, &minor);
+        if (rc == EGL_FALSE) {
+            report_failed_to_initialize_egl_on_creation();
+            delete client;
+            return NULL;
+        }
 
-    int n;
-    if (eglChooseConfig(
+        EGLint attribs[] = {
+            EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+            EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+            EGL_NONE };
+
+        int n;
+        if (eglChooseConfig(
+                client->egl_display, 
+                attribs, 
+                &client->egl_config, 
+                1, 
+                &n) == EGL_FALSE) {
+          report_failed_to_choose_egl_config_on_creation();
+          delete client;
+          return NULL;
+        }
+
+        EGLint context_attribs[] = { 
+            EGL_CONTEXT_CLIENT_VERSION, 2, 
+              EGL_NONE };
+
+        client->egl_context = eglCreateContext(
             client->egl_display, 
-            attribs, 
-            &client->egl_config, 
-            1, 
-            &n) == EGL_FALSE) {
-        report_failed_to_choose_egl_config_on_creation();
-        delete client;
-        return NULL;
+            client->egl_config, 
+            EGL_NO_CONTEXT, 
+            context_attribs);
     }
 
-    EGLint context_attribs[] = { 
-        EGL_CONTEXT_CLIENT_VERSION, 2, 
-        EGL_NONE };
-    
-    client->egl_context = eglCreateContext(
-        client->egl_display, 
-        client->egl_config, 
-        EGL_NO_CONTEXT, 
-        context_attribs);
-    
     return client;
+}
+
+SfClient* sf_client_create()
+{
+  return sf_client_create_full(true);
 }
 
 EGLDisplay sf_client_get_egl_display(SfClient* client)
 {
     assert(client);
-    return client->egl_display;
+
+    if (client->egl_support)
+        return client->egl_display;
+    else
+    {
+        fprintf(stderr, "Warning: sf_client_get_egl_display not supported, EGL "
+                "support disabled\n");
+        return NULL;
+    }
 }
 
 EGLConfig sf_client_get_egl_config(SfClient* client)
 {
     assert(client);
-    return client->egl_config;
+
+    if (client->egl_support)
+        return client->egl_config;
+    else
+    {
+        fprintf(stderr, "Warning: sf_client_get_egl_config not supported, EGL "
+                "support disabled\n");
+        return NULL;
+    }
 }
 
 void sf_client_begin_transaction(SfClient* client)
@@ -202,21 +227,35 @@ SfSurface* sf_surface_create(SfClient* client, SfSurfaceCreationParameters* para
 
     if (params->create_egl_window_surface)
     {
-        android::sp<ANativeWindow> anw(surface->surface);
-        surface->egl_surface = eglCreateWindowSurface(
-            surface->client->egl_display,
-            surface->client->egl_config,
-            anw.get(),
-            NULL);
+        if (client->egl_support)
+        {
+            android::sp<ANativeWindow> anw(surface->surface);
+            surface->egl_surface = eglCreateWindowSurface(
+                surface->client->egl_display,
+                surface->client->egl_config,
+                anw.get(),
+                NULL);
+        }
+        else
+          fprintf(stderr, "Warning: params->create_egl_window_surface not "
+                  "supported, EGL support disabled\n");
     }
-    
+
     return surface;
 }
 
 EGLSurface sf_surface_get_egl_surface(SfSurface* surface)
 {
     assert(surface);
-    return surface->egl_surface;
+
+    if (surface->client->egl_support)
+        return surface->egl_surface;
+    else
+    {
+        fprintf(stderr, "Warning: sf_surface_get_egl_surface not supported, "
+                "EGL support disabled\n");
+        return NULL;
+    }
 }
 
 EGLNativeWindowType sf_surface_get_egl_native_window(SfSurface* surface)
@@ -228,11 +267,20 @@ EGLNativeWindowType sf_surface_get_egl_native_window(SfSurface* surface)
 void sf_surface_make_current(SfSurface* surface)
 {
     assert(surface);
-    eglMakeCurrent(
-        surface->client->egl_display,
-        surface->egl_surface,
-        surface->egl_surface,
-        surface->client->egl_context);
+
+    if (surface->client->egl_support)
+    {
+        eglMakeCurrent(
+            surface->client->egl_display,
+            surface->egl_surface,
+            surface->egl_surface,
+            surface->client->egl_context);
+    }
+    else
+    {
+        fprintf(stderr, "Warning: sf_surface_make_current not supported, EGL "
+                "support disabled\n");
+    }
 }
 
 void sf_surface_move_to(SfSurface* surface, int x, int y)
