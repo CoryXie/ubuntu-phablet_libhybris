@@ -94,4 +94,6 @@ clean:
 	rm -rf libEGL* libGLESv2*
 	rm -rf libhardware*
 	rm -rf libsf*
+	rm -rf libcamera*
+	rm -rf libis*
 	rm -rf test_*

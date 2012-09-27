@@ -39,6 +39,7 @@ struct SfClient
     EGLDisplay egl_display;
     EGLConfig egl_config;
     EGLContext egl_context;
+    bool egl_support;
 };
 
 struct SfSurface
