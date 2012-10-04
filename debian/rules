@@ -43,8 +43,10 @@ ld_so_conf_path         := $(ld_so_conf_dir)/$(ld_so_conf_file)
 alt_ld_so_conf_path     := $(ld_so_conf_dir)/$(alt_ld_so_conf_file)
 mandir                  := usr/share/man/man1
 
-build: build-arch
-build-arch:
+%:
+	dh $@
+
+override_dh_install:
 	# Fill in important variables
 	for i in $(PKG_driver).dirs \
 			$(PKG_driver).install \
@@ -77,12 +79,7 @@ build-arch:
 			debian/$$i.in > debian/$$i; \
 	done
 
-	dh build-arch
-
-binary-arch:
-	dh_installdirs -p$(PKG_driver)
-	dh_installdirs -p$(PKG_driver_dev)
-	dh_installdirs -p$(PKG_driver_test)
+	dh_install
 
 	# ld.so.conf
 	echo "/$(PKG_libdir)" > "$(CURDIR)/debian/$(PKG_driver)/$(ld_so_conf_path)"
@@ -90,20 +87,12 @@ binary-arch:
 	# empty ld.so.conf for the fake multi-arch alternative
 	echo "" > "$(CURDIR)/debian/$(PKG_driver)/$(alt_ld_so_conf_path)"
 
-	dh binary-arch
-
-binary: binary-arch binary-indep;
-	# Run the normal stuff
-	dh binary
 
 override_dh_auto_build:
 	dh_auto_build -- $(make_opts)
 
 override_dh_shlibdeps:
 	dh_shlibdeps -l$(CURDIR)/debian/$(PKG_driver)/$(PKG_libdir)
-
-%:
-	dh $@
 
 # Disabled or the test files would be executed and
 # they are not exactly unit tests
