@@ -7,6 +7,7 @@ LOCAL_MODULE:= libis_compat_layer
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := \
+	libandroidfw \
 	libinput \
 	libcutils \
 	libutils \
