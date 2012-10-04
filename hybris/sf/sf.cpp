@@ -26,6 +26,11 @@
 extern "C" {
 #endif
 
+#ifdef __ARM_PCS_VFP
+#define FP_ATTRIB __attribute__((pcs("aapcs")))
+#else
+#define FP_ATTRIB
+#endif
 
 extern void *android_dlopen(const char *filename, int flag);
 extern void *android_dlsym(void *handle, const char *symbol);
@@ -42,7 +47,7 @@ static void (*_sf_surface_make_current)(SfSurface* surface) = NULL;
 
 static void (*_sf_surface_move_to)(SfSurface* surface, int x, int y) = NULL;
 static void (*_sf_surface_set_layer)(SfSurface* surface, int layer) = NULL;
-static void (*_sf_surface_set_alpha)(SfSurface* surface, float alpha) = NULL;
+static void (*_sf_surface_set_alpha)(SfSurface* surface, float alpha) FP_ATTRIB = NULL;
 
 static SfClient* (*_sf_client_create)(void) = NULL;
 static SfClient* (*_sf_client_create_full)(bool egl_support) = NULL;

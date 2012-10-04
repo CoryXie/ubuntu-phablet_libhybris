@@ -3,6 +3,12 @@
 #include <dlfcn.h>
 #include <stddef.h>
 
+#ifdef __ARM_PCS_VFP
+#define FP_ATTRIB __attribute__((pcs("aapcs")))
+#else
+#define FP_ATTRIB
+#endif
+
 static void *_libglesv2 = NULL;
 
 static void         (*_glActiveTexture)(GLenum texture) = NULL;
@@ -93,10 +99,10 @@ static GLboolean    (*_glIsProgram)(GLuint program) = NULL;
 static GLboolean    (*_glIsRenderbuffer)(GLuint renderbuffer) = NULL;
 static GLboolean    (*_glIsShader)(GLuint shader) = NULL;
 static GLboolean    (*_glIsTexture)(GLuint texture) = NULL;
-static void         (*_glLineWidth)(GLfloat width) = NULL;
+static void         (*_glLineWidth)(GLfloat width) FP_ATTRIB = NULL;
 static void         (*_glLinkProgram)(GLuint program) = NULL;
 static void         (*_glPixelStorei)(GLenum pname, GLint param) = NULL;
-static void         (*_glPolygonOffset)(GLfloat factor, GLfloat units) = NULL;
+static void         (*_glPolygonOffset)(GLfloat factor, GLfloat units) FP_ATTRIB = NULL;
 static void         (*_glReadPixels)(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, GLvoid* pixels) = NULL;
 static void         (*_glReleaseShaderCompiler)(void) = NULL;
 static void         (*_glRenderbufferStorage)(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) = NULL;
@@ -111,24 +117,24 @@ static void         (*_glStencilMaskSeparate)(GLenum face, GLuint mask) = NULL;
 static void         (*_glStencilOp)(GLenum fail, GLenum zfail, GLenum zpass) = NULL;
 static void         (*_glStencilOpSeparate)(GLenum face, GLenum fail, GLenum zfail, GLenum zpass) = NULL;
 static void         (*_glTexImage2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid* pixels) = NULL;
-static void         (*_glTexParameterf)(GLenum target, GLenum pname, GLfloat param) = NULL;
+static void         (*_glTexParameterf)(GLenum target, GLenum pname, GLfloat param) FP_ATTRIB = NULL;
 static void         (*_glTexParameterfv)(GLenum target, GLenum pname, const GLfloat* params) = NULL;
 static void         (*_glTexParameteri)(GLenum target, GLenum pname, GLint param) = NULL;
 static void         (*_glTexParameteriv)(GLenum target, GLenum pname, const GLint* params) = NULL;
 static void         (*_glTexSubImage2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid* pixels) = NULL;
-static void         (*_glUniform1f)(GLint location, GLfloat x) = NULL;
+static void         (*_glUniform1f)(GLint location, GLfloat x) FP_ATTRIB = NULL;
 static void         (*_glUniform1fv)(GLint location, GLsizei count, const GLfloat* v) = NULL;
 static void         (*_glUniform1i)(GLint location, GLint x) = NULL;
 static void         (*_glUniform1iv)(GLint location, GLsizei count, const GLint* v) = NULL;
-static void         (*_glUniform2f)(GLint location, GLfloat x, GLfloat y) = NULL;
+static void         (*_glUniform2f)(GLint location, GLfloat x, GLfloat y) FP_ATTRIB = NULL;
 static void         (*_glUniform2fv)(GLint location, GLsizei count, const GLfloat* v) = NULL;
 static void         (*_glUniform2i)(GLint location, GLint x, GLint y) = NULL;
 static void         (*_glUniform2iv)(GLint location, GLsizei count, const GLint* v) = NULL;
-static void         (*_glUniform3f)(GLint location, GLfloat x, GLfloat y, GLfloat z) = NULL;
+static void         (*_glUniform3f)(GLint location, GLfloat x, GLfloat y, GLfloat z) FP_ATTRIB = NULL;
 static void         (*_glUniform3fv)(GLint location, GLsizei count, const GLfloat* v) = NULL;
 static void         (*_glUniform3i)(GLint location, GLint x, GLint y, GLint z) = NULL;
 static void         (*_glUniform3iv)(GLint location, GLsizei count, const GLint* v) = NULL;
-static void         (*_glUniform4f)(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w) = NULL;
+static void         (*_glUniform4f)(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w) FP_ATTRIB = NULL;
 static void         (*_glUniform4fv)(GLint location, GLsizei count, const GLfloat* v) = NULL;
 static void         (*_glUniform4i)(GLint location, GLint x, GLint y, GLint z, GLint w) = NULL;
 static void         (*_glUniform4iv)(GLint location, GLsizei count, const GLint* v) = NULL;
@@ -137,13 +143,13 @@ static void         (*_glUniformMatrix3fv)(GLint location, GLsizei count, GLbool
 static void         (*_glUniformMatrix4fv)(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) = NULL;
 static void         (*_glUseProgram)(GLuint program) = NULL;
 static void         (*_glValidateProgram)(GLuint program) = NULL;
-static void         (*_glVertexAttrib1f)(GLuint indx, GLfloat x) = NULL;
+static void         (*_glVertexAttrib1f)(GLuint indx, GLfloat x) FP_ATTRIB = NULL;
 static void         (*_glVertexAttrib1fv)(GLuint indx, const GLfloat* values) = NULL;
-static void         (*_glVertexAttrib2f)(GLuint indx, GLfloat x, GLfloat y) = NULL;
+static void         (*_glVertexAttrib2f)(GLuint indx, GLfloat x, GLfloat y) FP_ATTRIB = NULL;
 static void         (*_glVertexAttrib2fv)(GLuint indx, const GLfloat* values) = NULL;
-static void         (*_glVertexAttrib3f)(GLuint indx, GLfloat x, GLfloat y, GLfloat z) = NULL;
+static void         (*_glVertexAttrib3f)(GLuint indx, GLfloat x, GLfloat y, GLfloat z) FP_ATTRIB = NULL;
 static void         (*_glVertexAttrib3fv)(GLuint indx, const GLfloat* values) = NULL;
-static void         (*_glVertexAttrib4f)(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w) = NULL;
+static void         (*_glVertexAttrib4f)(GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w) FP_ATTRIB = NULL;
 static void         (*_glVertexAttrib4fv)(GLuint indx, const GLfloat* values) = NULL;
 static void         (*_glVertexAttribPointer)(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) = NULL;
 static void         (*_glViewport)(GLint x, GLint y, GLsizei width, GLsizei height) = NULL;
