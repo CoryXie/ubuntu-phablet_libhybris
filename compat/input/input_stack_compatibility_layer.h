@@ -77,6 +77,7 @@ extern "C" {
                 
                 size_t pointer_count;
                 struct PointerCoordinates {
+                    int id;
                     float x, raw_x;
                     float y, raw_y;
                     float touch_major;
@@ -85,8 +86,7 @@ extern "C" {
                     float pressure;
                     float orientation;
                 }; 
-                PointerCoordinates pointer_coordinates[MAX_POINTER_COUNT];
-                
+                PointerCoordinates pointer_coordinates[MAX_POINTER_COUNT];                
             } motion;
         } details;
     };
