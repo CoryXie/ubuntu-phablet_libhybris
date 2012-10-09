@@ -340,9 +340,6 @@ static struct _hook hooks[] = {
     {"pthread_rwlock_unlock", pthread_rwlock_unlock},
     {"pthread_rwlock_wrlock", pthread_rwlock_wrlock},
     {"pthread_rwlock_rdlock", pthread_rwlock_rdlock},
-    {"fopen", fopen},
-    {"fgets", fgets},
-    {"fclose", fclose},
     {NULL, NULL},
 };
 
