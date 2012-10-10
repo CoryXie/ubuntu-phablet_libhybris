@@ -1,3 +1,9 @@
+libhybris (0.12) unstable; urgency=low
+
+  * Added sf_surface_set_size.  Ability to set a surface size.
+
+ -- Michael Frey <michael.frey@canonical.com>  Wed, 10 Oct 2012 10:30:01 -0400
+
 libhybris (0.11) unstable; urgency=low
 
   * Removed previous mappings.  Causes segfaults.
