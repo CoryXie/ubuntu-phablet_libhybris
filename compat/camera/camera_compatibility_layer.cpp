@@ -414,13 +414,21 @@ void android_camera_set_display_orientation(CameraControl* control, int32_t cloc
     control->camera->sendCommand(CAMERA_CMD_SET_DISPLAY_ORIENTATION, clockwise_rotation_degree, ignored_parameter);
 }
 
-void android_camera_update_preview_texture(CameraControl* control)
+void android_camera_get_preview_texture_transformation(CameraControl* control, float m[16])
 {
     REPORT_FUNCTION()
     assert(control);
 
     if (control->preview_texture == NULL)
         return;
+
+    control->preview_texture->getTransformMatrix(m);
+}
+
+void android_camera_update_preview_texture(CameraControl* control)
+{
+    REPORT_FUNCTION()
+    assert(control);
 
     control->preview_texture->updateTexImage();
 }
@@ -435,14 +443,7 @@ void android_camera_set_preview_texture(CameraControl* control, int texture_id)
         new android::SurfaceTexture(
             texture_id,
             allow_synchronous_mode));
-    /*uint32_t width, height, transform;
-    control->preview_texture->connect(
-        NATIVE_WINDOW_API_CAMERA,
-        &width,
-        &height,
-        &transform);*/
-    //printf("Connect to window camera api: %d, %d, %d", width, height, transform);
-    control->preview_texture->setBufferCount(3);
+    
     control->preview_texture->setFrameAvailableListener(
         android::sp<android::SurfaceTexture::FrameAvailableListener>(control));
     control->camera->setPreviewTexture(control->preview_texture);
@@ -526,6 +527,33 @@ void android_camera_take_snapshot(CameraControl* control)
     assert(control);
     android::Mutex::Autolock al(control->guard);
     control->camera->takePicture(CAMERA_MSG_SHUTTER | CAMERA_MSG_COMPRESSED_IMAGE);
+}
+
+void android_camera_set_preview_format(CameraControl* control, CameraPixelFormat pf)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    
+    control->camera_parameters.set(
+        android::CameraParameters::KEY_PREVIEW_FORMAT,
+        camera_pixel_formats[pf]);
+
+    control->camera->setParameters(control->camera_parameters.flatten());
+}
+
+void android_camera_get_preview_format(CameraControl* control, CameraPixelFormat* pf)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    
+    *pf = pixel_formats_lut.valueFor(
+        android::String8(
+            control->camera_parameters.get(
+                android::CameraParameters::KEY_PREVIEW_FORMAT)));
 }
 
 void android_camera_set_focus_region(

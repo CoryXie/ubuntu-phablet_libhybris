@@ -76,6 +76,17 @@ typedef enum
 
 typedef enum
 {
+    CAMERA_PIXEL_FORMAT_YUV422SP,
+    CAMERA_PIXEL_FORMAT_YUV420SP,
+    CAMERA_PIXEL_FORMAT_YUV422I,
+    CAMERA_PIXEL_FORMAT_YUV420P,
+    CAMERA_PIXEL_FORMAT_RGB565,
+    CAMERA_PIXEL_FORMAT_RGBA8888,
+    CAMERA_PIXEL_FORMAT_BAYER_RGGB
+} CameraPixelFormat;
+
+typedef enum
+{
     PICTURE_SIZE_SMALL,
     PICTURE_SIZE_MEDIUM,
     PICTURE_SIZE_LARGE
@@ -102,6 +113,7 @@ void android_camera_get_flash_mode(CameraControl* control, FlashMode* mode);
 void android_camera_get_white_balance_mode(CameraControl* control, WhiteBalanceMode* mode);
 void android_camera_get_scene_mode(CameraControl* control, SceneMode* mode);
 void android_camera_get_auto_focus_mode(CameraControl* control, AutoFocusMode* mode);
+void android_camera_get_preview_format(CameraControl* control, CameraPixelFormat* format);
 
 // Adjusts camera parameters
 void android_camera_set_preview_size(CameraControl* control, int width, int height); 
@@ -112,6 +124,7 @@ void android_camera_set_flash_mode(CameraControl* control, FlashMode mode);
 void android_camera_set_white_balance_mode(CameraControl* control, WhiteBalanceMode mode);
 void android_camera_set_scene_mode(CameraControl* control, SceneMode mode);
 void android_camera_set_auto_focus_mode(CameraControl* control, AutoFocusMode mode);
+void android_camera_set_preview_format(CameraControl* control, CameraPixelFormat format);
 
 void android_camera_set_focus_region(
     CameraControl* control,

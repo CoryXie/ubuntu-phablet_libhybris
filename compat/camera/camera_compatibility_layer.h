@@ -84,6 +84,9 @@ extern "C" {
     // Prepares the camera HAL to display preview images to the supplied surface/texture in a H/W-acclerated way.
     void android_camera_set_preview_texture(CameraControl* control, int texture_id);
 
+    // Reads out the transformation matrix that needs to be applied when displaying the texture
+    void android_camera_get_preview_texture_transformation(CameraControl* control, float m[16]);
+
     // Updates the texture to the last received frame.
     void android_camera_update_preview_texture(CameraControl* control);
 

@@ -147,6 +147,31 @@ static android::KeyedVector<android::String8, AutoFocusMode> init_auto_focus_mod
 
 static android::KeyedVector<android::String8, AutoFocusMode> auto_focus_modes_lut = init_auto_focus_modes_lut();
 
+static const char* camera_pixel_formats[] = {
+    android::CameraParameters::PIXEL_FORMAT_YUV422SP,
+    android::CameraParameters::PIXEL_FORMAT_YUV420SP,
+    android::CameraParameters::PIXEL_FORMAT_YUV422I,
+    android::CameraParameters::PIXEL_FORMAT_YUV420P,
+    android::CameraParameters::PIXEL_FORMAT_RGB565,
+    android::CameraParameters::PIXEL_FORMAT_RGBA8888,
+    android::CameraParameters::PIXEL_FORMAT_BAYER_RGGB
+};
+
+static android::KeyedVector<android::String8, CameraPixelFormat> init_pixel_formats_lut()
+{
+    android::KeyedVector<android::String8, CameraPixelFormat> m;
+    m.add(android::String8(android::CameraParameters::PIXEL_FORMAT_YUV422SP), CAMERA_PIXEL_FORMAT_YUV422SP);
+    m.add(android::String8(android::CameraParameters::PIXEL_FORMAT_YUV420SP), CAMERA_PIXEL_FORMAT_YUV420SP);
+    m.add(android::String8(android::CameraParameters::PIXEL_FORMAT_YUV422I), CAMERA_PIXEL_FORMAT_YUV422I);
+    m.add(android::String8(android::CameraParameters::PIXEL_FORMAT_YUV420P), CAMERA_PIXEL_FORMAT_YUV420P);
+    m.add(android::String8(android::CameraParameters::PIXEL_FORMAT_RGB565), CAMERA_PIXEL_FORMAT_RGB565);
+    m.add(android::String8(android::CameraParameters::PIXEL_FORMAT_RGBA8888), CAMERA_PIXEL_FORMAT_RGBA8888);
+    m.add(android::String8(android::CameraParameters::PIXEL_FORMAT_BAYER_RGGB), CAMERA_PIXEL_FORMAT_BAYER_RGGB);
+    return m;
+}
+
+static android::KeyedVector<android::String8, CameraPixelFormat> pixel_formats_lut = init_pixel_formats_lut();
+
 #ifdef __cplusplus
 }
 #endif
