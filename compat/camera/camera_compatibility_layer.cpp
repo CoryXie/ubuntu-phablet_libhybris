@@ -558,11 +558,7 @@ void android_camera_get_preview_format(CameraControl* control, CameraPixelFormat
 
 void android_camera_set_focus_region(
     CameraControl* control,
-    int top_left_x,
-    int top_left_y,
-    int bottom_right_x,
-    int bottom_right_y,
-    int weight)
+    FocusRegion* region)
 {
     REPORT_FUNCTION()
     assert(control);
@@ -573,11 +569,11 @@ void android_camera_set_focus_region(
         focus_region, 
         sizeof(focus_region), 
         focus_region_pattern, 
-        top_left_x,
-        top_left_y,
-        bottom_right_x,
-        bottom_right_y,
-        weight);
+        region->left,
+        region->top,
+        region->bottom,
+        region->right,
+        region->weight);
     
     control->camera_parameters.set(
         android::CameraParameters::KEY_FOCUS_AREAS,

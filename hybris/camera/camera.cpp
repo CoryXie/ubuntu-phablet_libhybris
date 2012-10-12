@@ -110,17 +110,45 @@ extern "C" {
         CAMERA_DLSYM(&f, #symbol);                              \
         f(_1, _2); }
 
+#define IMPLEMENT_VOID_FUNCTION3(symbol, arg1, arg2, arg3)      \
+    void symbol(arg1 _1, arg2 _2, arg3 _3)                      \
+    {                                                           \
+        static void (*f)(arg1, arg2, arg3) = NULL;              \
+        CAMERA_DLSYM(&f, #symbol);                              \
+        f(_1, _2, _3); }
+
+
 IMPLEMENT_FUNCTION2(CameraControl*, android_camera_connect_to, CameraType, CameraControlListener*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_dump_parameters, CameraControl*);
+
+// Setters
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_effect_mode, CameraControl*, EffectMode);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_flash_mode, CameraControl*, FlashMode);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_white_balance_mode, CameraControl*, WhiteBalanceMode);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_scene_mode, CameraControl*, SceneMode);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_auto_focus_mode, CameraControl*, AutoFocusMode);
-IMPLEMENT_VOID_FUNCTION2(android_camera_set_picture_size, CameraControl*, PictureSize);
+IMPLEMENT_VOID_FUNCTION3(android_camera_set_picture_size, CameraControl*, int, int);
+IMPLEMENT_VOID_FUNCTION3(android_camera_set_preview_size, CameraControl*, int, int);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_display_orientation, CameraControl*, int32_t);
-IMPLEMENT_VOID_FUNCTION2(android_camera_set_preview_texture, CameraControl*, SfSurface*);
+IMPLEMENT_VOID_FUNCTION2(android_camera_set_preview_texture, CameraControl*, int);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_preview_surface, CameraControl*, SfSurface*);
+IMPLEMENT_VOID_FUNCTION2(android_camera_set_focus_region, CameraControl*, FocusRegion*);
+// Getters
+IMPLEMENT_VOID_FUNCTION2(android_camera_get_effect_mode, CameraControl*, EffectMode*);
+IMPLEMENT_VOID_FUNCTION2(android_camera_get_flash_mode, CameraControl*, FlashMode*);
+IMPLEMENT_VOID_FUNCTION2(android_camera_get_white_balance_mode, CameraControl*, WhiteBalanceMode*);
+IMPLEMENT_VOID_FUNCTION2(android_camera_get_scene_mode, CameraControl*, SceneMode*);
+IMPLEMENT_VOID_FUNCTION2(android_camera_get_auto_focus_mode, CameraControl*, AutoFocusMode*);
+IMPLEMENT_VOID_FUNCTION2(android_camera_get_max_zoom, CameraControl*, int*);
+IMPLEMENT_VOID_FUNCTION3(android_camera_get_picture_size, CameraControl*, int*, int*);
+IMPLEMENT_VOID_FUNCTION3(android_camera_get_preview_size, CameraControl*, int*, int*);
+
+// Enumerators
+IMPLEMENT_VOID_FUNCTION2(android_camera_enumerate_supported_picture_sizes, CameraControl*, size_callback);
+IMPLEMENT_VOID_FUNCTION2(android_camera_enumerate_supported_preview_sizes, CameraControl*, size_callback);
+
+
+
 IMPLEMENT_VOID_FUNCTION1(android_camera_start_preview, CameraControl*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_stop_preview, CameraControl*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_start_autofocus, CameraControl*);

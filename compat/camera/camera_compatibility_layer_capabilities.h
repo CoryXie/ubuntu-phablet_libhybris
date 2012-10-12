@@ -85,12 +85,14 @@ typedef enum
     CAMERA_PIXEL_FORMAT_BAYER_RGGB
 } CameraPixelFormat;
 
-typedef enum
+typedef struct
 {
-    PICTURE_SIZE_SMALL,
-    PICTURE_SIZE_MEDIUM,
-    PICTURE_SIZE_LARGE
-} PictureSize;
+    int top;
+    int left;
+    int bottom;
+    int right;
+    int weight;
+} FocusRegion;
 
 typedef void (*size_callback)(void* ctx, int width, int height);
 
@@ -126,17 +128,13 @@ void android_camera_set_scene_mode(CameraControl* control, SceneMode mode);
 void android_camera_set_auto_focus_mode(CameraControl* control, AutoFocusMode mode);
 void android_camera_set_preview_format(CameraControl* control, CameraPixelFormat format);
 
-void android_camera_set_focus_region(
-    CameraControl* control,
-    int top_left_x,
-    int top_left_y,
-    int bottom_right_x,
-    int bottom_right_y,
-    int weight);
+void android_camera_set_focus_region(CameraControl* control, FocusRegion* region);
 
 void android_camera_reset_focus_region(CameraControl* control)
 {
-    android_camera_set_focus_region(control, 0, 0, 0, 0, 0);
+    static FocusRegion region = { 0, 0, 0, 0, 0 };
+    
+    android_camera_set_focus_region(control, &region);
 }
 
 #ifdef __cplusplus
