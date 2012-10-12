@@ -134,6 +134,7 @@ IMPLEMENT_VOID_FUNCTION2(android_camera_set_display_orientation, CameraControl*,
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_preview_texture, CameraControl*, int);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_preview_surface, CameraControl*, SfSurface*);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_focus_region, CameraControl*, FocusRegion*);
+IMPLEMENT_VOID_FUNCTION2(android_camera_set_preview_fps, CameraControl*, int);
 // Getters
 IMPLEMENT_VOID_FUNCTION2(android_camera_get_effect_mode, CameraControl*, EffectMode*);
 IMPLEMENT_VOID_FUNCTION2(android_camera_get_flash_mode, CameraControl*, FlashMode*);

@@ -81,13 +81,19 @@ extern "C" {
     // Passes the rotation r of the display in [°] relative to the camera to the camera HAL. r \in [0, 359].
     void android_camera_set_display_orientation(CameraControl* control, int32_t clockwise_rotation_degree);
 
-    // Prepares the camera HAL to display preview images to the supplied surface/texture in a H/W-acclerated way.
+    // Prepares the camera HAL to display preview images to the
+    // supplied surface/texture in a H/W-acclerated way.  New frames
+    // are reported via the
+    // 'on_preview_texture_needs_update'-callback, and clients of this
+    // API should invoke android_camera_update_preview_texture
+    // subsequently. Please note that the texture is bound automatically by the underlying
+    // implementation.
     void android_camera_set_preview_texture(CameraControl* control, int texture_id);
 
     // Reads out the transformation matrix that needs to be applied when displaying the texture
     void android_camera_get_preview_texture_transformation(CameraControl* control, float m[16]);
 
-    // Updates the texture to the last received frame.
+    // Updates the texture to the last received frame and binds the texture
     void android_camera_update_preview_texture(CameraControl* control);
 
     // Prepares the camera HAL to display preview images to the supplied surface/texture in a H/W-acclerated way.
