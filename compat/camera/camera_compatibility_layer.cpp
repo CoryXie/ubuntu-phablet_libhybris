@@ -1,20 +1,39 @@
 #include "camera_compatibility_layer.h"
+#include "camera_compatibility_layer_capabilities.h"
+#include "camera_compatibility_layer_configuration_translator.h"
 
 #include <surface_flinger_compatibility_layer_internal.h>
 
 #include <binder/ProcessState.h>
 #include <camera/Camera.h>
 #include <camera/CameraParameters.h>
+#include <gui/SurfaceTexture.h>
 
-#define REPORT_FUNCTION() printf("%s \n", __PRETTY_FUNCTION__);
+#define LOG_TAG "CameraCompatibilityLayer"
+#include <utils/KeyedVector.h>
+#include <utils/Log.h>
 
-struct CameraControl : public android::CameraListener
+
+#define REPORT_FUNCTION() LOGV("%s \n", __PRETTY_FUNCTION__);
+
+struct CameraControl : public android::CameraListener,
+                       public android::SurfaceTexture::FrameAvailableListener
 {
     android::Mutex guard;
     CameraControlListener* listener;
     android::sp<android::Camera> camera;
     android::CameraParameters camera_parameters;
+    android::sp<android::SurfaceTexture> preview_texture;
+    
+    // From android::SurfaceTexture::FrameAvailableListener
+    void onFrameAvailable()
+    {
+        REPORT_FUNCTION();
+        if (listener)
+            listener->on_preview_texture_needs_update_cb(listener->context);
+    }
 
+    // From android::CameraListener
     void notify(int32_t msg_type, int32_t ext1, int32_t ext2)
     {
         REPORT_FUNCTION();
@@ -82,9 +101,10 @@ struct CameraControl : public android::CameraListener
         (void) data;
     }
 };
-
 namespace
 {
+
+
 android::sp<CameraControl> camera_control_instance;
 }
 
@@ -139,18 +159,22 @@ void android_camera_set_flash_mode(CameraControl* control, FlashMode mode)
     assert(control);
 
     android::Mutex::Autolock al(control->guard);
-
-    static const char* flash_modes[] = {
-        "off",
-        "auto",
-        "on",
-        "torch"
-    };
-
     control->camera_parameters.set(
         android::CameraParameters::KEY_FLASH_MODE,
         flash_modes[mode]);
     control->camera->setParameters(control->camera_parameters.flatten());
+}
+
+void android_camera_get_flash_mode(CameraControl* control, FlashMode* mode)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    *mode = flash_modes_lut.valueFor(
+        android::String8(
+            control->camera_parameters.get(
+                android::CameraParameters::KEY_FLASH_MODE)));
 }
 
 void android_camera_set_white_balance_mode(CameraControl* control, WhiteBalanceMode mode)
@@ -160,18 +184,23 @@ void android_camera_set_white_balance_mode(CameraControl* control, WhiteBalanceM
 
     android::Mutex::Autolock al(control->guard);
 
-    static const char* white_balance_modes[] = {
-        android::CameraParameters::WHITE_BALANCE_AUTO,
-        android::CameraParameters::WHITE_BALANCE_DAYLIGHT,
-        android::CameraParameters::WHITE_BALANCE_CLOUDY_DAYLIGHT,
-        android::CameraParameters::WHITE_BALANCE_FLUORESCENT,
-        android::CameraParameters::WHITE_BALANCE_INCANDESCENT
-    };
-
     control->camera_parameters.set(
         android::CameraParameters::KEY_WHITE_BALANCE,
         white_balance_modes[mode]);
     control->camera->setParameters(control->camera_parameters.flatten());
+}
+
+void android_camera_get_white_balance_mode(CameraControl* control, WhiteBalanceMode* mode)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+
+    *mode = white_balance_modes_lut.valueFor(
+        android::String8(
+            control->camera_parameters.get(
+                android::CameraParameters::KEY_WHITE_BALANCE)));
 }
 
 void android_camera_set_scene_mode(CameraControl* control, SceneMode mode)
@@ -181,18 +210,23 @@ void android_camera_set_scene_mode(CameraControl* control, SceneMode mode)
 
     android::Mutex::Autolock al(control->guard);
 
-    static const char* scene_modes[] = {
-        android::CameraParameters::SCENE_MODE_AUTO,
-        android::CameraParameters::SCENE_MODE_ACTION,
-        android::CameraParameters::SCENE_MODE_NIGHT,
-        android::CameraParameters::SCENE_MODE_PARTY,
-        android::CameraParameters::SCENE_MODE_SUNSET
-    };
-
     control->camera_parameters.set(
         android::CameraParameters::KEY_SCENE_MODE,
         scene_modes[mode]);
     control->camera->setParameters(control->camera_parameters.flatten());
+}
+
+void android_camera_get_scene_mode(CameraControl* control, SceneMode* mode)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+
+    *mode = scene_modes_lut.valueFor(
+        android::String8(
+            control->camera_parameters.get(
+                android::CameraParameters::KEY_SCENE_MODE)));
 }
 
 void android_camera_set_auto_focus_mode(CameraControl* control, AutoFocusMode mode)
@@ -202,40 +236,32 @@ void android_camera_set_auto_focus_mode(CameraControl* control, AutoFocusMode mo
 
     android::Mutex::Autolock al(control->guard);
 
-    static const char* auto_focus_modes[] = {
-        android::CameraParameters::FOCUS_MODE_FIXED,
-        android::CameraParameters::FOCUS_MODE_CONTINUOUS_VIDEO,
-        android::CameraParameters::FOCUS_MODE_AUTO,
-        android::CameraParameters::FOCUS_MODE_MACRO,
-        android::CameraParameters::FOCUS_MODE_CONTINUOUS_PICTURE,
-        android::CameraParameters::FOCUS_MODE_INFINITY
-    };
-
     control->camera_parameters.set(
         android::CameraParameters::KEY_FOCUS_MODE,
         auto_focus_modes[mode]);
     control->camera->setParameters(control->camera_parameters.flatten());
 }
 
-void android_camera_set_effect_mode(CameraControl* control, EffectMode mode)
+void android_camera_get_auto_focus_mode(CameraControl* control, AutoFocusMode* mode)
 {
     REPORT_FUNCTION();
     assert(control);
 
     android::Mutex::Autolock al(control->guard);
-    
-    static const char* effect_modes[] = 
-    {
-        android::CameraParameters::EFFECT_NONE,
-        android::CameraParameters::EFFECT_MONO,
-        android::CameraParameters::EFFECT_NEGATIVE,
-        android::CameraParameters::EFFECT_SOLARIZE,
-        android::CameraParameters::EFFECT_SEPIA,
-        android::CameraParameters::EFFECT_POSTERIZE,
-        android::CameraParameters::EFFECT_WHITEBOARD,
-        android::CameraParameters::EFFECT_BLACKBOARD,
-        android::CameraParameters::EFFECT_AQUA
-    };
+
+    *mode = auto_focus_modes_lut.valueFor(
+        android::String8(
+            control->camera_parameters.get(
+                android::CameraParameters::KEY_FOCUS_MODE)));
+}
+
+
+void android_camera_set_effect_mode(CameraControl* control, EffectMode mode)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);    
 
     control->camera_parameters.set(
         android::CameraParameters::KEY_EFFECT,
@@ -243,7 +269,89 @@ void android_camera_set_effect_mode(CameraControl* control, EffectMode mode)
     control->camera->setParameters(control->camera_parameters.flatten());
 }
 
-void android_camera_set_picture_size(CameraControl* control, PictureSize size)
+void android_camera_get_effect_mode(CameraControl* control, EffectMode* mode)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);    
+
+    *mode = effect_modes_lut.valueFor(
+        android::String8(
+            control->camera_parameters.get(
+                android::CameraParameters::KEY_EFFECT)));
+}
+
+void android_camera_get_preview_fps_range(CameraControl* control, int* min, int* max)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+
+    control->camera_parameters.getPreviewFpsRange(min, max);
+}
+
+void android_camera_set_preview_fps(CameraControl* control, int fps)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    control->camera_parameters.setPreviewFrameRate(fps);
+    control->camera->setParameters(control->camera_parameters.flatten());
+}
+
+void android_camera_get_preview_fps(CameraControl* control, int* fps)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    *fps = control->camera_parameters.getPreviewFrameRate();
+}
+
+void android_camera_enumerate_supported_preview_sizes(CameraControl* control, size_callback cb, void* ctx)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    android::Vector<android::Size> sizes;
+    control->camera_parameters.getSupportedPreviewSizes(sizes);
+
+    for(unsigned int i = 0; i < sizes.size(); i++)
+    {
+        cb(ctx, sizes[i].width, sizes[i].height);
+    }
+}
+
+void android_camera_enumerate_supported_picture_sizes(CameraControl* control, size_callback cb, void* ctx)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    android::Vector<android::Size> sizes;
+    control->camera_parameters.getSupportedPictureSizes(sizes);
+
+    for(unsigned int i = 0; i < sizes.size(); i++)
+    {
+        cb(ctx, sizes[i].width, sizes[i].height);
+    }
+}
+
+void android_camera_get_preview_size(CameraControl* control, int* width, int* height)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    
+    control->camera_parameters.getPreviewSize(width, height);
+}
+
+void android_camera_set_preview_size(CameraControl* control, int width, int height)
 {
 
     REPORT_FUNCTION();
@@ -251,27 +359,49 @@ void android_camera_set_picture_size(CameraControl* control, PictureSize size)
 
     android::Mutex::Autolock al(control->guard);
     
-    android::Vector<android::Size> supported_sizes;
-    control->camera_parameters.getSupportedPictureSizes(supported_sizes);
-    
-    size_t offset = 0;
-    
-    switch(size)
-    {
-        case PICTURE_SIZE_SMALL:
-            offset = supported_sizes.size() - 1;
-            break;
-        case PICTURE_SIZE_MEDIUM:
-            offset = supported_sizes.size() / 2;
-            break;
-        case PICTURE_SIZE_LARGE:
-            offset = 0;
-            break;
-    }
-
-    android::Size selected_size = supported_sizes.itemAt(offset);
-    control->camera_parameters.setPictureSize(selected_size.width, selected_size.height);
+    control->camera_parameters.setPreviewSize(width, height);
     control->camera->setParameters(control->camera_parameters.flatten());
+}
+
+void android_camera_get_picture_size(CameraControl* control, int* width, int* height)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    
+    control->camera_parameters.getPictureSize(width, height);
+}
+
+void android_camera_set_picture_size(CameraControl* control, int width, int height)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    
+    control->camera_parameters.setPictureSize(width, height);
+    control->camera->setParameters(control->camera_parameters.flatten());
+}
+
+void android_camera_get_current_zoom(CameraControl* control, int* zoom)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    
+    *zoom = control->camera_parameters.getInt(android::CameraParameters::KEY_ZOOM);
+}
+
+void android_camera_get_max_zoom(CameraControl* control, int* zoom)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    
+    *zoom = control->camera_parameters.getInt(android::CameraParameters::KEY_MAX_ZOOM);
 }
 
 void android_camera_set_display_orientation(CameraControl* control, int32_t clockwise_rotation_degree)
@@ -284,14 +414,39 @@ void android_camera_set_display_orientation(CameraControl* control, int32_t cloc
     control->camera->sendCommand(CAMERA_CMD_SET_DISPLAY_ORIENTATION, clockwise_rotation_degree, ignored_parameter);
 }
 
-void android_camera_set_preview_texture(CameraControl* control, SfSurface* surface)
+void android_camera_get_preview_texture_transformation(CameraControl* control, float m[16])
 {
     REPORT_FUNCTION()
     assert(control);
-    assert(surface);
+
+    if (control->preview_texture == NULL)
+        return;
+
+    control->preview_texture->getTransformMatrix(m);
+}
+
+void android_camera_update_preview_texture(CameraControl* control)
+{
+    REPORT_FUNCTION()
+    assert(control);
+
+    control->preview_texture->updateTexImage();
+}
+
+void android_camera_set_preview_texture(CameraControl* control, int texture_id)
+{
+    REPORT_FUNCTION()
+    assert(control);
     
-    android::Mutex::Autolock al(control->guard);
-    control->camera->setPreviewTexture(surface->surface->getSurfaceTexture());
+    static const bool allow_synchronous_mode = false;
+    control->preview_texture = android::sp<android::SurfaceTexture>(
+        new android::SurfaceTexture(
+            texture_id,
+            allow_synchronous_mode));
+    
+    control->preview_texture->setFrameAvailableListener(
+        android::sp<android::SurfaceTexture::FrameAvailableListener>(control));
+    control->camera->setPreviewTexture(control->preview_texture);
 }
 
 void android_camera_set_preview_surface(CameraControl* control, SfSurface* surface)
@@ -372,4 +527,57 @@ void android_camera_take_snapshot(CameraControl* control)
     assert(control);
     android::Mutex::Autolock al(control->guard);
     control->camera->takePicture(CAMERA_MSG_SHUTTER | CAMERA_MSG_COMPRESSED_IMAGE);
+}
+
+void android_camera_set_preview_format(CameraControl* control, CameraPixelFormat pf)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    
+    control->camera_parameters.set(
+        android::CameraParameters::KEY_PREVIEW_FORMAT,
+        camera_pixel_formats[pf]);
+
+    control->camera->setParameters(control->camera_parameters.flatten());
+}
+
+void android_camera_get_preview_format(CameraControl* control, CameraPixelFormat* pf)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    
+    *pf = pixel_formats_lut.valueFor(
+        android::String8(
+            control->camera_parameters.get(
+                android::CameraParameters::KEY_PREVIEW_FORMAT)));
+}
+
+void android_camera_set_focus_region(
+    CameraControl* control,
+    FocusRegion* region)
+{
+    REPORT_FUNCTION()
+    assert(control);
+    android::Mutex::Autolock al(control->guard);
+    static const char* focus_region_pattern = "(%d,%d,%d,%d,%d)";
+    static char focus_region[256];
+    snprintf(
+        focus_region, 
+        sizeof(focus_region), 
+        focus_region_pattern, 
+        region->left,
+        region->top,
+        region->bottom,
+        region->right,
+        region->weight);
+    
+    control->camera_parameters.set(
+        android::CameraParameters::KEY_FOCUS_AREAS,
+        focus_region);
+    
+    control->camera->setParameters(control->camera_parameters.flatten());    
 }

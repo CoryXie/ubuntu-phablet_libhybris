@@ -19,77 +19,23 @@
 #ifndef CAMERA_COMPATIBILITY_LAYER_H_
 #define CAMERA_COMPATIBILITY_LAYER_H_
 
+//#include "camera_compatibility_layer_capabilities.h"
+    
+#include <stdint.h>
+#include <unistd.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
-    #include <stdint.h>
-    #include <unistd.h>
-
+       
     // Forward declarations
     struct SfSurface;
-
+    
     typedef enum
     {
         FRONT_FACING_CAMERA_TYPE,
         BACK_FACING_CAMERA_TYPE
     } CameraType;
-
-    typedef enum
-    {
-        FLASH_MODE_OFF,
-        FLASH_MODE_AUTO,
-        FLASH_MODE_ON,
-        FLASH_MODE_TORCH
-    } FlashMode;
-
-    typedef enum
-    {
-        WHITE_BALANCE_MODE_AUTO,
-        WHITE_BALANCE_MODE_DAYLIGHT,
-        WHITE_BALANCE_MODE_CLOUDY_DAYLIGHT,
-        WHITE_BALANCE_MODE_FLUORESCENT,
-        WHITE_BALANCE_MODE_INCANDESCENT        
-    } WhiteBalanceMode;
-
-    typedef enum
-    {
-        SCENE_MODE_AUTO,
-        SCENE_MODE_ACTION,
-        SCENE_MODE_NIGHT,
-        SCENE_MODE_PARTY,
-        SCENE_MODE_SUNSET
-    } SceneMode;
-
-    typedef enum
-    {
-        AUTO_FOCUS_MODE_OFF,
-        AUTO_FOCUS_MODE_CONTINUOUS_VIDEO,
-        AUTO_FOCUS_MODE_AUTO,
-        AUTO_FOCUS_MODE_MACRO,
-        AUTO_FOCUS_MODE_CONTINUOUS_PICTURE,
-        AUTO_FOCUS_MODE_INFINITY
-    } AutoFocusMode;
-
-    typedef enum
-    {
-        EFFECT_MODE_NONE,
-        EFFECT_MODE_MONO,
-        EFFECT_MODE_NEGATIVE,
-        EFFECT_MODE_SOLARIZE,
-        EFFECT_MODE_SEPIA,
-        EFFECT_MODE_POSTERIZE,
-        EFFECT_MODE_WHITEBOARD,
-        EFFECT_MODE_BLACKBOARD,
-        EFFECT_AQUA
-    } EffectMode;
-
-    typedef enum
-    {
-        PICTURE_SIZE_SMALL,
-        PICTURE_SIZE_MEDIUM,
-        PICTURE_SIZE_LARGE
-    } PictureSize;
 
     struct CameraControl;
     
@@ -102,6 +48,7 @@ extern "C" {
 
         typedef void (*on_data_raw_image)(void* data, uint32_t data_size, void* context);
         typedef void (*on_data_compressed_image)(void* data, uint32_t data_size, void* context);
+        typedef void (*on_preview_texture_needs_update)(void* context);
      
         // Called whenever an error occurs while the camera HAL executes a command
         on_msg_error on_msg_error_cb;
@@ -117,27 +64,37 @@ extern "C" {
         // JPEG-compressed image is reported over this callback
         on_data_compressed_image on_data_compressed_image_cb;
         
+        // If a texture has been set as a destination for preview frames,
+        // this callback is invoked whenever a new buffer from the camera is available
+        // and needs to be uploaded to the texture by means of calling 
+        // android_camera_update_preview_texture. Please note that this callback can
+        // be invoked on any thread, and android_camera_update_preview_texture must only
+        // be called on the thread that setup the EGL/GL context.
+        on_preview_texture_needs_update on_preview_texture_needs_update_cb;
+        
         void* context;
     };
 
     // Initializes a connection to the camera, returns NULL on error.
     CameraControl* android_camera_connect_to(CameraType camera_type, CameraControlListener* listener);
-    
-    // Dumps the camera parameters to stdout.
-    void android_camera_dump_parameters(CameraControl* control);
-    
-    void android_camera_set_effect_mode(CameraControl* control, EffectMode mode);
-    void android_camera_set_flash_mode(CameraControl* control, FlashMode mode);
-    void android_camera_set_white_balance_mode(CameraControl* control, WhiteBalanceMode mode);
-    void android_camera_set_scene_mode(CameraControl* control, SceneMode mode);
-    void android_camera_set_auto_focus_mode(CameraControl* control, AutoFocusMode mode);
-    void android_camera_set_picture_size(CameraControl* control, PictureSize size);
 
     // Passes the rotation r of the display in [°] relative to the camera to the camera HAL. r \in [0, 359].
     void android_camera_set_display_orientation(CameraControl* control, int32_t clockwise_rotation_degree);
 
-    // Prepares the camera HAL to display preview images to the supplied surface/texture in a H/W-acclerated way.
-    void android_camera_set_preview_texture(CameraControl* control, SfSurface* surface);
+    // Prepares the camera HAL to display preview images to the
+    // supplied surface/texture in a H/W-acclerated way.  New frames
+    // are reported via the
+    // 'on_preview_texture_needs_update'-callback, and clients of this
+    // API should invoke android_camera_update_preview_texture
+    // subsequently. Please note that the texture is bound automatically by the underlying
+    // implementation.
+    void android_camera_set_preview_texture(CameraControl* control, int texture_id);
+
+    // Reads out the transformation matrix that needs to be applied when displaying the texture
+    void android_camera_get_preview_texture_transformation(CameraControl* control, float m[16]);
+
+    // Updates the texture to the last received frame and binds the texture
+    void android_camera_update_preview_texture(CameraControl* control);
 
     // Prepares the camera HAL to display preview images to the supplied surface/texture in a H/W-acclerated way.
     void android_camera_set_preview_surface(CameraControl* control, SfSurface* surface);
