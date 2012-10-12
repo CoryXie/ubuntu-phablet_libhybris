@@ -18,6 +18,7 @@
 
 #include <cassert>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 int shot_counter = 1;

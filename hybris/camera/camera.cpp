@@ -17,6 +17,7 @@
  */
 
 #include <camera_compatibility_layer.h>
+#include <camera_compatibility_layer_capabilities.h>
 
 #include <assert.h>
 #include <dlfcn.h>
@@ -142,12 +143,15 @@ IMPLEMENT_VOID_FUNCTION2(android_camera_get_auto_focus_mode, CameraControl*, Aut
 IMPLEMENT_VOID_FUNCTION2(android_camera_get_max_zoom, CameraControl*, int*);
 IMPLEMENT_VOID_FUNCTION3(android_camera_get_picture_size, CameraControl*, int*, int*);
 IMPLEMENT_VOID_FUNCTION3(android_camera_get_preview_size, CameraControl*, int*, int*);
+IMPLEMENT_VOID_FUNCTION3(android_camera_get_preview_fps_range, CameraControl*, int*, int*);
+IMPLEMENT_VOID_FUNCTION2(android_camera_get_preview_fps, CameraControl*, int*);
+IMPLEMENT_VOID_FUNCTION2(android_camera_get_preview_texture_transformation, CameraControl*, float*);
 
 // Enumerators
-IMPLEMENT_VOID_FUNCTION2(android_camera_enumerate_supported_picture_sizes, CameraControl*, size_callback);
-IMPLEMENT_VOID_FUNCTION2(android_camera_enumerate_supported_preview_sizes, CameraControl*, size_callback);
+IMPLEMENT_VOID_FUNCTION3(android_camera_enumerate_supported_picture_sizes, CameraControl*, size_callback, void*);
+IMPLEMENT_VOID_FUNCTION3(android_camera_enumerate_supported_preview_sizes, CameraControl*, size_callback, void*);
 
-
+IMPLEMENT_VOID_FUNCTION1(android_camera_update_preview_texture, CameraControl*);
 
 IMPLEMENT_VOID_FUNCTION1(android_camera_start_preview, CameraControl*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_stop_preview, CameraControl*);
