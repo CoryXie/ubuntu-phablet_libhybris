@@ -1,6 +1,6 @@
 compat/surface_flinger/surface_flinger_compatibility_layer.h	#PKGINCLUDEDIR#/surface_flinger
 compat/input/*.h	#PKGINCLUDEDIR#/input
-compat/camera/camera_compatibility_layer.h	#PKGINCLUDEDIR#/camera
+compat/camera/*.h	#PKGINCLUDEDIR#/camera
 hybris/libis.so		#LIBDIR#
 hybris/libsf.so		#LIBDIR#
 hybris/libhardware.so	#LIBDIR#
