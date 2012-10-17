@@ -226,10 +226,15 @@ struct Session : public ubuntu::application::ui::Session
         assert(client);
 
         InputChannel::openInputChannelPair(
-            String8("something different"),
+            String8("UbuntuApplicationUiSession"),
             server_channel,
             client_channel);
 
+        printf("Created input channels: \n");
+        printf("\t %d, %d, %d \n", 
+               server_channel->getAshmemFd(),
+               server_channel->getSendPipeFd(),
+               server_channel->getReceivePipeFd());
         input_consumer = InputConsumer(client_channel);
         input_consumer.initialize();
 
