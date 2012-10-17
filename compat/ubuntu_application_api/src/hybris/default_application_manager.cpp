@@ -247,9 +247,9 @@ struct ApplicationManager : public android::BnApplicationManager,
             android::sp<android::InputChannel>(
                 new android::InputChannel(
                     app_name,
-                    ashmem_fd,
-                    in_socket_fd,
-                    out_socket_fd))));
+                    dup(ashmem_fd),
+                    dup(in_socket_fd),
+                    dup(out_socket_fd)))));
         
         {
             android::Mutex::Autolock al(guard);

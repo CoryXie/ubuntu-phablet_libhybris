@@ -181,7 +181,7 @@ struct Session : public ubuntu::application::ui::Session
             while (true)
             {
                 looper->pollOnce(5 * 1000);
-                printf("%s \n", __PRETTY_FUNCTION__);
+                // printf("%s \n", __PRETTY_FUNCTION__);
                 InputEvent* event = NULL;
                 bool result = true;
                 switch(input_consumer.consume(&event_factory, &event))
@@ -190,6 +190,7 @@ struct Session : public ubuntu::application::ui::Session
                         //TODO:Dispatch to input listener
                         result = true;
                         printf("Yeah, we have an event client-side.\n");
+                        input_consumer.sendFinishedSignal(result);
                         break;
                     case INVALID_OPERATION:
                         result = true;
@@ -197,9 +198,7 @@ struct Session : public ubuntu::application::ui::Session
                     case NO_MEMORY:
                         result = true;
                         break;
-                }
-                
-                input_consumer.sendFinishedSignal(result);
+                }                               
             }
             return true;
         }
