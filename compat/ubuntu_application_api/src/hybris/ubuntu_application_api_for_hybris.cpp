@@ -19,6 +19,7 @@
 #include <ui/PixelFormat.h>
 #include <ui/Region.h>
 #include <ui/Rect.h>
+#include <utils/Looper.h>
 
 namespace android
 {
@@ -161,11 +162,59 @@ struct Session : public ubuntu::application::ui::Session
         Session* parent;
     };
 
+    struct InputConsumerThread : public android::Thread
+    {
+        InputConsumerThread(android::InputConsumer& input_consumer) 
+                : input_consumer(input_consumer),
+                  looper(android::Looper::prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS))
+        {
+            looper->addFd(input_consumer.getChannel()->getReceivePipeFd(),
+                          input_consumer.getChannel()->getReceivePipeFd(),
+                          ALOOPER_EVENT_INPUT,
+                          NULL,
+                          NULL);
+                         
+        }
+
+        bool threadLoop()
+        {
+            while (true)
+            {
+                looper->pollOnce(5 * 1000);
+                printf("%s \n", __PRETTY_FUNCTION__);
+                InputEvent* event = NULL;
+                bool result = true;
+                switch(input_consumer.consume(&event_factory, &event))
+                {
+                    case OK:
+                        //TODO:Dispatch to input listener
+                        result = true;
+                        printf("Yeah, we have an event client-side.\n");
+                        break;
+                    case INVALID_OPERATION:
+                        result = true;
+                        break;
+                    case NO_MEMORY:
+                        result = true;
+                        break;
+                }
+                
+                input_consumer.sendFinishedSignal(result);
+            }
+            return true;
+        }
+        
+        android::InputConsumer input_consumer;
+        android::sp<android::Looper> looper;
+        android::PreallocatedInputEventFactory event_factory;
+    };
+
     sp<ApplicationManagerSession> app_manager_session;
     sp<SurfaceComposerClient> client;
     sp<InputChannel> client_channel;
     sp<InputChannel> server_channel;
     InputConsumer input_consumer;
+    android::sp<InputConsumerThread> input_consumer_thread;
     Mutex surfaces_guard;
     Vector< android::sp<UbuntuSurface> > surfaces;
     
@@ -177,12 +226,14 @@ struct Session : public ubuntu::application::ui::Session
         assert(client);
 
         InputChannel::openInputChannelPair(
-            String8("ubuntu::application::ui::Session"),
+            String8("something different"),
             server_channel,
             client_channel);
 
         input_consumer = InputConsumer(client_channel);
         input_consumer.initialize();
+
+        input_consumer_thread = new InputConsumerThread(input_consumer);
 
         sp<IServiceManager> service_manager = defaultServiceManager();
         sp<IBinder> service = service_manager->getService(
@@ -197,6 +248,7 @@ struct Session : public ubuntu::application::ui::Session
             server_channel->getReceivePipeFd());
 
         android::ProcessState::self()->startThreadPool();
+        input_consumer_thread->run();
     }
 
     ubuntu::application::ui::PhysicalDisplayInfo::Ptr physical_display_info(

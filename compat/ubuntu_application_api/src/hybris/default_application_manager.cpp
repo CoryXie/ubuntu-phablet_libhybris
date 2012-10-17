@@ -32,97 +32,116 @@ struct ApplicationManager : public android::BnApplicationManager,
                 : remote_session(remote_session),
                   app_name(app_name),
                   input_channel(input_channel),
-                  input_publisher(input_channel)
+                  input_window_handle(new InputWindowHandle(this))
         {
-            input_publisher.initialize();
+            input_window_handles.push_back(input_window_handle);
         }
 
-        void dispatch_key_event(const android::NotifyKeyArgs& args)
+        struct InputApplicationHandle : public android::InputApplicationHandle
         {
-            input_publisher.publishKeyEvent(
-                args.deviceId,
-                args.source,
-                args.action,
-                args.flags,
-                args.keyCode,
-                args.scanCode,
-                args.metaState,
-                0, // repeatCount
-                args.downTime,
-                args.eventTime);
+            InputApplicationHandle(ApplicationSession* parent) : parent(parent)
+            {
+                mInfo = new android::InputApplicationInfo();
+                mInfo->name = parent->app_name;
+                mInfo->dispatchingTimeout = 10 * 1000 * 1000; // TODO(tvoss): Find out sensible value here
+            }
 
-            input_publisher.sendDispatchSignal();
-        }
+            bool updateInfo()
+            {
+                return true;
+            }
 
-        void dispatch_motion_event(const android::NotifyMotionArgs& args)
+            ApplicationSession* parent;
+        };
+
+        struct InputWindowHandle : public android::InputWindowHandle
         {
-            input_publisher.publishMotionEvent(
-                args.deviceId,
-                args.source,
-                args.action,
-                args.flags,
-                args.edgeFlags,
-                args.metaState,
-                args.buttonState,
-                0.f, //args.xOffset,
-                0.f, // args.yOffset,
-                args.xPrecision,
-                args.yPrecision,
-                args.downTime,
-                args.eventTime,
-                args.pointerCount,
-                args.pointerProperties,
-                args.pointerCoords);
+            InputWindowHandle(ApplicationSession* parent) 
+                    : android::InputWindowHandle(
+                        android::sp<InputApplicationHandle>(
+                            new InputApplicationHandle(parent))),
+                      parent(parent)
+            {
+                SkRegion touchable_region;
+                touchable_region.setRect(0, 0, 720, 960);
 
-            input_publisher.sendDispatchSignal();
-        }
+                mInfo = new android::InputWindowInfo();
+                mInfo->name = parent->app_name;
+                mInfo->touchableRegion = touchable_region;
+                mInfo->frameLeft = 0;
+                mInfo->frameTop = 0;
+                mInfo->frameRight = 720;
+                mInfo->frameBottom = 960;
+                mInfo->scaleFactor = 1.f;
+                mInfo->visible = true;
+                mInfo->canReceiveKeys = true;
+                mInfo->hasFocus = true;
+                mInfo->hasWallpaper = false;
+                mInfo->paused = false;
+                mInfo->layer = 100;
+                mInfo->ownerPid = 0;
+                mInfo->ownerUid = 0;
+                mInfo->inputFeatures = 0;
+                mInfo->inputChannel = parent->input_channel;
+            }
+
+            bool updateInfo()
+            {
+                return true;
+            }
+
+            ApplicationSession* parent;
+        };
 
         android::sp<android::IApplicationManagerSession> remote_session;
         android::String8 app_name;
         android::sp<android::InputChannel> input_channel;
-        android::InputPublisher input_publisher;
+        android::sp<android::InputWindowHandle> input_window_handle;
+        android::Vector< android::sp<android::InputWindowHandle> > input_window_handles;
     };
 
-    class InputListener : public android::InputListenerInterface
+    class InputFilter : public android::InputFilter
     {
       public:
-        InputListener(ApplicationManager* manager) : manager(manager)
+        InputFilter(ApplicationManager* manager) : manager(manager)
         {
         }
 
-        void notifyConfigurationChanged(const android::NotifyConfigurationChangedArgs* args)
+        bool filter_event(const android::InputEvent* event)
         {
-            (void) args;
-        }
-
-        void notifyKey(const android::NotifyKeyArgs* args)
-        {
-            printf("%s \n", __PRETTY_FUNCTION__);
-
-            if (args->action == AKEY_EVENT_ACTION_DOWN)
+            bool result = true;
+            
+            switch (event->getType())
             {
-                if (args->keyCode == AKEYCODE_VOLUME_UP)
+                case AINPUT_EVENT_TYPE_KEY:
+                    result = handle_key_event(static_cast<const android::KeyEvent*>(event));
+                    break;
+            }
+
+            return result;
+        }
+
+        bool handle_key_event(const android::KeyEvent* event)
+        {
+            printf("%s: %p\n", __PRETTY_FUNCTION__, event);
+
+            bool result = true;
+
+            if (!event)
+                return result;
+
+            if (event->getAction() == AKEY_EVENT_ACTION_DOWN)
+            {
+                if (event->getKeyCode() == AKEYCODE_VOLUME_UP)
                 {   
                     manager->lock();
                     manager->switch_focus_to_next_application_locked();
                     manager->unlock();
+                    result = false;
                 }
             }
-        }
 
-        void notifyMotion(const android::NotifyMotionArgs* args)
-        {
-            (void) args;
-        }
-
-        void notifySwitch(const android::NotifySwitchArgs* args)
-        {
-            (void) args;
-        }
-
-        void notifyDeviceReset(const android::NotifyDeviceResetArgs* args)
-        {
-            (void) args;
+            return result;
         }
 
         ApplicationManager* manager;
@@ -169,12 +188,11 @@ struct ApplicationManager : public android::BnApplicationManager,
         size_t it;
     };
 
-    ApplicationManager() : input_listener(new InputListener(this)),
-                           input_setup(new android::InputSetup(input_listener)),
+    ApplicationManager() : input_filter(new InputFilter(this)),
+                           input_setup(new android::InputSetup(input_filter)),
                            focused_application(0)
     {
-        input_setup->input_reader_thread->run();
-        input_setup->looper_thread->run();
+        input_setup->start();
     }
 
     // From DeathRecipient
@@ -230,14 +248,20 @@ struct ApplicationManager : public android::BnApplicationManager,
                 new android::InputChannel(
                     app_name,
                     ashmem_fd,
-                    out_socket_fd,
-                    in_socket_fd))));
+                    in_socket_fd,
+                    out_socket_fd))));
         
         {
             android::Mutex::Autolock al(guard);
             session->asBinder()->linkToDeath(
                 android::sp<android::IBinder::DeathRecipient>(this));                
-            apps.add(session->asBinder(), app_session);
+            apps.add(session->asBinder(), app_session);            
+
+            input_setup->input_manager->getDispatcher()->registerInputChannel(
+                app_session->input_channel,
+                app_session->input_window_handle,
+                false);
+
             switch_focused_application_locked(apps.size() - 1);
         }
 
@@ -252,7 +276,7 @@ struct ApplicationManager : public android::BnApplicationManager,
     
     void switch_focused_application_locked(size_t index_of_next_focused_app)
     {
-        if (focused_application < apps.size())
+        if (apps.size() > 1 && focused_application < apps.size())
         {
             apps.valueAt(focused_application)->remote_session->raise_application_surfaces_to_layer(non_focused_application_layer);
         }
@@ -262,6 +286,11 @@ struct ApplicationManager : public android::BnApplicationManager,
         if (focused_application < apps.size())
         {
             apps.valueAt(focused_application)->remote_session->raise_application_surfaces_to_layer(focused_application_base_layer);
+            input_setup->input_manager->getDispatcher()->setFocusedApplication(
+                apps.valueAt(focused_application)->input_window_handle->inputApplicationHandle);
+            input_setup->input_manager->getDispatcher()->setInputWindows(
+                apps.valueAt(focused_application)->input_window_handles);
+
         }
     }
 
@@ -275,6 +304,7 @@ struct ApplicationManager : public android::BnApplicationManager,
     }
 
     android::sp<android::InputListenerInterface> input_listener;
+    android::sp<InputFilter> input_filter;
     android::sp<android::InputSetup> input_setup;
     android::Mutex guard;
     android::KeyedVector< android::sp<android::IBinder>, android::sp<ApplicationSession> > apps;

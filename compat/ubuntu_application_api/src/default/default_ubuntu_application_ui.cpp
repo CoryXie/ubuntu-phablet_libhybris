@@ -11,13 +11,10 @@
 // C apis
 #include <ubuntu/application/ui/ubuntu_application_ui.h>
 
-#include <set>
-
 // C-API implementation
 namespace
 {
 ubuntu::application::ui::Session::Ptr session;
-std::set<ubuntu::application::ui::Surface::Ptr> surfaces;
 
 struct CallbackEventListener : public ubuntu::application::ui::input::Listener
 {
@@ -66,7 +63,7 @@ ubuntu_application_ui_start_a_new_session(const char* name)
 
     ubuntu::application::ui::SessionCredentials creds = 
     {
-        name
+        "TestSession" // TODO { name }
     };
 
     session = ubuntu::ui::SessionService::instance()->start_a_new_session(creds);
@@ -101,7 +98,5 @@ ubuntu_application_ui_create_surface(
                 ubuntu::application::ui::input::Listener::Ptr(
                     new CallbackEventListener(cb, ctx))); 
     
-    surfaces.insert(surface);
-
     *out_surface = surface.get();
 }

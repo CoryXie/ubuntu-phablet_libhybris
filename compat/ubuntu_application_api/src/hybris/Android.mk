@@ -8,9 +8,10 @@ LOCAL_C_INCLUDES := \
 
 LOCAL_SRC_FILES := \
 	ubuntu_application_api_for_hybris.cpp \
+	../default/default_ubuntu_application_ui.cpp \
 	application_manager.cpp
 
-LOCAL_MODULE := libubuntu_application_api_for_hybris
+LOCAL_MODULE := libubuntu_application_api
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := \
@@ -41,7 +42,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libutils \
 	libEGL \
 	libGLESv2 \
-	libubuntu_application_api_for_hybris
+	libubuntu_application_api
 
 include $(BUILD_EXECUTABLE)
 
@@ -70,7 +71,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libutils \
 	libEGL \
 	libGLESv2 \
-	libubuntu_application_api_for_hybris
+	libubuntu_application_api
 
 include $(BUILD_EXECUTABLE)
 
@@ -94,6 +95,6 @@ LOCAL_SHARED_LIBRARIES := \
 	libutils \
 	libEGL \
 	libGLESv2 \
-	libubuntu_application_api_for_hybris
+	libubuntu_application_api
 
 include $(BUILD_EXECUTABLE)

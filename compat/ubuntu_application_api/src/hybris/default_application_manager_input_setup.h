@@ -1,11 +1,17 @@
 #ifndef DEFAULT_APPLICATION_MANAGER_INPUT_SETUP_H_
 #define DEFAULT_APPLICATION_MANAGER_INPUT_SETUP_H_
 
+#include <input/InputDispatcher.h>
 #include <input/InputListener.h>
+#include <input/InputManager.h>
 #include <input/InputReader.h>
 #include <input/PointerController.h>
 #include <input/SpriteController.h>
 #include <surfaceflinger/SurfaceComposerClient.h>
+
+#include <cstdio>
+
+#define REPORT_FUNCTION_CALL()// printf("%s \n", __PRETTY_FUNCTION__);
 
 namespace android
 {
@@ -126,6 +132,150 @@ class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInter
     android::InputReaderConfiguration default_configuration;
 };
 
+class InputFilter : public android::RefBase
+{
+  public:
+    virtual bool filter_event(const android::InputEvent* event) = 0;
+
+  protected:
+    InputFilter() {}
+    virtual ~InputFilter() {}
+
+    InputFilter(const InputFilter&) = delete;
+    InputFilter& operator=(const InputFilter&) = delete;
+};
+
+class DefaultInputDispatcherPolicy : public InputDispatcherPolicyInterface
+{
+  public:
+    DefaultInputDispatcherPolicy(const android::sp<InputFilter>& input_filter)
+            : input_filter(input_filter)
+    {
+    }
+
+    ~DefaultInputDispatcherPolicy() 
+    {
+    }
+
+    void notifyConfigurationChanged(nsecs_t when)
+    {
+        REPORT_FUNCTION_CALL();
+        (void) when;
+    }
+
+    nsecs_t notifyANR(const sp<InputApplicationHandle>& inputApplicationHandle,
+                      const sp<InputWindowHandle>& inputWindowHandle)
+    {
+        REPORT_FUNCTION_CALL();
+        (void) inputApplicationHandle;
+        (void) inputWindowHandle;
+
+        return 0;
+    }
+
+    void notifyInputChannelBroken(const sp<InputWindowHandle>& inputWindowHandle)
+    {
+        REPORT_FUNCTION_CALL();
+        (void) inputWindowHandle;
+    }
+
+    void getDispatcherConfiguration(InputDispatcherConfiguration* outConfig)
+    {
+        REPORT_FUNCTION_CALL();
+        static InputDispatcherConfiguration config;
+        *outConfig = config;
+    }
+
+    bool isKeyRepeatEnabled()
+    {
+        REPORT_FUNCTION_CALL();
+        return true;
+    }
+
+    bool filterInputEvent(const InputEvent* event, uint32_t policyFlags)
+    {
+        REPORT_FUNCTION_CALL();
+        (void) event;
+        (void) policyFlags;
+        return input_filter->filter_event(event);
+    }
+
+    void interceptKeyBeforeQueueing(const KeyEvent* event, uint32_t& policyFlags)
+    {
+        REPORT_FUNCTION_CALL();
+        (void) event;
+        policyFlags |= POLICY_FLAG_PASS_TO_USER;
+    }
+
+    void interceptMotionBeforeQueueing(nsecs_t when, uint32_t& policyFlags)
+    {
+        REPORT_FUNCTION_CALL();
+        (void) when;
+        (void) policyFlags;
+        policyFlags |= POLICY_FLAG_PASS_TO_USER;
+    }
+
+    nsecs_t interceptKeyBeforeDispatching(
+        const sp<InputWindowHandle>& inputWindowHandle,
+        const KeyEvent* keyEvent, 
+        uint32_t policyFlags)
+    {
+        REPORT_FUNCTION_CALL();
+        (void) inputWindowHandle;
+        (void) keyEvent;
+        (void) policyFlags;
+        
+        return 0;
+    }
+
+    bool dispatchUnhandledKey(
+        const sp<InputWindowHandle>& inputWindowHandle,
+        const KeyEvent* keyEvent, 
+        uint32_t policyFlags, 
+        KeyEvent* outFallbackKeyEvent)
+    {
+        REPORT_FUNCTION_CALL();
+        (void) inputWindowHandle;
+        (void) keyEvent;
+        (void) policyFlags;
+        (void) outFallbackKeyEvent;
+        return false;
+    }
+
+    virtual void notifySwitch(
+        nsecs_t when,
+        int32_t switchCode, 
+        int32_t switchValue, 
+        uint32_t policyFlags)
+    {
+        REPORT_FUNCTION_CALL();
+        (void) when;
+        (void) switchCode;
+        (void) switchValue;
+        (void) policyFlags;
+    }
+
+    void pokeUserActivity(nsecs_t eventTime, int32_t eventType)
+    {
+        REPORT_FUNCTION_CALL();
+        (void) eventTime;
+        (void) eventType;        
+    }
+
+    bool checkInjectEventsPermissionNonReentrant(
+            int32_t injectorPid, 
+            int32_t injectorUid)
+    {
+        REPORT_FUNCTION_CALL();
+        (void) injectorPid;
+        (void) injectorUid;
+
+        return true;
+    }
+
+    android::sp<InputFilter> input_filter;
+};
+
 class LooperThread : public android::Thread
 {
   public:
@@ -148,33 +298,40 @@ class LooperThread : public android::Thread
 
 struct InputSetup : public android::RefBase
 {
-    InputSetup(const sp<InputListenerInterface>& listener)          
+    InputSetup(const android::sp<InputFilter>& input_filter)
             : looper(new android::Looper(false)),
               looper_thread(new LooperThread(looper)),
               event_hub(new android::EventHub()),
               input_reader_policy(new DefaultInputReaderPolicyInterface(looper)),
-              input_listener(listener),
-              input_reader(new android::InputReader(
-                  event_hub, 
-                  input_reader_policy,
-                  input_listener)),
-              input_reader_thread(new android::InputReaderThread(input_reader))
+              input_dispatcher_policy(new DefaultInputDispatcherPolicy(input_filter)),
+              input_manager(new InputManager(event_hub, input_reader_policy, input_dispatcher_policy))
     {
+        input_manager->getDispatcher()->setInputFilterEnabled(true);
+    }
+
+    void start()
+    {
+        input_manager->start();
+        looper_thread->run();
+    }
+
+    void stop()
+    {
+        input_manager->stop();
+        looper_thread->requestExitAndWait();
     }
 
     ~InputSetup()
     {
-        input_reader_thread->requestExitAndWait();
+        stop();
     }
-
     android::sp<android::Looper> looper;
     android::sp<LooperThread> looper_thread;
-    
+
     android::sp<android::EventHubInterface> event_hub;
     android::sp<android::InputReaderPolicyInterface> input_reader_policy;
-    android::sp<android::InputListenerInterface> input_listener;
-    android::sp<android::InputReaderInterface> input_reader;
-    android::sp<android::InputReaderThread> input_reader_thread;
+    android::sp<android::InputDispatcherPolicyInterface> input_dispatcher_policy;
+    android::sp<android::InputManager> input_manager;
 
     android::Condition wait_condition;
     android::Mutex wait_guard;
