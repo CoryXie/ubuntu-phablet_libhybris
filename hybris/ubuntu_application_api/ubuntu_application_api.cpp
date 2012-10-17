@@ -48,7 +48,7 @@ struct Bridge
         assert(lib_handle && "Error loading ubuntu_application_api");
     }
 
-    ~CameraBridge()
+    ~Bridge()
     {
         // TODO android_dlclose(libcamera_handle);
     }
