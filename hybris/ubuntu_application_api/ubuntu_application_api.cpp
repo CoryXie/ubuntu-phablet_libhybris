@@ -40,7 +40,7 @@ struct Bridge
 {
     static const char* path_to_library()
     {
-        return "/system/lib/libubuntu_application_ui.so";
+        return "/system/lib/libubuntu_application_api.so";
     }
     
     Bridge() : lib_handle(android_dlopen(path_to_library(), RTLD_LAZY))
