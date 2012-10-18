@@ -1,3 +1,10 @@
+libhybris (0.14) unstable; urgency=low
+
+  * Check for env var GRAPHICS at runtime.  This allows dynamic use of
+    the nvidia graphics hack.
+
+ -- Michael Frey <michael.frey@canonical.com>  Thu, 18 Oct 2012 12:42:57 -0400
+
 libhybris (0.13) unstable; urgency=low
 
   * Added camera headers
