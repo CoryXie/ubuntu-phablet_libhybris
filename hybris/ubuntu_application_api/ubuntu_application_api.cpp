@@ -130,6 +130,10 @@ extern "C" {
     IMPLEMENT_FUNCTION0(FormFactorHint, ubuntu_application_ui_setup_get_form_factor_hint);
     IMPLEMENT_VOID_FUNCTION1(ubuntu_application_ui_start_a_new_session, const char*);
     IMPLEMENT_VOID_FUNCTION7(ubuntu_application_ui_create_surface, ubuntu_application_ui_surface*, const char*, int, int, SurfaceRole, input_event_cb, void*);
+    IMPLEMENT_VOID_FUNCTION1(ubuntu_application_ui_destroy_surface, ubuntu_application_ui_surface);
+    IMPLEMENT_FUNCTION1(EGLNativeWindowType, ubuntu_application_ui_surface_to_native_window_type, ubuntu_application_ui_surface);
+    IMPLEMENT_VOID_FUNCTION3(ubuntu_application_ui_move_surface_to, ubuntu_application_ui_surface, int, int);
+    IMPLEMENT_VOID_FUNCTION3(ubuntu_application_ui_resize_surface_to, ubuntu_application_ui_surface, int, int);
 
 #ifdef __cplusplus
 }
