@@ -15,7 +15,7 @@ COMMON_SOURCES=common/strlcpy.c common/hooks.c common/properties.c
 
 ICS_SOURCES=ics/linker.c ics/dlfcn.c ics/rt.c ics/linker_environ.c ics/linker_format.c ics/init.c
 
-all:  libhybris_ics.so libEGL.so.1 libGLESv2.so.2 libcamera.so libhardware.so libis.so libsf.so test_camera test_sf test_egl test_hw test_sensors test_glesv2
+all:  libhybris_ics.so libEGL.so.1 libGLESv2.so.2 libcamera.so libhardware.so libis.so libsf.so libubuntu_application_api.so test_camera test_sf test_egl test_hw test_sensors test_ubuntu_app_api test_glesv2
 
 
 libhybris_ics.so: $(COMMON_SOURCES) $(ICS_SOURCES)
@@ -43,6 +43,12 @@ libis.so.1.0: is/is.cpp
 
 libsf.so.1.0: sf/sf.cpp
 	$(CXX) -g -fpermissive -shared -o $@ -fPIC -I../compat/surface_flinger -Wl,-soname,libsf.so.1 $< libhybris_ics.so
+
+libubuntu_application_api.so: ubuntu_application_api/ubuntu_application_api.cpp
+	$(CXX) -g -fpermissive -shared -o $@ -fPIC -I../compat/ubuntu_application_api/include -Wl,-soname,libubuntu_application_api.so.1 $< libhybris_ics.so
+
+test_ubuntu_app_api: 
+	$(CXX) -g -o $@ ubuntu_application_api/test_c_api.cpp libubuntu_application_api.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/ubuntu_application_api/include
 
 libEGL.so.1: libEGL.so.1.0
 	ln -sf libEGL.so.1.0 libEGL.so.1
