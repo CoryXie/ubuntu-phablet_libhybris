@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include <signal.h>
 
-#define NVIDIA_HACK 0
+static int nvidia_hack = 0;
 
 struct _hook {
     const char *name;
@@ -20,9 +20,12 @@ struct _hook {
 
 static void *my_malloc(size_t size) 
 {
-    size_t s = malloc(sizeof(size_t));
-    s = size;
-    return malloc(s);
+    if (nvidia_hack) {
+        size_t s = malloc(sizeof(size_t));
+        s = size;
+        return malloc(s);
+    } else 
+        return malloc(size);
 }
 
 static void *my_memcpy(void *dst, const void *src, size_t len)
@@ -124,9 +127,8 @@ static int my_pthread_mutex_init (pthread_mutex_t *__mutex, __const pthread_mute
 static int my_pthread_mutex_lock (pthread_mutex_t *__mutex)
 {
 
-#if NVIDIA_HACK
-    return 0;
-#endif
+    if (nvidia_hack)
+        return 0;
 
     if (!__mutex)
         return 0;
@@ -158,9 +160,8 @@ static int my_pthread_mutex_trylock (pthread_mutex_t *__mutex)
 static int my_pthread_mutex_unlock (pthread_mutex_t *__mutex)
 {
 
-#if NVIDIA_HACK
-    return 0;
-#endif
+    if (nvidia_hack)
+        return 0;
 
     if (!__mutex)
         return 0;
@@ -181,9 +182,8 @@ static int my_pthread_mutex_destroy (pthread_mutex_t *__mutex)
 static int my_pthread_mutexattr_setpshared(pthread_mutexattr_t *__attr,
                                            int pshared)
 {
-#if NVIDIA_HACK
-    return 0;
-#endif
+    if (nvidia_hack)
+        return 0;
 
     pthread_mutexattr_t *realmutex = (pthread_mutexattr_t *) *(int *) __attr;
 
@@ -210,9 +210,8 @@ static int my_pthread_cond_destroy (pthread_cond_t *cond)
 
 static int my_pthread_cond_broadcast(pthread_cond_t *cond)
 {
-#if NVIDIA_HACK
-    return 0;
-#endif
+    if (nvidia_hack)
+        return 0;
 
     pthread_cond_t *realcond = (pthread_cond_t *) *(int *) cond;
     return pthread_cond_broadcast(realcond);    
@@ -241,9 +240,9 @@ static int my_pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex)
 
 static int my_pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const struct timespec *abstime)
 {
-#if NVIDIA_HACK
-    return 0;
-#endif
+
+    if (nvidia_hack)
+        return 0;
 
     pthread_cond_t *realcond = (pthread_cond_t *) *(int *) cond;
 
@@ -264,11 +263,7 @@ static struct _hook hooks[] = {
     {"property_set", property_set },
     {"getenv", getenv },
     {"printf", printf },
-#if NVIDIA_HACK
     {"malloc", my_malloc },
-#else
-    {"malloc", malloc },
-#endif
     {"free", free },
     {"calloc", calloc },
     {"cfree", cfree },
@@ -382,11 +377,15 @@ void *get_hooked_symbol(char *sym)
 {
     struct _hook *ptr = &hooks[0];
     static int counter = -1;  
-  
+    char *graphics = getenv("GRAPHICS");
+
+    if (!graphics || strcmp("NVIDIA",graphics) == 0) {
+        nvidia_hack = 1;
+    }
+
     while (ptr->name != NULL)
     {
         if (strcmp(sym, ptr->name) == 0){
-            //printf("Calling %s\n",sym);
             return ptr->func;
         }
         ptr++;
