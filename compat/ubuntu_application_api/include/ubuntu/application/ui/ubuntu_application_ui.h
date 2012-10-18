@@ -3,6 +3,8 @@
 
 #include "ubuntu/application/ui/input/event.h"
 
+#include <EGL/egl.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -59,6 +61,24 @@ extern "C" {
         SurfaceRole role,
         input_event_cb cb,
         void* ctx);
+
+    void 
+    ubuntu_application_ui_destroy_surface(
+        ubuntu_application_ui_surface surface);
+
+    EGLNativeWindowType
+    ubuntu_application_ui_surface_to_native_window_type(
+        ubuntu_application_ui_surface surface);
+
+    void ubuntu_application_ui_move_surface_to(
+        ubuntu_application_ui_surface surface,
+        int x,
+        int y);
+
+    void ubuntu_application_ui_resize_surface_to(
+        ubuntu_application_ui_surface surface,
+        int w,
+        int h);
 
 #ifdef __cplusplus
 }

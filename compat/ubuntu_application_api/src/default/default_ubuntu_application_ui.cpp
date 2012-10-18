@@ -33,6 +33,22 @@ struct CallbackEventListener : public ubuntu::application::ui::input::Listener
     void* context;
 };
 
+template<typename T>
+struct Holder
+{
+    Holder(const T&value = T()) : value(value)
+    {
+    }
+
+    T value;
+};
+
+template<typename T>
+Holder<T>* make_holder(const T& value)
+{
+    return new Holder<T>(value);
+}
+
 }
 
 void 
@@ -98,5 +114,40 @@ ubuntu_application_ui_create_surface(
                 ubuntu::application::ui::input::Listener::Ptr(
                     new CallbackEventListener(cb, ctx))); 
     
-    *out_surface = surface.get();
+    *out_surface = make_holder(surface);
+}
+
+void 
+ubuntu_application_ui_destroy_surface(
+    ubuntu_application_ui_surface surface)
+{
+    auto s = static_cast<Holder<ubuntu::application::ui::Surface::Ptr>*>(surface);
+
+    delete s;
+}
+
+EGLNativeWindowType
+ubuntu_application_ui_surface_to_native_window_type(
+    ubuntu_application_ui_surface surface)
+{
+    auto s = static_cast<Holder<ubuntu::application::ui::Surface::Ptr>*>(surface);
+    return s->value->to_native_window_type();
+}
+
+void ubuntu_application_ui_move_surface_to(
+    ubuntu_application_ui_surface surface,
+    int x,
+    int y)
+{
+    auto s = static_cast<Holder<ubuntu::application::ui::Surface::Ptr>*>(surface);
+    s->value->move_to(x, y);
+}
+
+void ubuntu_application_ui_resize_surface_to(
+    ubuntu_application_ui_surface surface,
+    int w,
+    int h)
+{
+    auto s = static_cast<Holder<ubuntu::application::ui::Surface::Ptr>*>(surface);
+    s->value->resize(w, h);
 }

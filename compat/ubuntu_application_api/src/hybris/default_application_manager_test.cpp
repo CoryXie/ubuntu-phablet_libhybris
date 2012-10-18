@@ -12,15 +12,21 @@ namespace
 {
 struct ApplicationManagerSession : public android::BnApplicationManagerSession
 {
-  ApplicationManagerSession()
-  {
-  }
-
-  void raise_application_surfaces_to_layer(int layer)
-  {
+    ApplicationManagerSession()
+    {
+    }
+    
+    void raise_application_surfaces_to_layer(int layer)
+    {
       printf("%s \n", __PRETTY_FUNCTION__);
       printf("%d \n", layer);
-  }
+    }
+    
+    SurfaceProperties query_surface_properties_for_token(int32_t token)
+    {
+        SurfaceProperties props = { 0, 0, 960, 1280 };
+        return props;
+    }
 };
 }
 

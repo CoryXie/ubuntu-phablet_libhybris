@@ -1,25 +1,12 @@
-#include <ubuntu/application/ui/init.h>
-#include <ubuntu/application/ui/session.h>
-#include <ubuntu/application/ui/session_credentials.h>
-#include <ubuntu/application/ui/setup.h>
+#include <ubuntu/application/ui/ubuntu_application_ui.h>
 
-#include <ubuntu/ui/session_service.h>
-
+#include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
 #include <cassert>
 #include <cstdio>
-
-namespace
-{
-struct InputListener : public ubuntu::application::ui::input::Listener
-{
-    void on_new_event(const Event& /*ev*/)
-    {
-        printf("%s \n", __PRETTY_FUNCTION__);
-    }
-};
+#include <cstdlib>
 
 struct View
 {
@@ -53,12 +40,12 @@ struct View
         return result;
     }
 
-    View(const ubuntu::application::ui::Surface::Ptr& surface);
+    View(ubuntu_application_ui_surface surface);
 
     void render();
     void step();    
     
-    ubuntu::application::ui::Surface::Ptr surface;
+    ubuntu_application_ui_surface surface;
     EGLDisplay egl_display;
     EGLSurface egl_surface;
     EGLConfig egl_config;
@@ -74,52 +61,33 @@ struct View
     const GLfloat * color_data;
 };
 
+void on_new_event(void* ctx, const Event* ev)
+{
 }
 
 int main(int argc, char** argv)
 {
-    ubuntu::application::ui::init(argc, argv);
-    ubuntu::application::ui::Setup::instance();
+    ubuntu_application_ui_init(argc, argv);
 
-    ubuntu::application::ui::SessionCredentials creds = 
-    {
-        "HybrisUbuntuApplicationAPIIntegrationTest"
-    };
+    ubuntu_application_ui_start_a_new_session("UbuntuApplicationCAPITest");
 
-    ubuntu::application::ui::Session::Ptr session = 
-            ubuntu::ui::SessionService::instance()->start_a_new_session(creds);
-
-    ubuntu::application::ui::PhysicalDisplayInfo::Ptr p = 
-            session->physical_display_info(ubuntu::application::ui::primary_physical_display);
-
-    printf("Resolution: (%dx%d)\n", p->horizontal_resolution(), p->vertical_resolution());
-    ubuntu::application::ui::SurfaceProperties props = 
-    {
-        "MainActorSurface",
+    ubuntu_application_ui_surface surface;
+    ubuntu_application_ui_create_surface(
+        &surface,
+        "TestSurface",
+        500, 
         500,
-        500,
-        ubuntu::application::ui::main_actor_role
-    };
-
-    ubuntu::application::ui::Surface::Ptr surface =
-            session->create_surface(
-            props,
-                ubuntu::application::ui::input::Listener::Ptr(new InputListener()));
-
-    surface->set_alpha(0.5f);
+        MAIN_ACTOR_ROLE,
+        on_new_event,
+        NULL);
+    
     View view(surface);
-    int x = 0;
-    while (true)
+    while(true)
     {
         view.render();
         view.step();
-        x++;
-        surface->move_to(x % p->horizontal_resolution(), 0);
-    }
+    }   
 }
-
-namespace
-{
 
 const char* View::vertex_shader()
 {
@@ -218,7 +186,7 @@ GLuint View::create_program(const char* pVertexSource, const char* pFragmentSour
 	return program;
 }
 
-View::View(const ubuntu::application::ui::Surface::Ptr& surface) 
+View::View(ubuntu_application_ui_surface surface) 
         : surface(surface),
           rotation_angle(0.f),
           num_vertex(3)
@@ -264,7 +232,7 @@ View::View(const ubuntu::application::ui::Surface::Ptr& surface)
 
     assert(EGL_NO_CONTEXT != eglContext);
 
-    EGLNativeWindowType nativeWindow = surface->to_native_window_type();
+    EGLNativeWindowType nativeWindow = ubuntu_application_ui_surface_to_native_window_type(surface);
     egl_surface = eglCreateWindowSurface(egl_display, egl_config, nativeWindow, NULL);
 
     eglMakeCurrent(
@@ -325,6 +293,4 @@ void View::render()
 void View::step()
 {
     rotation_angle += 0.01;
-}
-
 }

@@ -19,20 +19,16 @@ class Surface : public ubuntu::platform::ReferenceCountedBase
     typedef ubuntu::platform::shared_ptr<Surface> Ptr;
     
     // Default surface API
-    virtual bool is_visible() const = 0;
     virtual void set_visible(bool visible) = 0; 
-
     virtual void set_alpha(float alpha) = 0;
-    virtual float alpha() const = 0;
-
     virtual void move_to(int x, int y) = 0;
-    virtual void move_by(int dx, int dy) = 0;
-
+    virtual void resize(int w, int h) = 0;
+    
     // Bind to EGL/GL rendering API
     virtual EGLNativeWindowType to_native_window_type() = 0;
 
   protected:
-    Surface(const input::Listener::Ptr& input_listener) {}
+    Surface(const input::Listener::Ptr& input_listener) : input_listener(input_listener) {}
     virtual ~Surface() {}
 
     Surface(const Surface&) = delete;

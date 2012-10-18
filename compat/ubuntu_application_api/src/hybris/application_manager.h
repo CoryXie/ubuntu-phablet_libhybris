@@ -11,12 +11,23 @@ class IApplicationManagerSession : public IInterface
   public:
     DECLARE_META_INTERFACE(ApplicationManagerSession);
 
+    struct SurfaceProperties
+    {
+        int32_t layer;
+        int32_t left;
+        int32_t top;
+        int32_t right;
+        int32_t bottom;
+    };
+
     virtual void raise_application_surfaces_to_layer(int layer) = 0;
-    
+    virtual SurfaceProperties query_surface_properties_for_token(int32_t token) = 0;
+
   protected:
     enum
     {
-        RAISE_APPLICATION_SURFACES_TO_LAYER_COMMAND = IBinder::FIRST_CALL_TRANSACTION
+        RAISE_APPLICATION_SURFACES_TO_LAYER_COMMAND = IBinder::FIRST_CALL_TRANSACTION,
+        QUERY_SURFACE_PROPERTIES_FOR_TOKEN_COMMAND
     };
 };
 
@@ -39,6 +50,7 @@ class BpApplicationManagerSession : public BpInterface<IApplicationManagerSessio
     ~BpApplicationManagerSession();
     
     void raise_application_surfaces_to_layer(int layer);        
+    IApplicationManagerSession::SurfaceProperties query_surface_properties_for_token(int32_t token);
 };
 
 class IApplicationManager : public IInterface
@@ -56,10 +68,19 @@ class IApplicationManager : public IInterface
                                      int ashmem_fd,
                                      int out_socket_fd,
                                      int in_socket_fd) = 0;
+
+    virtual void register_a_surface(const String8& title,
+                                    const sp<IApplicationManagerSession>& session,
+                                    int32_t token,
+                                    int ashmem_fd,
+                                    int out_socket_fd,
+                                    int in_socket_fd) = 0;
+
   protected:
     enum
     {
-        START_A_NEW_SESSION_COMMAND = IBinder::FIRST_CALL_TRANSACTION
+        START_A_NEW_SESSION_COMMAND = IBinder::FIRST_CALL_TRANSACTION,
+        REGISTER_A_SURFACE_COMMAND
     };
 };
 
@@ -86,6 +107,13 @@ class BpApplicationManager : public BpInterface<IApplicationManager>
                              int ashmem_fd,
                              int out_socket_fd,
                              int in_socket_fd);
+
+    virtual void register_a_surface(const String8& title,
+                                    const android::sp<android::IApplicationManagerSession>& session,
+                                    int32_t token,
+                                    int ashmem_fd,
+                                    int out_socket_fd,
+                                    int in_socket_fd);
 };
 
 }
