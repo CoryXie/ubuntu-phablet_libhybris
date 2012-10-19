@@ -358,6 +358,8 @@ struct ApplicationManager : public android::BnApplicationManager,
         {
             //apps.valueAt(focused_application)->raise_application_surfaces_to_layer(focused_application_base_layer);
             apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(focused_application_base_layer);
+            input_setup->input_manager->getDispatcher()->setFocusedApplication(
+                apps.valueFor(apps_as_added[focused_application])->input_application_handle());
             input_setup->input_manager->getDispatcher()->setInputWindows(
                 apps.valueFor(apps_as_added[focused_application])->input_window_handles());
         }
