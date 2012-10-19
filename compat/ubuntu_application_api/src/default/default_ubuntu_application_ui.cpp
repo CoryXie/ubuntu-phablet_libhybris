@@ -85,6 +85,42 @@ ubuntu_application_ui_start_a_new_session(const char* name)
     session = ubuntu::ui::SessionService::instance()->start_a_new_session(creds);
 }
 
+void
+ubuntu_application_ui_create_display_info(
+    ubuntu_application_ui_physical_display_info* info,
+    size_t index)
+{
+    *info = make_holder(
+        session->physical_display_info(
+            static_cast<ubuntu::application::ui::PhysicalDisplayIdentifier>(index)));    
+}
+
+void
+ubuntu_application_ui_destroy_display_info(
+    ubuntu_application_ui_physical_display_info info)
+{
+    auto s = static_cast<Holder<ubuntu::application::ui::PhysicalDisplayInfo::Ptr>*>(info);
+    delete s;
+}
+
+int32_t
+ubuntu_application_ui_query_horizontal_resolution(
+    ubuntu_application_ui_physical_display_info info)
+{
+    auto s = static_cast<Holder<ubuntu::application::ui::PhysicalDisplayInfo::Ptr>*>(info);
+    return s->value->horizontal_resolution();
+}
+
+int32_t
+ubuntu_application_ui_query_vertical_resolution(
+    ubuntu_application_ui_physical_display_info info,
+    size_t index)
+{
+    auto s = static_cast<Holder<ubuntu::application::ui::PhysicalDisplayInfo::Ptr>*>(info);
+    return s->value->vertical_resolution();
+}
+
+
 void 
 ubuntu_application_ui_create_surface(
         ubuntu_application_ui_surface* out_surface,
