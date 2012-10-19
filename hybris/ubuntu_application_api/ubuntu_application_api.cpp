@@ -132,7 +132,7 @@ extern "C" {
     IMPLEMENT_VOID_FUNCTION2(ubuntu_application_ui_create_display_info, ubuntu_application_ui_physical_display_info*, size_t);
     IMPLEMENT_VOID_FUNCTION1(ubuntu_application_ui_destroy_display_info, ubuntu_application_ui_physical_display_info);
     IMPLEMENT_FUNCTION1(int32_t, ubuntu_application_ui_query_horizontal_resolution, ubuntu_application_ui_physical_display_info);
-    IMPLEMENT_FUNCTION1(int32_t, ubuntu_application_ui_query_horizontal_resolution, ubuntu_application_ui_physical_display_info);    
+    IMPLEMENT_FUNCTION1(int32_t, ubuntu_application_ui_query_vertical_resolution, ubuntu_application_ui_physical_display_info);    
     IMPLEMENT_VOID_FUNCTION7(ubuntu_application_ui_create_surface, ubuntu_application_ui_surface*, const char*, int, int, SurfaceRole, input_event_cb, void*);
     IMPLEMENT_VOID_FUNCTION1(ubuntu_application_ui_destroy_surface, ubuntu_application_ui_surface);
     IMPLEMENT_FUNCTION1(EGLNativeWindowType, ubuntu_application_ui_surface_to_native_window_type, ubuntu_application_ui_surface);
