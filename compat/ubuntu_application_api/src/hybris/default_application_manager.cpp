@@ -354,8 +354,7 @@ struct ApplicationManager : public android::BnApplicationManager,
                 surface->make_input_window_handle(),
                 false);
         apps.valueFor(session->asBinder())->register_surface(surface);
-        // if(focused_application == apps.indexOfKey(session->asBinder()))
-        if(focused_application == apps.indexOfKey(apps_as_added[focused_application]))
+        if(focused_application == apps.indexOfKey(session->asBinder()))
         {
             //apps.valueAt(focused_application)->raise_application_surfaces_to_layer(focused_application_base_layer);
             apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(focused_application_base_layer);
