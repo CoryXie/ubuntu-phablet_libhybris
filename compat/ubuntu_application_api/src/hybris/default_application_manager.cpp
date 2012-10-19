@@ -354,20 +354,32 @@ struct ApplicationManager : public android::BnApplicationManager,
                 surface->make_input_window_handle(),
                 false);
         apps.valueFor(session->asBinder())->register_surface(surface);
-        if(apps_as_added[focused_application] == session->asBinder())
+        
+        size_t i = 0;
+        for(i = 0; i < apps_as_added.size(); i++)
         {
-            //apps.valueAt(focused_application)->raise_application_surfaces_to_layer(focused_application_base_layer);
+            if (apps_as_added[i] == session->asBinder())
+                break;
+        }
+
+        switch_focused_application_locked(i);
+
+        /*if(apps_as_added[focused_application] == session->asBinder())
+        {
+            printf("we are raising and focusing the application now.\n");
             apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(focused_application_base_layer);
             input_setup->input_manager->getDispatcher()->setFocusedApplication(
                 apps.valueFor(apps_as_added[focused_application])->input_application_handle());
             input_setup->input_manager->getDispatcher()->setInputWindows(
                 apps.valueFor(apps_as_added[focused_application])->input_window_handles());
-        }
+                }*/
     }
     
     void switch_focused_application_locked(size_t index_of_next_focused_app)
     {
-        if (apps.size() > 1 && focused_application < apps.size())
+        if (apps.size() > 1 && 
+            focused_application < apps.size() &&
+            focused_application != index_of_next_focused_app)
         {
             apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(non_focused_application_layer);
         }
