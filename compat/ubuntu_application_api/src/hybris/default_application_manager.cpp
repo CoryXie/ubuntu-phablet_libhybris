@@ -300,7 +300,6 @@ struct ApplicationManager : public android::BnApplicationManager,
         printf("\t%d \n", out_socket_fd);
         printf("\t%d \n", in_socket_fd);
 
-        
         android::sp<ApplicationSession> app_session(new ApplicationSession(
             session,
             app_name));
@@ -311,7 +310,7 @@ struct ApplicationManager : public android::BnApplicationManager,
             apps.add(session->asBinder(), app_session);            
             apps_as_added.push_back(session->asBinder());
             // switch_focused_application_locked(apps.indexOfKey(session->asBinder()));
-            switch_focused_application_locked(apps.indexOfKey(session->asBinder()));
+            switch_focused_application_locked(apps_as_added.size() - 1);
         }
 
         printf("Iterating registered applications now:\n");
