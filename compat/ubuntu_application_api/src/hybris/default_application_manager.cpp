@@ -389,6 +389,8 @@ struct ApplicationManager : public android::BnApplicationManager,
         if (new_idx >= apps.size())
             new_idx = 0;
 
+        printf("current: %d, next: %d \n", focused_application, new_idx);
+
         switch_focused_application_locked(new_idx);
     }
 
