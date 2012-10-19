@@ -226,7 +226,7 @@ struct ApplicationManager : public android::BnApplicationManager,
         
         const android::sp<ApplicationSession>& operator*()
         {
-            return manager->apps.valueAt(it);
+            return manager->apps.valueFor(manager->apps_as_added[it]);
         }
 
       protected:
@@ -267,6 +267,7 @@ struct ApplicationManager : public android::BnApplicationManager,
         }
         
         apps.removeItem(sp);
+        apps_as_added.removeAt(idx);
     }
 
     void lock()
@@ -308,8 +309,9 @@ struct ApplicationManager : public android::BnApplicationManager,
             session->asBinder()->linkToDeath(
                 android::sp<android::IBinder::DeathRecipient>(this));                
             apps.add(session->asBinder(), app_session);            
-            
-            switch_focused_application_locked(apps.size() - 1);
+            apps_as_added.push_back(session->asBinder());
+            // switch_focused_application_locked(apps.indexOfKey(session->asBinder()));
+            switch_focused_application_locked(apps.indexOfKey(session->asBinder()));
         }
 
         printf("Iterating registered applications now:\n");
@@ -353,11 +355,13 @@ struct ApplicationManager : public android::BnApplicationManager,
                 surface->make_input_window_handle(),
                 false);
         apps.valueFor(session->asBinder())->register_surface(surface);
-        if(focused_application == apps.indexOfKey(session->asBinder()))
+        // if(focused_application == apps.indexOfKey(session->asBinder()))
+        if(focused_application == apps.indexOfKey(apps_as_added[focused_application]))
         {
-            apps.valueAt(focused_application)->raise_application_surfaces_to_layer(focused_application_base_layer);
+            //apps.valueAt(focused_application)->raise_application_surfaces_to_layer(focused_application_base_layer);
+            apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(focused_application_base_layer);
             input_setup->input_manager->getDispatcher()->setInputWindows(
-                apps.valueAt(focused_application)->input_window_handles());
+                apps.valueFor(apps_as_added[focused_application])->input_window_handles());
         }
     }
     
@@ -365,18 +369,18 @@ struct ApplicationManager : public android::BnApplicationManager,
     {
         if (apps.size() > 1 && focused_application < apps.size())
         {
-            apps.valueAt(focused_application)->raise_application_surfaces_to_layer(non_focused_application_layer);
+            apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(non_focused_application_layer);
         }
 
         focused_application = index_of_next_focused_app;
 
         if (focused_application < apps.size())
         {
-            apps.valueAt(focused_application)->raise_application_surfaces_to_layer(focused_application_base_layer);
+            apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(focused_application_base_layer);
             input_setup->input_manager->getDispatcher()->setFocusedApplication(
-                apps.valueAt(focused_application)->input_application_handle());
+                apps.valueFor(apps_as_added[focused_application])->input_application_handle());
             input_setup->input_manager->getDispatcher()->setInputWindows(
-                apps.valueAt(focused_application)->input_window_handles());
+                apps.valueFor(apps_as_added[focused_application])->input_window_handles());
 
         }
     }
@@ -395,6 +399,7 @@ struct ApplicationManager : public android::BnApplicationManager,
     android::sp<android::InputSetup> input_setup;
     android::Mutex guard;
     android::KeyedVector< android::sp<android::IBinder>, android::sp<ApplicationSession> > apps;
+    android::Vector< android::sp<android::IBinder> > apps_as_added;
     size_t focused_application;
 };
 
