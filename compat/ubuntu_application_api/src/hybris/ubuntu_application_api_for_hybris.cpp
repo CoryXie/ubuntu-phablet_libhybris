@@ -67,6 +67,9 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
         bool result = true;
         UbuntuSurface* s = static_cast<UbuntuSurface*>(ctxt);
         InputEvent* ev;
+
+        s->input_consumer.receiveDispatchSignal();
+
         switch(s->input_consumer.consume(&s->event_factory, &ev))
         {
             case OK:
@@ -82,7 +85,6 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
                 result = true;
                 break;
         }
-        // TODO: call event listener.
 
         return result ? 1 : 0;
     }
