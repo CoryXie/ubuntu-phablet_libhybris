@@ -310,7 +310,7 @@ struct ApplicationManager : public android::BnApplicationManager,
             apps.add(session->asBinder(), app_session);            
             apps_as_added.push_back(session->asBinder());
             // switch_focused_application_locked(apps.indexOfKey(session->asBinder()));
-            switch_focused_application_locked(apps_as_added.size() - 1);
+            // switch_focused_application_locked(apps_as_added.size() - 1);
         }
 
         printf("Iterating registered applications now:\n");
