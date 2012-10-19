@@ -35,6 +35,7 @@ extern "C" {
     
     typedef void (*input_event_cb)(void* ctx, const Event* ev);
 
+    typedef void* ubuntu_application_ui_physical_display_info;
     typedef void* ubuntu_application_ui_session;
     typedef void* ubuntu_application_ui_surface;
     
@@ -51,6 +52,23 @@ extern "C" {
 
     void
     ubuntu_application_ui_start_a_new_session(const char* app_name);
+
+    void
+    ubuntu_application_ui_create_display_info(
+        ubuntu_application_ui_physical_display_info* info,
+        size_t index);
+
+    void
+    ubuntu_application_ui_destroy_display_info(
+        ubuntu_application_ui_physical_display_info info);
+
+    int32_t
+    ubuntu_application_ui_query_horizontal_resolution(
+        ubuntu_application_ui_physical_display_info info);
+
+    int32_t
+    ubuntu_application_ui_query_vertical_resolution(
+        ubuntu_application_ui_physical_display_info info);
 
     void 
     ubuntu_application_ui_create_surface(

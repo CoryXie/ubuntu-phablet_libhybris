@@ -99,7 +99,7 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
               input_channel(input_channel),
               input_consumer(input_channel),
               looper(looper),
-              properties({0, 0, props.width-1, props.height-1}),
+              properties({0, 0, 0, props.width-1, props.height-1}),
               is_visible_flag(false)
     {
         assert(client != NULL);
