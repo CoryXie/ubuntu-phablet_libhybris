@@ -73,7 +73,7 @@ class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInter
             : looper(looper),
               default_layer_for_touch_point_visualization(INT_MAX)
     {
-        default_configuration.showTouches = true;
+        default_configuration.showTouches = false;
 
         android::DisplayInfo info;
         android::SurfaceComposerClient::getDisplayInfo(
