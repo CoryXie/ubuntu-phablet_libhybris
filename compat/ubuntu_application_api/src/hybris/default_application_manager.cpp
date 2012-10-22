@@ -104,14 +104,29 @@ void ApplicationManager::binderDied(const android::wp<android::IBinder>& who)
     printf("%s \n", __PRETTY_FUNCTION__);
     android::Mutex::Autolock al(guard);
     android::sp<android::IBinder> sp = who.promote();
-    size_t idx = apps.indexOfKey(sp);
-    if (idx == focused_application)
+
+    size_t i = 0;
+    for(i = 0; i < apps_as_added.size(); i++)
     {
-        switch_focus_to_next_application_locked();
+        if (apps_as_added[i] == sp)
+            break;
     }
-    
+
+    size_t next_focused_app = 0;
+    next_focused_app = apps_as_added.removeAt(i);        
     apps.removeItem(sp);
-    // apps_as_added.removeAt(idx);
+
+    if (next_focused_app >= apps_as_added.size())
+        next_focused_app = 0;
+
+    if (i == focused_application)
+    {              
+        switch_focused_application_locked(next_focused_app);
+    } else if(focused_application > i)
+    {
+        focused_application--;
+    }    
+    
 }
 
 void ApplicationManager::lock()
