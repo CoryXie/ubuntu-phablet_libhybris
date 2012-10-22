@@ -193,7 +193,10 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
     void set_layer(int layer)
     {
         client->openGlobalTransaction();
-        surface_control->setLayer(layer);
+        if (layer == -1)
+            surface_control->hide();
+        else
+            surface_control->show(layer);
         client->closeGlobalTransaction();
         properties.layer = layer;
     }
@@ -403,7 +406,7 @@ struct Session : public ubuntu::application::ui::Session
         Mutex::Autolock al(surfaces_guard);
         printf("%s: %d\n", __PRETTY_FUNCTION__, layer);
         for(size_t i = 0; i < surfaces.size(); i++)
-            surfaces.valueAt(i)->set_layer(layer + i);
+            surfaces.valueAt(i)->set_layer(layer);            
     }
 
     int32_t next_surface_token()
