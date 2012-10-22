@@ -213,10 +213,16 @@ void ApplicationManager::register_a_surface(const android::String8& title,
 
 void ApplicationManager::switch_focused_application_locked(size_t index_of_next_focused_app)
 {
+    printf("%s: %d vs. current: %d \n", 
+           __PRETTY_FUNCTION__, 
+           index_of_next_focused_app, 
+           focused_application);
+    
     if (apps.size() > 1 && 
         focused_application < apps.size() &&
         focused_application != index_of_next_focused_app)
     {
+        printf("\tLowering current application now for idx: %d \n", focused_application);
         apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(non_focused_application_layer);
     }
     
@@ -224,6 +230,8 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
     
     if (focused_application < apps.size())
     {
+        printf("\tRaising application now for idx: %d \n", focused_application);
+        
         apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(focused_application_base_layer);
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
             apps.valueFor(apps_as_added[focused_application])->input_application_handle());
