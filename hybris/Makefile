@@ -44,7 +44,7 @@ libis.so.1.0: is/is.cpp
 libsf.so.1.0: sf/sf.cpp
 	$(CXX) -g -fpermissive -shared -o $@ -fPIC -I../compat/surface_flinger -Wl,-soname,libsf.so.1 $< libhybris_ics.so
 
-libubuntu_application_api.so: ubuntu_application_api/ubuntu_application_api.cpp
+libubuntu_application_api.so.1.0: ubuntu_application_api/ubuntu_application_api.cpp
 	$(CXX) -g -fpermissive -shared -o $@ -fPIC -I../compat/ubuntu_application_api/include -Wl,-soname,libubuntu_application_api.so.1 $< libhybris_ics.so
 
 test_ubuntu_app_api: 
@@ -76,6 +76,12 @@ libcamera.so.1: libcamera.so.1.0
 
 libcamera.so: libcamera.so.1
 	ln -sf libcamera.so.1.0 libcamera.so
+
+libubuntu_application_api.so.1: libubuntu_application_api.so.1.0
+	ln -sf libubuntu_application_api.so.1.0 libubuntu_application_api.so.1
+
+libubuntu_application_api.so: libubuntu_application_api.so.1
+	ln -sf libubuntu_application_api.so.1.0 libubuntu_application_api.so
 
 test_egl: libEGL.so.1 libGLESv2.so.2 egl/test.c libhybris_ics.so
 	$(CC) -g -o $@ egl/test.c libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I .
