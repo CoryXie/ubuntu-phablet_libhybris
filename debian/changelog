@@ -1,4 +1,4 @@
-libhybris (0.15) UNRELEASED; urgency=low
+libhybris (0.15) unstable; urgency=low
 
   * Adding libubuntu_application_api and test_ubuntu_app_api for application
     and window manager.
