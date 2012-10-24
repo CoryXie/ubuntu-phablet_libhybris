@@ -18,7 +18,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libbinder \
 	libhardware \
 	libui \
-	libgui
+	libgui 
 
 include $(BUILD_SHARED_LIBRARY)
 

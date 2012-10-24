@@ -210,7 +210,8 @@ class ExportedInputListener : public android::InputListenerInterface
 
         for(unsigned int i = 0; i < current_event.details.motion.pointer_count; i++)
         {
-            current_event.details.motion.pointer_coordinates[i].x
+            current_event.details.motion.pointer_coordinates[i].id = args->pointerProperties[i].id; 
+            current_event.details.motion.pointer_coordinates[i].x 
                     = current_event.details.motion.pointer_coordinates[i].raw_x
                     = args->pointerCoords[i].getX();
             current_event.details.motion.pointer_coordinates[i].y

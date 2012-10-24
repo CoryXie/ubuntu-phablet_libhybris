@@ -41,6 +41,7 @@ static EGLNativeWindowType (*_sf_surface_get_egl_native_window)(SfSurface*) = NU
 static void (*_sf_surface_make_current)(SfSurface* surface) = NULL;
 
 static void (*_sf_surface_move_to)(SfSurface* surface, int x, int y) = NULL;
+static void (*_sf_surface_set_size)(SfSurface* surface, int w, int h) = NULL;
 static void (*_sf_surface_set_layer)(SfSurface* surface, int layer) = NULL;
 static void (*_sf_surface_set_alpha)(SfSurface* surface, float alpha) = NULL;
 
@@ -106,6 +107,12 @@ void sf_surface_move_to(SfSurface* surface, int x, int y)
 {
   SF_DLSYM(&_sf_surface_move_to, "sf_surface_move_to");
   return (*_sf_surface_move_to)(surface, x, y);
+}
+
+void sf_surface_set_size(SfSurface* surface, int w, int h)
+{
+  SF_DLSYM(&_sf_surface_set_size, "sf_surface_set_size");
+  return (*_sf_surface_set_size)(surface, w, h);
 }
 
 void sf_surface_set_layer(SfSurface* surface, int layer)
