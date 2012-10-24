@@ -21,7 +21,7 @@
 
 #include <utils/misc.h>
 
-#include <gui/SurfaceComposerClient.h>
+#include <surfaceflinger/SurfaceComposerClient.h>
 #include <ui/PixelFormat.h>
 #include <ui/Region.h>
 #include <ui/Rect.h>
@@ -80,11 +80,11 @@ size_t sf_get_display_height(size_t display_id)
 
 SfClient* sf_client_create_full(bool egl_support)
 {
-
+    
     SfClient* client = new SfClient();
-
+        
     client->client = new android::SurfaceComposerClient();
-    if (client->client == NULL)
+    if (client->client == NULL) 
     {
         report_failed_to_allocate_surface_flinger_composer_client_on_creation();
         delete client;
@@ -117,24 +117,24 @@ SfClient* sf_client_create_full(bool egl_support)
 
         int n;
         if (eglChooseConfig(
-                client->egl_display,
-                attribs,
-                &client->egl_config,
-                1,
+                client->egl_display, 
+                attribs, 
+                &client->egl_config, 
+                1, 
                 &n) == EGL_FALSE) {
           report_failed_to_choose_egl_config_on_creation();
           delete client;
           return NULL;
         }
 
-        EGLint context_attribs[] = {
-            EGL_CONTEXT_CLIENT_VERSION, 2,
+        EGLint context_attribs[] = { 
+            EGL_CONTEXT_CLIENT_VERSION, 2, 
               EGL_NONE };
 
         client->egl_context = eglCreateContext(
-            client->egl_display,
-            client->egl_config,
-            EGL_NO_CONTEXT,
+            client->egl_display, 
+            client->egl_config, 
+            EGL_NO_CONTEXT, 
             context_attribs);
     }
 
@@ -190,14 +190,14 @@ SfSurface* sf_surface_create(SfClient* client, SfSurfaceCreationParameters* para
 {
     assert(client);
     assert(params);
-
+    
     SfSurface* surface = new SfSurface();
     surface->client = client;
     surface->surface_control = surface->client->client->createSurface(
-        android::String8(params->name),
-        0,
-        params->w,
-        params->h,
+        android::String8(params->name), 
+        0, 
+        params->w, 
+        params->h, 
         android::PIXEL_FORMAT_RGBA_8888,
         0x300);
 
@@ -222,7 +222,7 @@ SfSurface* sf_surface_create(SfClient* client, SfSurfaceCreationParameters* para
         surface->surface_control->setPosition(params->x, params->y);
         surface->surface_control->setLayer(params->layer);
         surface->surface_control->setAlpha(params->alpha);
-    }
+    } 
     sf_client_end_transaction(client);
 
     if (params->create_egl_window_surface)
