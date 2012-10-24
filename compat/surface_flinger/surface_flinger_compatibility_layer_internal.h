@@ -25,7 +25,7 @@
 
 #include <utils/misc.h>
 
-#include <gui/SurfaceComposerClient.h>
+#include <surfaceflinger/SurfaceComposerClient.h>
 #include <ui/PixelFormat.h>
 #include <ui/Region.h>
 #include <ui/Rect.h>
@@ -47,7 +47,7 @@ struct SfSurface
     SfSurface() : client(NULL)
     {
     }
-
+    
     SfClient* client;
     android::sp<android::SurfaceControl> surface_control;
     android::sp<android::Surface> surface;
