@@ -82,7 +82,7 @@ LOCAL_SRC_FILES:= \
 	application_manager.cpp \
 	default_application_manager.cpp \
 
-LOCAL_MODULE:= default_ubuntu_application_manager
+LOCAL_MODULE:= ubuntuappmanager
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := \
@@ -109,7 +109,7 @@ LOCAL_SRC_FILES:= \
 	application_manager.cpp \
 	default_application_manager_test.cpp \
 
-LOCAL_MODULE:= default_ubuntu_application_manager_test
+LOCAL_MODULE:= ubuntuappmanager_test
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := \
