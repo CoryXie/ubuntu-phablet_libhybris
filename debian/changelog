@@ -1,10 +1,16 @@
-libhybris (0.16) UNRELEASED; urgency=low
+libhybris (0.17) UNRELEASED; urgency=low
 
   * Renaming Android binaries to follow the binary pattern at the fs:
     - default_ubuntu_application_manager to ubuntuappmanager
     - default_ubuntu_application_manager_test to ubuntuappmanager_test
 
- -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Thu, 25 Oct 2012 08:38:53 +0200
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Thu, 25 Oct 2012 17:38:53 +0200
+
+libhybris (0.16) unstable; urgency=low
+
+  * Remove debug printouts in application manager.
+
+ -- Michael Frey <michael.frey@canonical.com>  Thu, 25 Oct 2012 13:06:28 +0200
 
 libhybris (0.15) unstable; urgency=low
 

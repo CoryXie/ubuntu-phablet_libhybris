@@ -74,7 +74,7 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
         {
             case OK:
                 result = true;
-                printf("We have a client side event for process %d. \n", getpid());
+                //printf("We have a client side event for process %d. \n", getpid());
                 s->translate_and_dispatch_event(ev);
                 s->input_consumer.sendFinishedSignal(result);
                 break;
@@ -258,14 +258,14 @@ struct Session : public ubuntu::application::ui::Session
         // From IApplicationManagerSession
         void raise_application_surfaces_to_layer(int layer)
         {
-            printf("%s: %d \n", __PRETTY_FUNCTION__, layer);
+            //printf("%s: %d \n", __PRETTY_FUNCTION__, layer);
 
             parent->raise_application_surfaces_to_layer(layer);
         }
 
         SurfaceProperties query_surface_properties_for_token(int32_t token)
         {
-            printf("%s: %d \n", __PRETTY_FUNCTION__, token);
+            //printf("%s: %d \n", __PRETTY_FUNCTION__, token);
             return parent->surfaces.valueFor(token)->properties;
         }
 
@@ -322,11 +322,11 @@ struct Session : public ubuntu::application::ui::Session
             server_channel,
             client_channel);
 
-        printf("Created input channels: \n");
-        printf("\t %d, %d, %d \n", 
-               server_channel->getAshmemFd(),
-               server_channel->getSendPipeFd(),
-               server_channel->getReceivePipeFd());
+        //printf("Created input channels: \n");
+        //printf("\t %d, %d, %d \n", 
+        //server_channel->getAshmemFd(),
+        //server_channel->getSendPipeFd(),
+        //server_channel->getReceivePipeFd());
         //============= This has to die =================
         sp<IServiceManager> service_manager = defaultServiceManager();
         sp<IBinder> service = service_manager->getService(
@@ -404,7 +404,7 @@ struct Session : public ubuntu::application::ui::Session
     void raise_application_surfaces_to_layer(int layer)
     {
         Mutex::Autolock al(surfaces_guard);
-        printf("%s: %d\n", __PRETTY_FUNCTION__, layer);
+        //printf("%s: %d\n", __PRETTY_FUNCTION__, layer);
         for(size_t i = 0; i < surfaces.size(); i++)
             surfaces.valueAt(i)->set_layer(layer);            
     }

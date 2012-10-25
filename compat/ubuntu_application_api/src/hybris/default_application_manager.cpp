@@ -38,7 +38,7 @@ bool ApplicationManager::InputFilter::filter_event(const android::InputEvent* ev
 
 bool ApplicationManager::InputFilter::handle_key_event(const android::KeyEvent* event)
 {
-    printf("%s: %p\n", __PRETTY_FUNCTION__, event);
+    //printf("%s: %p\n", __PRETTY_FUNCTION__, event);
     
     bool result = true;
     
@@ -78,7 +78,7 @@ bool ApplicationManager::LockingIterator::is_valid() const
 
 void ApplicationManager::LockingIterator::make_current()
 {
-    printf("%s \n", __PRETTY_FUNCTION__);
+    //printf("%s \n", __PRETTY_FUNCTION__);
 }
         
 const android::sp<mir::ApplicationSession>& ApplicationManager::LockingIterator::operator*()
@@ -101,7 +101,7 @@ ApplicationManager::ApplicationManager() : input_filter(new InputFilter(this)),
 // From DeathRecipient
 void ApplicationManager::binderDied(const android::wp<android::IBinder>& who)
 {
-    printf("%s \n", __PRETTY_FUNCTION__);
+    //printf("%s \n", __PRETTY_FUNCTION__);
     android::Mutex::Autolock al(guard);
     android::sp<android::IBinder> sp = who.promote();
 
@@ -154,11 +154,11 @@ void ApplicationManager::start_a_new_session(const android::String8& app_name,
                          int out_socket_fd,
                          int in_socket_fd)
 {
-    printf("%s \n", __PRETTY_FUNCTION__);
-    printf("\t%s \n", app_name.string());
-    printf("\t%d \n", ashmem_fd);
-    printf("\t%d \n", out_socket_fd);
-    printf("\t%d \n", in_socket_fd);
+    //printf("%s \n", __PRETTY_FUNCTION__);
+    //printf("\t%s \n", app_name.string());
+    //printf("\t%d \n", ashmem_fd);
+    //printf("\t%d \n", out_socket_fd);
+    //printf("\t%d \n", in_socket_fd);
     
     android::sp<mir::ApplicationSession> app_session(new mir::ApplicationSession(
         session,
@@ -173,11 +173,11 @@ void ApplicationManager::start_a_new_session(const android::String8& app_name,
         // switch_focused_application_locked(apps_as_added.size() - 1);
     }
     
-    printf("Iterating registered applications now:\n");
+    //printf("Iterating registered applications now:\n");
     android::sp<LockingIterator> it = iterator();
     while(it->is_valid())
     {
-        printf("\t %s \n", (**it)->app_name.string());
+        //printf("\t %s \n", (**it)->app_name.string());
         it->advance();
     }
 }
@@ -189,11 +189,11 @@ void ApplicationManager::register_a_surface(const android::String8& title,
                                             int out_socket_fd,
                                             int in_socket_fd)
 {
-    printf("%s \n", __PRETTY_FUNCTION__);
-    printf("\t%s \n", title.string());
-    printf("\t%d \n", ashmem_fd);
-    printf("\t%d \n", out_socket_fd);
-    printf("\t%d \n", in_socket_fd);
+    //printf("%s \n", __PRETTY_FUNCTION__);
+    //printf("\t%s \n", title.string());
+    //printf("\t%d \n", ashmem_fd);
+    //printf("\t%d \n", out_socket_fd);
+    //printf("\t%d \n", in_socket_fd);
     
     android::Mutex::Autolock al(guard);
     android::sp<android::InputChannel> input_channel(
@@ -228,16 +228,16 @@ void ApplicationManager::register_a_surface(const android::String8& title,
 
 void ApplicationManager::switch_focused_application_locked(size_t index_of_next_focused_app)
 {
-    printf("%s: %d vs. current: %d \n", 
-           __PRETTY_FUNCTION__, 
-           index_of_next_focused_app, 
-           focused_application);
+    //printf("%s: %d vs. current: %d \n", 
+    //       __PRETTY_FUNCTION__, 
+    //       index_of_next_focused_app, 
+    //       focused_application);
     
     if (apps.size() > 1 && 
         focused_application < apps.size() &&
         focused_application != index_of_next_focused_app)
     {
-        printf("\tLowering current application now for idx: %d \n", focused_application);
+        //printf("\tLowering current application now for idx: %d \n", focused_application);
         apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(non_focused_application_layer);
     }
     
@@ -245,7 +245,7 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
     
     if (focused_application < apps.size())
     {
-        printf("\tRaising application now for idx: %d \n", focused_application);
+        //printf("\tRaising application now for idx: %d \n", focused_application);
         
         apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(focused_application_base_layer);
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
@@ -261,7 +261,7 @@ void ApplicationManager::switch_focus_to_next_application_locked()
     if (new_idx >= apps.size())
         new_idx = 0;
     
-    printf("current: %d, next: %d \n", focused_application, new_idx);
+    //printf("current: %d, next: %d \n", focused_application, new_idx);
     
     switch_focused_application_locked(new_idx);
 }
@@ -278,7 +278,7 @@ int main(int argc, char** argv)
             android::String16(android::IApplicationManager::exported_service_name()),
             app_manager))
     {
-        printf("Error registering service with the system ... exiting now.");
+        //printf("Error registering service with the system ... exiting now.");
         return EXIT_FAILURE;
     }
 
