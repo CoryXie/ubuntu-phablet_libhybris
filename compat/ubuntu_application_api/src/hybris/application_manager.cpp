@@ -143,7 +143,7 @@ void BpApplicationManager::start_a_new_session(const String8& app_name,
                                                int out_socket_fd,
                                                int in_socket_fd)
 {
-    printf("%s \n", __PRETTY_FUNCTION__);
+    //printf("%s \n", __PRETTY_FUNCTION__);
     Parcel in, out;
     in.pushAllowFds(true);
     in.writeString8(app_name);
@@ -164,7 +164,7 @@ void BpApplicationManager::register_a_surface(const String8& title,
                                               int out_socket_fd,
                                               int in_socket_fd)
 {
-    printf("%s \n", __PRETTY_FUNCTION__);
+    //printf("%s \n", __PRETTY_FUNCTION__);
     Parcel in, out;
     in.pushAllowFds(true);
     in.writeString8(title);

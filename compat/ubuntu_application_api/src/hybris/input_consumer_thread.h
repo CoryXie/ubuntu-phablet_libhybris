@@ -41,7 +41,7 @@ switch(input_consumer.consume(&event_factory, &event))
     case OK:
 //TODO:Dispatch to input listener
 result = true;
-printf("Yeah, we have an event client-side.\n");
+//printf("Yeah, we have an event client-side.\n");
 input_consumer.sendFinishedSignal(result);
 break;
     case INVALID_OPERATION:
