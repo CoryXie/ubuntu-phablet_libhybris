@@ -183,6 +183,7 @@ class DefaultInputDispatcherPolicy : public InputDispatcherPolicyInterface
     {
         REPORT_FUNCTION_CALL();
         static InputDispatcherConfiguration config;
+        config.maxEventsPerSecond = 100;
         *outConfig = config;
     }
 

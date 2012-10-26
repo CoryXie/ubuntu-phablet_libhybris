@@ -61,7 +61,7 @@ struct ApplicationSession : public android::RefBase
             {
                 mInfo = new android::InputApplicationInfo();
                 mInfo->name = parent->app_name;
-                mInfo->dispatchingTimeout = 10 * 1000 * 1000; // TODO(tvoss): Find out sensible value here
+                mInfo->dispatchingTimeout = 10 * 1000 * 1000 * 1000; // TODO(tvoss): Find out sensible value here
             }
             
             return true;
@@ -93,6 +93,8 @@ struct ApplicationSession : public android::RefBase
                     
                 mInfo = new android::InputWindowInfo();
                 mInfo->name = parent->app_name;
+                mInfo->layoutParamsFlags = android::InputWindowInfo::FLAG_SPLIT_TOUCH | android::InputWindowInfo::FLAG_HARDWARE_ACCELERATED;
+                mInfo->layoutParamsType = android::InputWindowInfo::TYPE_BASE_APPLICATION;
                 mInfo->touchableRegion = touchable_region;
                 mInfo->frameLeft = props.left;
                 mInfo->frameTop = props.top;
@@ -105,6 +107,7 @@ struct ApplicationSession : public android::RefBase
                 mInfo->hasWallpaper = false;
                 mInfo->paused = false;
                 mInfo->layer = 100;
+                mInfo->dispatchingTimeout = 100 * 1000 * 1000 * 1000;
                 mInfo->ownerPid = 0;
                 mInfo->ownerUid = 0;
                 mInfo->inputFeatures = 0;
