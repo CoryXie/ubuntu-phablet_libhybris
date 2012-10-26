@@ -130,13 +130,7 @@ void android_camera_set_auto_focus_mode(CameraControl* control, AutoFocusMode mo
 void android_camera_set_preview_format(CameraControl* control, CameraPixelFormat format);
 
 void android_camera_set_focus_region(CameraControl* control, FocusRegion* region);
-
-void android_camera_reset_focus_region(CameraControl* control)
-{
-    static FocusRegion region = { 0, 0, 0, 0, 0 };
-    
-    android_camera_set_focus_region(control, &region);
-}
+void android_camera_reset_focus_region(CameraControl* control);
 
 #ifdef __cplusplus
 }
