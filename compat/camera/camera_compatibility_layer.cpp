@@ -581,3 +581,10 @@ void android_camera_set_focus_region(
     
     control->camera->setParameters(control->camera_parameters.flatten());    
 }
+
+void android_camera_reset_focus_region(CameraControl* control)
+{
+    static FocusRegion region = { 0, 0, 0, 0, 0 };
+    
+    android_camera_set_focus_region(control, &region);
+}
