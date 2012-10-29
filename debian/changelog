@@ -1,8 +1,12 @@
-libhybris (0.17) UNRELEASED; urgency=low
+libhybris (0.17) unstable; urgency=low
 
+  [ Ricardo Salveti de Araujo ]
   * Renaming Android binaries to follow the binary pattern at the fs:
     - default_ubuntu_application_manager to ubuntuappmanager
     - default_ubuntu_application_manager_test to ubuntuappmanager_test
+
+  [ Sergio Schvezov ]
+  * Releasing
 
  -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Thu, 25 Oct 2012 17:38:53 +0200
 
