@@ -508,6 +508,21 @@ void android_camera_start_zoom(CameraControl* control, int32_t zoom)
                                  ignored_argument);
 }
 
+// Adjust the zoom level immediately as opposed to smoothly zoomin gin.
+void android_camera_set_zoom(CameraControl* control, int32_t zoom)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    
+    control->camera_parameters.set(
+        android::CameraParameters::KEY_ZOOM, 
+        zoom);
+    
+    control->camera->setParameters(control->camera_parameters.flatten());
+}
+
 void android_camera_stop_zoom(CameraControl* control)
 {
     REPORT_FUNCTION()

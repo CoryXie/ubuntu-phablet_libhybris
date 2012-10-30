@@ -143,6 +143,14 @@ struct Sensor : public ubuntu::application::sensors::Sensor
     android::sp<android::SensorEventQueue> sensor_event_queue;
 };
 
+void print_vector(const ASensorVector& vec)
+{
+    printf("Status: %d \n", vec.status);
+    printf("\t\t %f, %f, %f \n", vec.v[0], vec.v[1], vec.v[2]);
+    printf("\t\t %f, %f, %f \n", vec.x, vec.y, vec.z);
+    printf("\t\t %f, %f, %f \n", vec.azimuth, vec.pitch, vec.roll);    
+}
+
 struct SensorService : public ubuntu::application::sensors::SensorService
 {    
     static int looper_callback(int receiveFd, int events, void* ctxt)
@@ -202,6 +210,11 @@ struct SensorService : public ubuntu::application::sensors::SensorService
                 break;
             case ASENSOR_TYPE_PROXIMITY:
                 reading->distance = event.distance;
+                break;
+            case SENSOR_TYPE_ORIENTATION:
+                reading->vector.v[0] = event.vector.azimuth;
+                reading->vector.v[1] = event.vector.pitch;
+                reading->vector.v[2] = event.vector.roll;
                 break;
         }
 

@@ -116,6 +116,9 @@ extern "C" {
 
     // Stops an ongoing zoom operation.
     void android_camera_stop_zoom(CameraControl* control);
+
+    // Adjust the zoom level immediately as opposed to smoothly zoomin gin.
+    void android_camera_set_zoom(CameraControl* control, int32_t zoom);
     
     // Takes a picture and reports back image data via
     // callback. Please note that this stops the preview and thus, the
