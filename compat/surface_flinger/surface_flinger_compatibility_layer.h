@@ -73,6 +73,7 @@ extern "C" {
     void sf_surface_make_current(SfSurface* surface);
     
     void sf_surface_move_to(SfSurface* surface, int x, int y);
+    void sf_surface_set_size(SfSurface* surface, int w, int h);
     void sf_surface_set_layer(SfSurface* surface, int layer);
     void sf_surface_set_alpha(SfSurface* surface, float alpha);
     

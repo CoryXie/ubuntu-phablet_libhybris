@@ -1,3 +1,4 @@
 #PKGINCLUDEDIR#/surface_flinger
 #PKGINCLUDEDIR#/input
 #PKGINCLUDEDIR#/camera
+#PKGINCLUDEDIR#/ubuntu

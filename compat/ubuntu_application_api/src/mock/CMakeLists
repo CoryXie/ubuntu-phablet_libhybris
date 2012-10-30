@@ -1,0 +1,5 @@
+add_library(
+	ubuntu_mock_platform
+
+	mock.cpp
+)

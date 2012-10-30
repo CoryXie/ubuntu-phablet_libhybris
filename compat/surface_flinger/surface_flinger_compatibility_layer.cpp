@@ -289,6 +289,13 @@ void sf_surface_move_to(SfSurface* surface, int x, int y)
     surface->surface_control->setPosition(x, y);
 }
 
+void sf_surface_set_size(SfSurface* surface, int w, int h)
+{
+    assert(surface);
+    surface->surface_control->setSize(w, h);
+}
+
+
 void sf_surface_set_layer(SfSurface* surface, int layer)
 {
     assert(surface);
