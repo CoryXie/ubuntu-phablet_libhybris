@@ -160,6 +160,7 @@ IMPLEMENT_VOID_FUNCTION1(android_camera_start_autofocus, CameraControl*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_stop_autofocus, CameraControl*);
 
 IMPLEMENT_VOID_FUNCTION2(android_camera_start_zoom, CameraControl*, int32_t);
+IMPLEMENT_VOID_FUNCTION2(android_camera_set_zoom, CameraControl*, int32_t);
 IMPLEMENT_VOID_FUNCTION1(android_camera_stop_zoom, CameraControl*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_take_snapshot, CameraControl*);
 

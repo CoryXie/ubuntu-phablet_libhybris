@@ -387,6 +387,7 @@ int main(int argc, char** argv)
     int zoom;
     android_camera_get_max_zoom(cc, &zoom);
     printf("Max zoom: %d \n", zoom);
+    android_camera_set_zoom(cc, 10);
 
     EffectMode effect_mode;
     FlashMode flash_mode;
