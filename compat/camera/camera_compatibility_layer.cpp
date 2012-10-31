@@ -586,8 +586,8 @@ void android_camera_set_focus_region(
         focus_region_pattern, 
         region->left,
         region->top,
-        region->bottom,
         region->right,
+        region->bottom,
         region->weight);
     
     control->camera_parameters.set(
