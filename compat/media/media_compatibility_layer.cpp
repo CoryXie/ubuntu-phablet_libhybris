@@ -17,8 +17,6 @@
  */
 
 #include "media_compatibility_layer.h"
-// #include "media_compatibility_layer_capabilities.h"
-// #include "media_compatibility_layer_configuration_translator.h"
 
 #include <fcntl.h>
 #include <sys/stat.h>

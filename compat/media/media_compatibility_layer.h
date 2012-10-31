@@ -19,7 +19,6 @@
 #ifndef MEDIA_COMPATIBILITY_LAYER_H_
 #define MEDIA_COMPATIBILITY_LAYER_H_
 
-#include "media_compatibility_layer_capabilities.h"
 #include <media/MediaPlayerInterface.h>
 
 #include <GLES2/gl2.h>
