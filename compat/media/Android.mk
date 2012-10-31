@@ -12,6 +12,7 @@ LOCAL_C_INCLUDES := \
 	canonical/hybris/compat/input \
 	frameworks/base/media/libstagefright/include \
 	frameworks/base/include/media/stagefright/openmax \
+	frameworks/base/include/media/stagefright \
 	frameworks/base/include/media
 
 LOCAL_SHARED_LIBRARIES := \

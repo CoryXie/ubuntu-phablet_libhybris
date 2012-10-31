@@ -17,6 +17,7 @@
  */
 
 #include "media_compatibility_layer.h"
+#include "test_player.h"
 
 #include <utils/Errors.h>
 
@@ -36,6 +37,82 @@
 #include <cstring>
 
 using namespace android;
+
+static float DestWidth = 0.0, DestHeight = 0.0;
+// Actual video dimmensions
+static int Width = 0, Height = 0;
+
+static GLfloat positionCoordinates[8];
+
+void calculate_position_coordinates()
+{
+    // Assuming cropping output for now
+    float x = 1, y = 1;
+
+#if 0
+    // Crop
+    x = float(Width / DestWidth);
+    y = float(Height / DestHeight);
+    // Make the smaller side be 1
+    if (x > y)
+    {
+        x /= y;
+        y = 1;
+    }
+    else
+    {
+        y /= x;
+        x = 1;
+    }
+#else
+    // Black borders
+    x = float(Width / DestWidth);
+    y = float(Height / DestHeight);
+    // Make the larger side be 1
+    if (x > y)
+    {
+        y /= x;
+        x = 1;
+    }
+    else
+    {
+        x /= y;
+        y = 1;
+    }
+#endif
+
+    positionCoordinates[0] = -x;
+    positionCoordinates[1] = y;
+    positionCoordinates[2] = -x;
+    positionCoordinates[3] = -y;
+    positionCoordinates[4] = x;
+    positionCoordinates[5] = -y;
+    positionCoordinates[6] = x;
+    positionCoordinates[7] = y;
+}
+
+WindowRenderer::WindowRenderer(int width, int height)
+    : mThreadCmd(CMD_IDLE)
+{
+    createThread(threadStart, this);
+}
+
+WindowRenderer::~WindowRenderer()
+{
+}
+
+int WindowRenderer::threadStart(void* self)
+{
+    ((WindowRenderer *)self)->glThread();
+    return 0;
+}
+
+void WindowRenderer::glThread()
+{
+    printf("%s\n", __PRETTY_FUNCTION__);
+
+    Mutex::Autolock autoLock(mLock);
+}
 
 struct ClientWithSurface
 {
@@ -57,12 +134,15 @@ ClientWithSurface client_with_surface(bool setup_surface_with_egl)
 
     static const size_t primary_display = 0;
 
+    DestWidth = sf_get_display_width(primary_display);
+    DestHeight = sf_get_display_height(primary_display);
+    printf("Primary display width: %f, height: %f\n", DestWidth, DestHeight);
     SfSurfaceCreationParameters params =
     {
         0,
         0,
-        sf_get_display_width(primary_display),
-        sf_get_display_height(primary_display),
+        DestWidth,
+        DestHeight,
         -1, //PIXEL_FORMAT_RGBA_8888,
         15000,
         0.5f,
@@ -90,32 +170,32 @@ struct RenderData
     static const char *vertex_shader()
     {
         return
-                "#extension GL_OES_EGL_image_external : require              \n"
-                "attribute vec4 a_position;                                  \n"
-                "attribute vec2 a_texCoord;                                  \n"
-                "uniform mat4 m_texMatrix;                                   \n"
-                "varying vec2 v_texCoord;                                    \n"
-                "varying float topDown;                                      \n"
-                "void main()                                                 \n"
-                "{                                                           \n"
-                "   gl_Position = a_position;                                \n"
-                "   v_texCoord = a_texCoord;                                 \n"
-                //                "   v_texCoord = (m_texMatrix * vec4(a_texCoord, 0.0, 1.0)).xy;\n"
-                //"   topDown = v_texCoord.y;                                  \n"
-                "}                                                           \n";
+            "#extension GL_OES_EGL_image_external : require              \n"
+            "attribute vec4 a_position;                                  \n"
+            "attribute vec2 a_texCoord;                                  \n"
+            "uniform mat4 m_texMatrix;                                   \n"
+            "varying vec2 v_texCoord;                                    \n"
+            "varying float topDown;                                      \n"
+            "void main()                                                 \n"
+            "{                                                           \n"
+            "   gl_Position = a_position;                                \n"
+            //"   v_texCoord = a_texCoord;                                 \n"
+            "   v_texCoord = (m_texMatrix * vec4(a_texCoord, 0.0, 1.0)).xy;\n"
+            //"   topDown = v_texCoord.y;                                  \n"
+            "}                                                           \n";
     }
 
     static const char *fragment_shader()
     {
         return
-                "#extension GL_OES_EGL_image_external : require      \n"
-                "precision mediump float;                            \n"
-                "varying vec2 v_texCoord;                            \n"
-                "uniform samplerExternalOES s_texture;               \n"
-                "void main()                                         \n"
-                "{                                                   \n"
-                "  gl_FragColor = texture2D( s_texture, v_texCoord );\n"
-                "}                                                   \n";
+            "#extension GL_OES_EGL_image_external : require      \n"
+            "precision mediump float;                            \n"
+            "varying vec2 v_texCoord;                            \n"
+            "uniform samplerExternalOES s_texture;               \n"
+            "void main()                                         \n"
+            "{                                                   \n"
+            "  gl_FragColor = texture2D( s_texture, v_texCoord );\n"
+            "}                                                   \n";
     }
 
     static GLuint loadShader(GLenum shaderType, const char* pSource)
@@ -216,7 +296,7 @@ static status_t setup_video_texture(ClientWithSurface *cs, GLuint *preview_textu
     sf_surface_make_current(cs->surface);
 
     glGenTextures(1, preview_texture_id);
-    glClearColor(1.0, 0., 0.5, 1.);
+    glClearColor(0, 0, 0, 0);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -232,18 +312,18 @@ static status_t update_gl_buffer(RenderData *render_data, EGLDisplay *disp, EGLS
     assert(disp != NULL);
     assert(surface != NULL);
 
-    static GLfloat vVertices[] = { 1.0f, -1.0f, 0.0f, // Position 0
-        0.0f, 0.0f,         // TexCoord 0
-        1.0f, 1.0f, 0.0f,   // Position 1
-        0.0f, 1.0f,         // TexCoord 1
-        -1.0f, 1.0f, 0.0f,  // Position 2
-        1.0f, 1.0f,         // TexCoord 2
-        -1.0f, -1.0f, 0.0f, // Position 3
-        1.0f, 0.0f          // TexCoord 3
-    };
     GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
 
+    const GLfloat textureCoordinates[] = {
+        1.0f,  1.0f,
+        0.0f,  1.0f,
+        0.0f,  0.0f,
+        1.0f,  0.0f
+    };
+
     android_media_update_surface_texture();
+
+    calculate_position_coordinates();
 
     glClear(GL_COLOR_BUFFER_BIT);
     // Use the program object
@@ -253,18 +333,23 @@ static status_t update_gl_buffer(RenderData *render_data, EGLDisplay *disp, EGLS
     glEnableVertexAttribArray(render_data->tex_coord_loc);
     // Load the vertex position
     glVertexAttribPointer(render_data->position_loc,
-            3,
+            2,
             GL_FLOAT,
             GL_FALSE,
-            5 * sizeof(GLfloat),
-            vVertices);
+            0,
+            positionCoordinates);
     // Load the texture coordinate
     glVertexAttribPointer(render_data->tex_coord_loc,
             2,
             GL_FLOAT,
             GL_FALSE,
-            5 * sizeof(GLfloat),
-            vVertices+3);
+            0,
+            textureCoordinates);
+
+    GLfloat matrix[16];
+    android_media_surface_texture_get_transformation_matrix(matrix);
+
+    glUniformMatrix4fv(render_data->matrix_loc, 1, GL_FALSE, matrix);
 
     glActiveTexture(GL_TEXTURE0);
     // Set the sampler texture unit to 0
@@ -272,13 +357,23 @@ static status_t update_gl_buffer(RenderData *render_data, EGLDisplay *disp, EGLS
     glUniform1i(render_data->matrix_loc, 0);
     // android_camera_update_preview_texture(cc);
     android_media_update_surface_texture();
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
     glDisableVertexAttribArray(render_data->position_loc);
     glDisableVertexAttribArray(render_data->tex_coord_loc);
 
     eglSwapBuffers(*disp, *surface);
 
     return OK;
+}
+
+void set_video_size_cb(int height, int width, void *context)
+{
+    printf("Video height: %d, width: %d\n", height, width);
+    printf("Video dest height: %f, width: %f\n", DestHeight, DestWidth);
+
+    Height = height;
+    Width = width;
 }
 
 int main(int argc, char **argv)
@@ -295,6 +390,10 @@ int main(int argc, char **argv)
         printf("Usage: test_player <video_to_play>");
         return EXIT_FAILURE;
     }
+
+    // Set player event cb for when the video size is known:
+    android_media_set_video_size_cb(set_video_size_cb);
+
     printf("Setting data source to: %s.\n", argv[1]);
 
     if (android_media_set_data_source(argv[1]) != OK)
@@ -302,6 +401,8 @@ int main(int argc, char **argv)
         printf("Failed to set data source: %s\n", argv[1]);
         return EXIT_FAILURE;
     }
+
+    WindowRenderer renderer(DestWidth, DestHeight);
 
     printf("Creating EGL surface.\n");
     ClientWithSurface cs = client_with_surface(true /* Associate surface with egl. */);
@@ -332,6 +433,8 @@ int main(int argc, char **argv)
     {
         update_gl_buffer(&render_data, &disp, &surface);
     }
+
+    android_media_stop();
 
     return EXIT_SUCCESS;
 }
