@@ -481,7 +481,7 @@ Player *android_media_new_player()
     return player;
 }
 
-status_t android_media_set_data_source(const char* url)
+int android_media_set_data_source(const char* url)
 {
     REPORT_FUNCTION()
 
@@ -505,7 +505,7 @@ status_t android_media_set_data_source(const char* url)
     return OK;
 }
 
-status_t android_media_set_preview_texture(int texture_id)
+int android_media_set_preview_texture(int texture_id)
 {
     REPORT_FUNCTION()
 
@@ -535,7 +535,7 @@ void android_media_surface_texture_get_transformation_matrix(GLfloat* matrix)
     player_instance->get_transformation_matrix_for_surface_texture(matrix);
 }
 
-android::status_t android_media_play()
+int android_media_play()
 {
     REPORT_FUNCTION()
 
@@ -559,7 +559,7 @@ android::status_t android_media_play()
     return OK;
 }
 
-android::status_t android_media_pause()
+int android_media_pause()
 {
     REPORT_FUNCTION()
 
@@ -571,7 +571,7 @@ android::status_t android_media_pause()
     return OK;
 }
 
-android::status_t android_media_stop()
+int android_media_stop()
 {
     REPORT_FUNCTION()
 

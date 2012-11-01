@@ -15,7 +15,7 @@ COMMON_SOURCES=common/strlcpy.c common/hooks.c common/properties.c
 
 ICS_SOURCES=ics/linker.c ics/dlfcn.c ics/rt.c ics/linker_environ.c ics/linker_format.c ics/init.c
 
-all:  libhybris_ics.so libEGL.so.1 libGLESv2.so.2 libcamera.so libhardware.so libis.so libsf.so libubuntu_application_api.so test_camera test_sf test_egl test_hw test_sensors test_ubuntu_app_api test_glesv2
+all:  libhybris_ics.so libEGL.so.1 libGLESv2.so.2 libcamera.so libmediaplayer.so libhardware.so libis.so libsf.so libubuntu_application_api.so test_camera test_media_player test_sf test_egl test_hw test_sensors test_ubuntu_app_api test_glesv2
 
 
 libhybris_ics.so: $(COMMON_SOURCES) $(ICS_SOURCES)
@@ -37,6 +37,9 @@ libEGL.so.1.0: egl/egl.c
 
 libcamera.so.1.0: camera/camera.cpp
 	$(CXX) -g -fpermissive -shared -o $@ -fPIC -I../compat/camera -Wl,-soname,libcamera.so.1 $< libhybris_ics.so
+
+libmediaplayer.so.1.0: media/media.cpp
+	$(CXX) -g -fpermissive -shared -o $@ -fPIC -I../compat/media -Wl,-soname,libmediaplayer.so.1 $< libhybris_ics.so
 
 libis.so.1.0: is/is.cpp
 	$(CXX) -g -fpermissive -shared -o $@ -fPIC -I../compat/input -Wl,-soname,libis.so.1 $< libhybris_ics.so
@@ -77,6 +80,12 @@ libcamera.so.1: libcamera.so.1.0
 libcamera.so: libcamera.so.1
 	ln -sf libcamera.so.1.0 libcamera.so
 
+libmediaplayer.so.1: libmediaplayer.so.1.0
+	ln -sf libmediaplayer.so.1.0 libmediaplayer.so.1
+
+libmediaplayer.so: libmediaplayer.so.1
+	ln -sf libmediaplayer.so.1.0 libmediaplayer.so
+
 libubuntu_application_api.so.1: libubuntu_application_api.so.1.0
 	ln -sf libubuntu_application_api.so.1.0 libubuntu_application_api.so.1
 
@@ -91,6 +100,9 @@ test_sf: libsf.so sf/test.cpp libhybris_ics.so
 
 test_camera: libcamera.so libsf.so libis.so camera/test.cpp libhybris_ics.so
 	$(CXX) -g -o $@ camera/test.cpp libcamera.so libsf.so libis.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/camera -I../compat/input -I../compat/surface_flinger
+
+test_media_player: libmediaplayer.so libsf.so libis.so media/test_player.cpp libhybris_ics.so
+	$(CXX) -g -o $@ media/test_player.cpp libmediaplayer.so libsf.so libis.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/media -I../compat/input -I../compat/surface_flinger
 
 test_hw: libhardware.so hardware/test.c libhybris_ics.so
 	$(CC) -g -o $@ hardware/test.c libhardware.so libhybris_ics.so  -I .
@@ -107,5 +119,6 @@ clean:
 	rm -rf libhardware*
 	rm -rf libsf*
 	rm -rf libcamera*
+	rm -rf libmediaplayer*
 	rm -rf libis*
 	rm -rf test_*

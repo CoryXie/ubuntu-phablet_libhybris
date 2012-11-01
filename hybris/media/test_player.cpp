@@ -19,8 +19,6 @@
 #include "media_compatibility_layer.h"
 #include "test_player.h"
 
-#include <utils/Errors.h>
-
 #include <surface_flinger_compatibility_layer.h>
 
 #include <GLES2/gl2.h>
@@ -91,6 +89,7 @@ void calculate_position_coordinates()
     positionCoordinates[7] = y;
 }
 
+#if 0
 WindowRenderer::WindowRenderer(int width, int height)
     : mThreadCmd(CMD_IDLE)
 {
@@ -113,6 +112,7 @@ void WindowRenderer::glThread()
 
     Mutex::Autolock autoLock(mLock);
 }
+#endif
 
 struct ClientWithSurface
 {
@@ -401,8 +401,6 @@ int main(int argc, char **argv)
         printf("Failed to set data source: %s\n", argv[1]);
         return EXIT_FAILURE;
     }
-
-    WindowRenderer renderer(DestWidth, DestHeight);
 
     printf("Creating EGL surface.\n");
     ClientWithSurface cs = client_with_surface(true /* Associate surface with egl. */);

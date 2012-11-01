@@ -19,8 +19,6 @@
 #ifndef MEDIA_COMPATIBILITY_LAYER_H_
 #define MEDIA_COMPATIBILITY_LAYER_H_
 
-#include <media/MediaPlayerInterface.h>
-
 #include <GLES2/gl2.h>
 
 #include <stdint.h>
@@ -39,13 +37,13 @@ extern "C" {
     void android_media_set_video_size_cb(on_msg_set_video_size cb);
 
     Player *android_media_new_player();
-    android::status_t android_media_set_data_source(const char* url);
-    android::status_t android_media_set_preview_texture(int texture_id);
+    int android_media_set_data_source(const char* url);
+    int android_media_set_preview_texture(int texture_id);
     void android_media_update_surface_texture();
     void android_media_surface_texture_get_transformation_matrix(GLfloat* matrix);
-    android::status_t android_media_play();
-    android::status_t android_media_pause();
-    android::status_t android_media_stop();
+    int android_media_play();
+    int android_media_pause();
+    int android_media_stop();
     bool android_media_is_playing();
 
 #ifdef __cplusplus
