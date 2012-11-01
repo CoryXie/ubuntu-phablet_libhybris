@@ -46,6 +46,10 @@ extern "C" {
     int android_media_stop();
     bool android_media_is_playing();
 
+    int android_media_seek_to(int msec);
+    int android_media_get_current_position(int *msec);
+    int android_media_get_duration(int *msec);
+
 #ifdef __cplusplus
 }
 #endif

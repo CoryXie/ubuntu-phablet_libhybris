@@ -299,7 +299,9 @@ status_t Player::start()
 {
     REPORT_FUNCTION();
     setAudioSink(mAudioSink);
+    ALOGV("Set the audio sink, now starting it.\n");
     mAudioSink->start();
+    ALOGV("Calling play on the media player\n");
     return mPlayer->play();
 }
 
@@ -394,9 +396,11 @@ status_t Player::invoke(const Parcel &request, Parcel *reply)
 void Player::setAudioSink(const sp<AudioSink> &audioSink)
 {
     REPORT_FUNCTION();
-    MediaPlayerInterface::setAudioSink(audioSink);
+    //MediaPlayerInterface::setAudioSink(audioSink);
+    //ALOGV("Called MediaPlayerInterface::setAudioSink");
 
     mPlayer->setAudioSink(audioSink);
+    ALOGV("Called mPlayer->setAudioSink\n");
 }
 
 status_t Player::setParameter(int key, const Parcel &request)
@@ -594,6 +598,36 @@ bool android_media_is_playing()
             return true;
 
     return false;
+}
+
+int android_media_seek_to(int msec)
+{
+    REPORT_FUNCTION()
+
+    if (player_instance == NULL)
+        return BAD_VALUE;
+
+    return player_instance->seekTo(msec);
+}
+
+int android_media_get_current_position(int *msec)
+{
+    REPORT_FUNCTION()
+
+    if (player_instance == NULL)
+        return BAD_VALUE;
+
+    return player_instance->getCurrentPosition(msec);
+}
+
+int android_media_get_duration(int *msec)
+{
+    REPORT_FUNCTION()
+
+    if (player_instance == NULL)
+        return BAD_VALUE;
+
+    return player_instance->getDuration(msec);
 }
 
 // From android::MediaPlayerListener

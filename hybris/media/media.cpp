@@ -75,53 +75,53 @@ extern "C" {
 
 #define MEDIA_PLAYER_DLSYM(fptr, sym) if (*(fptr) == NULL) { *(fptr) = (void *) media_player_bridge.resolve_symbol(sym); }
 
-#define IMPLEMENT_VOID_FUNCTION0(symbol)              \
-    void symbol()                                     \
-    {                                                 \
-        static void (*f)() = NULL;                    \
-        MEDIA_PLAYER_DLSYM(&f, #symbol);              \
+#define IMPLEMENT_VOID_FUNCTION0(symbol)                        \
+    void symbol()                                               \
+    {                                                           \
+        static void (*f)() = NULL;                              \
+        MEDIA_PLAYER_DLSYM(&f, #symbol);                        \
         f(); }
 
-#define IMPLEMENT_FUNCTION0(return_type, symbol)  \
-    return_type symbol()                          \
-    {                                             \
-        static return_type (*f)() = NULL;         \
-        MEDIA_PLAYER_DLSYM(&f, #symbol);                \
+#define IMPLEMENT_FUNCTION0(return_type, symbol)                \
+    return_type symbol()                                        \
+    {                                                           \
+        static return_type (*f)() = NULL;                       \
+        MEDIA_PLAYER_DLSYM(&f, #symbol);                        \
         return f();}
 
-#define IMPLEMENT_FUNCTION1(return_type, symbol, arg1) \
-    return_type symbol(arg1 _1)                        \
-    {                                                  \
-        static return_type (*f)(arg1) = NULL;          \
-        MEDIA_PLAYER_DLSYM(&f, #symbol);                     \
+#define IMPLEMENT_FUNCTION1(return_type, symbol, arg1)          \
+    return_type symbol(arg1 _1)                                 \
+    {                                                           \
+        static return_type (*f)(arg1) = NULL;                   \
+        MEDIA_PLAYER_DLSYM(&f, #symbol);                        \
         return f(_1); }
 
-#define IMPLEMENT_VOID_FUNCTION1(symbol, arg1)               \
-    void symbol(arg1 _1)                                     \
-    {                                                        \
-        static void (*f)(arg1) = NULL;                       \
-        MEDIA_PLAYER_DLSYM(&f, #symbol);                           \
+#define IMPLEMENT_VOID_FUNCTION1(symbol, arg1)                  \
+    void symbol(arg1 _1)                                        \
+    {                                                           \
+        static void (*f)(arg1) = NULL;                          \
+        MEDIA_PLAYER_DLSYM(&f, #symbol);                        \
         f(_1); }
 
 #define IMPLEMENT_FUNCTION2(return_type, symbol, arg1, arg2)    \
     return_type symbol(arg1 _1, arg2 _2)                        \
     {                                                           \
         static return_type (*f)(arg1, arg2) = NULL;             \
-        MEDIA_PLAYER_DLSYM(&f, #symbol);                              \
+        MEDIA_PLAYER_DLSYM(&f, #symbol);                        \
         return f(_1, _2); }
 
 #define IMPLEMENT_VOID_FUNCTION2(symbol, arg1, arg2)            \
     void symbol(arg1 _1, arg2 _2)                               \
     {                                                           \
         static void (*f)(arg1, arg2) = NULL;                    \
-        MEDIA_PLAYER_DLSYM(&f, #symbol);                              \
+        MEDIA_PLAYER_DLSYM(&f, #symbol);                        \
         f(_1, _2); }
 
 #define IMPLEMENT_VOID_FUNCTION3(symbol, arg1, arg2, arg3)      \
     void symbol(arg1 _1, arg2 _2, arg3 _3)                      \
     {                                                           \
         static void (*f)(arg1, arg2, arg3) = NULL;              \
-        MEDIA_PLAYER_DLSYM(&f, #symbol);                              \
+        MEDIA_PLAYER_DLSYM(&f, #symbol);                        \
         f(_1, _2, _3); }
 
 
@@ -131,6 +131,7 @@ IMPLEMENT_FUNCTION0(int, android_media_play);
 IMPLEMENT_FUNCTION0(int, android_media_pause);
 IMPLEMENT_FUNCTION0(int, android_media_stop);
 IMPLEMENT_FUNCTION0(bool, android_media_is_playing);
+IMPLEMENT_FUNCTION1(int, android_media_seek_to, int);
 
 // Setters
 IMPLEMENT_FUNCTION1(int, android_media_set_data_source, const char*);
@@ -138,6 +139,8 @@ IMPLEMENT_FUNCTION1(int, android_media_set_preview_texture, int);
 
 // Getters
 IMPLEMENT_VOID_FUNCTION1(android_media_surface_texture_get_transformation_matrix, GLfloat*);
+IMPLEMENT_FUNCTION1(int, android_media_get_current_position, int*);
+IMPLEMENT_FUNCTION1(int, android_media_get_duration, int*);
 
 // Callbacks
 IMPLEMENT_VOID_FUNCTION1(android_media_set_video_size_cb, on_msg_set_video_size);
