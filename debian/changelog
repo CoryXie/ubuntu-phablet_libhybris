@@ -1,3 +1,9 @@
+libhybris (0.19) unstable; urgency=low
+
+  * Fix logic for detecting NVIDIA hack.  We were always using it.
+
+ -- Michael Frey <michael.frey@canonical.com>  Tue, 06 Nov 2012 10:32:06 -0500
+
 libhybris (0.18) unstable; urgency=low
 
   * Support for ARM hard float.

@@ -379,7 +379,9 @@ void *get_hooked_symbol(char *sym)
     static int counter = -1;  
     char *graphics = getenv("GRAPHICS");
 
-    if (!graphics || strcmp("NVIDIA",graphics) == 0) {
+    if (graphics == NULL) {
+        nvidia_hack = 0;
+    } else if (strcmp("NVIDIA",graphics) == 0) {
         nvidia_hack = 1;
     }
 
