@@ -132,6 +132,9 @@ void android_camera_set_preview_format(CameraControl* control, CameraPixelFormat
 void android_camera_set_focus_region(CameraControl* control, FocusRegion* region);
 void android_camera_reset_focus_region(CameraControl* control);
 
+// Set photo metadata
+void android_camera_set_rotation(CameraControl* control, int rotation);
+
 #ifdef __cplusplus
 }
 #endif

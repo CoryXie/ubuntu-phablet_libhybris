@@ -603,3 +603,16 @@ void android_camera_reset_focus_region(CameraControl* control)
     
     android_camera_set_focus_region(control, &region);
 }
+
+void android_camera_set_rotation(CameraControl* control, int rotation)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    control->camera_parameters.set(
+        android::CameraParameters::KEY_ROTATION,
+        rotation);
+    control->camera->setParameters(control->camera_parameters.flatten());
+}
+
