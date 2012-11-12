@@ -1,3 +1,11 @@
+libhybris (0.21) unstable; urgency=low
+
+  * Fixes from upstream, specifically for errno handling, to avoid random
+    crashes when Android calls need to use and set errno (egl libs case when
+    using Nux and Unity)
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Mon, 12 Nov 2012 10:10:26 -0200
+
 libhybris (0.20) unstable; urgency=low
 
   * Support for photo rotation.
