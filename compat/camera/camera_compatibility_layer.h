@@ -33,7 +33,9 @@ extern "C" {
     
     typedef enum
     {
+        // This camera has higher quality and features like high resolution and flash
         BACK_FACING_CAMERA_TYPE,
+        // The camera that is on the same side as the touch display. Usually used for video calls
         FRONT_FACING_CAMERA_TYPE
     } CameraType;
 
