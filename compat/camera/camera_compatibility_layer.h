@@ -33,8 +33,8 @@ extern "C" {
     
     typedef enum
     {
-        FRONT_FACING_CAMERA_TYPE,
-        BACK_FACING_CAMERA_TYPE
+        BACK_FACING_CAMERA_TYPE,
+        FRONT_FACING_CAMERA_TYPE
     } CameraType;
 
     struct CameraControl;
@@ -77,6 +77,9 @@ extern "C" {
 
     // Initializes a connection to the camera, returns NULL on error.
     CameraControl* android_camera_connect_to(CameraType camera_type, CameraControlListener* listener);
+
+    // Disconnects the camera and deletes the pointer
+    void android_camera_disconnect(CameraControl* control);
 
     // Passes the rotation r of the display in [°] relative to the camera to the camera HAL. r \in [0, 359].
     void android_camera_set_display_orientation(CameraControl* control, int32_t clockwise_rotation_degree);

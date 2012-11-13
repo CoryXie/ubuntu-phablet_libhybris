@@ -101,6 +101,7 @@ void android_camera_dump_parameters(CameraControl* control);
 
 // Query camera parameters
 
+int android_camera_get_number_of_devices();
 void android_camera_enumerate_supported_preview_sizes(CameraControl* control, size_callback cb, void* ctx);
 void android_camera_get_preview_fps_range(CameraControl* control, int* min, int* max);
 void android_camera_get_preview_fps(CameraControl* control, int* fps);

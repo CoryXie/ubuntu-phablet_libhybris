@@ -1,3 +1,11 @@
+libhybris (0.22) UNRELEASED; urgency=low
+
+  * Add a function to disconnect the camera
+  * Add a function to query for the number of availbale cameras
+  * Correct front and back camera order
+
+ -- Guenter Schwann <guenter.schwann@canonical.com>  Tue, 13 Nov 2012 08:21:16 -0100
+
 libhybris (0.21) unstable; urgency=low
 
   * Fixes from upstream, specifically for errno handling, to avoid random
