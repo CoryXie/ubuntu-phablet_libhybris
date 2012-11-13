@@ -108,6 +108,12 @@ namespace
 android::sp<CameraControl> camera_control_instance;
 }
 
+int android_camera_get_number_of_devices()
+{
+    REPORT_FUNCTION()
+    return android::Camera::getNumberOfCameras();
+}
+
 CameraControl* android_camera_connect_to(CameraType camera_type, CameraControlListener* listener)
 {    
     REPORT_FUNCTION()
@@ -143,6 +149,15 @@ CameraControl* android_camera_connect_to(CameraType camera_type, CameraControlLi
     android::ProcessState::self()->startThreadPool();
 
     return cc;
+}
+
+void android_camera_disconnect(CameraControl* control)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    control->camera->disconnect();
 }
 
 void android_camera_dump_parameters(CameraControl* control)
