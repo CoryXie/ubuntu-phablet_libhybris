@@ -1,3 +1,9 @@
+libhybris (0.22) unstable; urgency=low
+
+  * Added more hooks for *printf functions.
+
+ -- Michael Frey <michael.frey@canonical.com>  Tue, 13 Nov 2012 11:20:15 -0500
+
 libhybris (0.21) unstable; urgency=low
 
   * Fixes from upstream, specifically for errno handling, to avoid random
