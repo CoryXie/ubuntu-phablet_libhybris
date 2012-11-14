@@ -86,34 +86,147 @@ static int my_pthread_create(pthread_t *thread, const pthread_attr_t *__attr,
 
 }
 
-static int my_pthread_attr_destroy(pthread_attr_t *__attr)
-{
-    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
-    return pthread_attr_destroy(realattr);
-}
-
-static int my_pthread_attr_setdetachstate(pthread_attr_t *__attr, int detachstate)
-{
-    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
-    return pthread_attr_setdetachstate(realattr, detachstate);
-}
-
-
-static int my_pthread_attr_setstacksize(pthread_attr_t *__attr, size_t stacksize)
-{
-
-    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
-    return pthread_attr_setstacksize (realattr,stacksize);
-}
+/* 
+ * pthread_attr_* functions
+ *
+ * Specific implementations to workaround the differences between at the
+ * pthread_attr_t struct differences between Bionic and Glibc.
+ *
+ * */
 
 static int my_pthread_attr_init(pthread_attr_t *__attr) 
 {
-    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    pthread_attr_t *realattr;
 
     realattr = malloc(sizeof(pthread_attr_t));
     *((int *)__attr) = (int) realattr;
 
     return pthread_attr_init(realattr);
+}
+
+static int my_pthread_attr_destroy(pthread_attr_t *__attr)
+{
+    int r;
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+
+    r = pthread_attr_destroy(realattr);
+    /* We need to release the memory allocated at my_pthread_attr_init
+     * Possible side effects if destroy is called without our init */
+    free(realattr); 
+
+    return r;
+}
+
+static int my_pthread_attr_setdetachstate(pthread_attr_t *__attr, int state)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_setdetachstate(realattr, state);
+}
+
+static int my_pthread_attr_getdetachstate(pthread_attr_t const *__attr, int *state)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_getdetachstate(realattr, state);
+}
+
+static int my_pthread_attr_setschedpolicy(pthread_attr_t *__attr, int policy)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_setschedpolicy(realattr, policy);
+}
+
+static int my_pthread_attr_getschedpolicy(pthread_attr_t const *__attr, int *policy)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_getschedpolicy(realattr, policy);
+}
+
+static int my_pthread_attr_setschedparam(pthread_attr_t *__attr, struct sched_param const *param)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_setschedparam(realattr, param);
+}
+
+static int my_pthread_attr_getschedparam(pthread_attr_t const *__attr, struct sched_param *param)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_getschedparam(realattr, param);
+}
+
+static int my_pthread_attr_setstacksize(pthread_attr_t *__attr, size_t stack_size)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_setstacksize(realattr, stack_size);
+}
+
+static int my_pthread_attr_getstacksize(pthread_attr_t const *__attr, size_t *stack_size)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_getstacksize(realattr, stack_size);
+}
+
+static int my_pthread_attr_setstackaddr(pthread_attr_t *__attr, void *stack_addr)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_setstackaddr(realattr, stack_addr);
+}
+
+static int my_pthread_attr_getstackaddr(pthread_attr_t const *__attr, void **stack_addr)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_getstackaddr(realattr, stack_addr);
+}
+
+static int my_pthread_attr_setstack(pthread_attr_t *__attr, void *stack_base, size_t stack_size)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_setstack(realattr, stack_base, stack_size);
+}
+
+static int my_pthread_attr_getstack(pthread_attr_t const *__attr, void **stack_base, size_t *stack_size)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_getstack(realattr, stack_base, stack_size);
+}
+
+static int my_pthread_attr_setguardsize(pthread_attr_t *__attr, size_t guard_size)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_setguardsize(realattr, guard_size);
+}
+
+static int my_pthread_attr_getguardsize(pthread_attr_t const *__attr, size_t *guard_size)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_getguardsize(realattr, guard_size);
+}
+
+static int my_pthread_attr_setscope(pthread_attr_t *__attr, int scope)
+{
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+    return pthread_attr_setscope(realattr, scope);
+}
+
+static int my_pthread_attr_getscope(pthread_attr_t const *__attr)
+{
+    int scope;
+    pthread_attr_t *realattr = (pthread_attr_t *) *(int *) __attr;
+
+    /* Android doesn't have the scope attribute because it always
+     * returns PTHREAD_SCOPE_SYSTEM */
+    pthread_attr_getscope(realattr, scope);
+
+    return scope;
+}
+
+static int my_pthread_getattr_np(pthread_t thid, pthread_attr_t *__attr)
+{
+    pthread_attr_t *realattr;
+
+    realattr = malloc(sizeof(pthread_attr_t));
+    *((int *)__attr) = (int) realattr;
+
+    return pthread_getattr_np(thid, realattr);
 }
 
 
@@ -364,13 +477,25 @@ static struct _hook hooks[] = {
     {"pthread_cond_timedwait", my_pthread_cond_timedwait},
     {"pthread_cond_timedwait_monotonic", my_pthread_cond_timedwait},
     {"pthread_cond_timedwait_relative_np", my_pthread_cond_timedwait},
-    {"pthread_attr_setstacksize", my_pthread_attr_setstacksize},
+    {"pthread_attr_init", my_pthread_attr_init},
     {"pthread_attr_destroy", my_pthread_attr_destroy},
     {"pthread_attr_setdetachstate", my_pthread_attr_setdetachstate},
-    {"pthread_attr_getschedparam", pthread_attr_getschedparam},
-    {"pthread_attr_setschedparam", pthread_attr_setschedparam},
-    {"pthread_attr_getstacksize", pthread_attr_getstacksize},
-    {"pthread_attr_init", my_pthread_attr_init},
+    {"pthread_attr_getdetachstate", my_pthread_attr_getdetachstate},
+    {"pthread_attr_setschedpolicy", my_pthread_attr_setschedpolicy},
+    {"pthread_attr_getschedpolicy", my_pthread_attr_getschedpolicy},
+    {"pthread_attr_setschedparam", my_pthread_attr_setschedparam},
+    {"pthread_attr_getschedparam", my_pthread_attr_getschedparam},
+    {"pthread_attr_setstacksize", my_pthread_attr_setstacksize},
+    {"pthread_attr_getstacksize", my_pthread_attr_getstacksize},
+    {"pthread_attr_setstackaddr", my_pthread_attr_setstackaddr},
+    {"pthread_attr_getstackaddr", my_pthread_attr_getstackaddr},
+    {"pthread_attr_setstack", my_pthread_attr_setstack},
+    {"pthread_attr_getstack", my_pthread_attr_getstack},
+    {"pthread_attr_setguardsize", my_pthread_attr_setguardsize},
+    {"pthread_attr_getguardsize", my_pthread_attr_getguardsize},
+    {"pthread_attr_setscope", my_pthread_attr_setscope},
+    {"pthread_attr_setscope", my_pthread_attr_getscope},
+    {"pthread_getattr_np", my_pthread_getattr_np},
     {"pthread_rwlock_init", pthread_rwlock_init},
     {"pthread_rwlock_destroy", pthread_rwlock_destroy},
     {"pthread_rwlock_unlock", pthread_rwlock_unlock},
