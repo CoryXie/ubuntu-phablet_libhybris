@@ -45,7 +45,7 @@ struct MediaPlayerBridge
 
     MediaPlayerBridge() : libmediaplayer_handle(android_dlopen(path_to_library(), RTLD_LAZY))
     {
-        assert(libmediaplayer_handle && "Error loading media player library from");
+        assert(libmediaplayer_handle && "Error loading media player library from /system/lib/libmedia_compat_layer.so");
     }
 
     ~MediaPlayerBridge()

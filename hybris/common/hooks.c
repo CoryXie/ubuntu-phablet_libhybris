@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include <signal.h>
 
-static int nvidia_hack = 0;
+static int nvidia_hack = 1;
 
 struct _hook {
     const char *name;
@@ -126,20 +126,19 @@ static int my_pthread_mutex_init (pthread_mutex_t *__mutex, __const pthread_mute
 
 static int my_pthread_mutex_lock (pthread_mutex_t *__mutex)
 {
-
     if (nvidia_hack)
         return 0;
 
     if (!__mutex)
         return 0;
-  
-    pthread_mutex_t   *realmutex = (pthread_mutex_t *) *(int *) __mutex;
+
+    pthread_mutex_t *realmutex = (pthread_mutex_t *) *(int *) __mutex;
 
     if (realmutex == NULL)
     {
         realmutex = malloc(sizeof(pthread_mutex_t));
         *((int *)__mutex) = (int) realmutex;
-        pthread_mutex_init(realmutex, NULL);     
+        pthread_mutex_init(realmutex, NULL);
     }
     return pthread_mutex_lock(realmutex);
 }
@@ -151,7 +150,7 @@ static int my_pthread_mutex_trylock (pthread_mutex_t *__mutex)
     {
         realmutex = malloc(sizeof(pthread_mutex_t));
         *((int *)__mutex) = (int) realmutex;
-        pthread_mutex_init(realmutex, NULL);     
+        pthread_mutex_init(realmutex, NULL);
     }
     return pthread_mutex_trylock(realmutex);
 }
@@ -159,7 +158,6 @@ static int my_pthread_mutex_trylock (pthread_mutex_t *__mutex)
 
 static int my_pthread_mutex_unlock (pthread_mutex_t *__mutex)
 {
-
     if (nvidia_hack)
         return 0;
 
