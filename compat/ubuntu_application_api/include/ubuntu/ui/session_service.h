@@ -3,6 +3,7 @@
 
 #include "ubuntu/application/ui/session.h"
 #include "ubuntu/platform/shared_ptr.h"
+#include "ubuntu/ui/session_enumerator.h"
 
 namespace ubuntu
 {
@@ -27,6 +28,10 @@ class SessionService : public platform::ReferenceCountedBase
 
     virtual const ubuntu::application::ui::Session::Ptr& start_a_new_session(const ubuntu::application::ui::SessionCredentials& cred) = 0;
 
+    virtual void install_session_lifecycle_observer(const SessionLifeCycleObserver::Ptr& observer) = 0;
+
+    virtual void enumerate_running_sessions(const SessionEnumerator::Ptr& session_enumerator) = 0;
+    
   protected:
     SessionService() {}
     SessionService(const SessionService&) = delete;

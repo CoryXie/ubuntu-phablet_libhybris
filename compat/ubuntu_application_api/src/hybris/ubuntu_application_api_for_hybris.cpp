@@ -393,6 +393,43 @@ struct Session : public ubuntu::application::ui::Session
 
 struct SessionService : public ubuntu::ui::SessionService
 {
+    struct SessionProperties : public ubuntu::ui::SessionProperties
+    {
+        SessionProperties() 
+        {
+            lut.add(android::String8(SessionProperties::key_application_name()),
+                    android::String8("42"));
+            lut.add(android::String8(SessionProperties::key_application_name()),
+                    android::String8("MyAwesomeApplication"));
+            lut.add(android::String8(SessionProperties::key_desktop_file_hint()),
+                    android::String8("/usr/share/applications/shotwell.desktop"));
+        }
+
+        const char* value_for_key(const char* key) const
+        {
+            return lut.valueFor(android::String8(key)).string();
+        }
+
+        android::KeyedVector<android::String8, android::String8> lut;
+    };
+
+    struct SessionPreviewProvider : public ubuntu::ui::SessionPreviewProvider
+    {
+        SessionPreviewProvider()
+        {
+        }
+
+        bool get_or_update_session_preview(GLuint texture, unsigned int& w, unsigned int& h)
+        {
+            (void) texture;
+
+            w = 1024;
+            h = 768;
+
+            return true;
+        }
+    };
+
     SessionService()
     {
     }
@@ -402,6 +439,26 @@ struct SessionService : public ubuntu::ui::SessionService
         (void) cred;
         static ubuntu::application::ui::Session::Ptr session(new Session(cred));
         return session;
+    }
+
+    void install_session_lifecycle_observer(const ubuntu::ui::SessionLifeCycleObserver::Ptr& observer)
+    {
+        (void) observer;
+    }
+
+    void enumerate_running_sessions(const ubuntu::ui::SessionEnumerator::Ptr& enumerator)
+    {
+        static SessionProperties::Ptr props(new SessionProperties());
+        static SessionPreviewProvider::Ptr preview_provider(new SessionPreviewProvider());
+        
+        static const unsigned int app_count = 5;
+
+        enumerator->init_with_total_session_count(app_count);
+        
+        for(unsigned int i = 0; i < app_count; i++)
+        {
+            enumerator->for_each_session(props, preview_provider); 
+        }
     }
 };
 
@@ -447,6 +504,24 @@ const ubuntu::ui::SessionService::Ptr& ubuntu::ui::SessionService::instance()
 {
     static ubuntu::ui::SessionService::Ptr instance(new android::SessionService());
     return instance;
+}
+
+const char* SessionProperties::key_application_instance_id()
+{
+    static const char* key = "application_instance_id";
+    return key;
+}
+
+const char* SessionProperties::key_application_name()
+{
+    static const char* key = "application_name";
+    return key;
+}
+
+const char* SessionProperties::key_desktop_file_hint()
+{
+    static const char* key = "desktop_file_hint";
+    return key;
 }
 }
 }
