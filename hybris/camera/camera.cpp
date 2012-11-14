@@ -119,7 +119,9 @@ extern "C" {
         f(_1, _2, _3); }
 
 
+IMPLEMENT_FUNCTION0(int, android_camera_get_number_of_devices);
 IMPLEMENT_FUNCTION2(CameraControl*, android_camera_connect_to, CameraType, CameraControlListener*);
+IMPLEMENT_VOID_FUNCTION1(android_camera_disconnect, CameraControl*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_dump_parameters, CameraControl*);
 
 // Setters
@@ -134,7 +136,9 @@ IMPLEMENT_VOID_FUNCTION2(android_camera_set_display_orientation, CameraControl*,
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_preview_texture, CameraControl*, int);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_preview_surface, CameraControl*, SfSurface*);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_focus_region, CameraControl*, FocusRegion*);
+IMPLEMENT_VOID_FUNCTION1(android_camera_reset_focus_region, CameraControl*);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_preview_fps, CameraControl*, int);
+IMPLEMENT_VOID_FUNCTION2(android_camera_set_rotation, CameraControl*, int);
 // Getters
 IMPLEMENT_VOID_FUNCTION2(android_camera_get_effect_mode, CameraControl*, EffectMode*);
 IMPLEMENT_VOID_FUNCTION2(android_camera_get_flash_mode, CameraControl*, FlashMode*);
@@ -160,6 +164,7 @@ IMPLEMENT_VOID_FUNCTION1(android_camera_start_autofocus, CameraControl*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_stop_autofocus, CameraControl*);
 
 IMPLEMENT_VOID_FUNCTION2(android_camera_start_zoom, CameraControl*, int32_t);
+IMPLEMENT_VOID_FUNCTION2(android_camera_set_zoom, CameraControl*, int32_t);
 IMPLEMENT_VOID_FUNCTION1(android_camera_stop_zoom, CameraControl*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_take_snapshot, CameraControl*);
 

@@ -10,6 +10,7 @@
 #include <dlfcn.h>
 #include <pthread.h>
 #include <signal.h>
+#include <errno.h>
 
 static int nvidia_hack = 1;
 
@@ -255,6 +256,11 @@ static int my_pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mute
     return pthread_cond_timedwait(realcond, realmutex, abstime);    
 }
 
+static int my_set_errno(int oi_errno)
+{
+    errno = oi_errno;
+    return -1;
+}
 
 static struct _hook hooks[] = {
     {"property_get", property_get },
@@ -368,6 +374,14 @@ static struct _hook hooks[] = {
     {"pthread_rwlock_unlock", pthread_rwlock_unlock},
     {"pthread_rwlock_wrlock", pthread_rwlock_wrlock},
     {"pthread_rwlock_rdlock", pthread_rwlock_rdlock},
+    {"fopen", fopen},
+    {"fgets", fgets},
+    {"fclose", fclose},
+    {"sprintf", sprintf},
+    {"snprintf", snprintf},
+    {"vsprintf", vsprintf},
+    {"__errno", __errno_location},
+    {"__set_errno", my_set_errno},
     {NULL, NULL},
 };
 
@@ -377,7 +391,9 @@ void *get_hooked_symbol(char *sym)
     static int counter = -1;  
     char *graphics = getenv("GRAPHICS");
 
-    if (!graphics || strcmp("NVIDIA",graphics) == 0) {
+    if (graphics == NULL) {
+        nvidia_hack = 0;
+    } else if (strcmp("NVIDIA",graphics) == 0) {
         nvidia_hack = 1;
     }
 

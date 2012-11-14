@@ -101,6 +101,7 @@ void android_camera_dump_parameters(CameraControl* control);
 
 // Query camera parameters
 
+int android_camera_get_number_of_devices();
 void android_camera_enumerate_supported_preview_sizes(CameraControl* control, size_callback cb, void* ctx);
 void android_camera_get_preview_fps_range(CameraControl* control, int* min, int* max);
 void android_camera_get_preview_fps(CameraControl* control, int* fps);
@@ -130,13 +131,10 @@ void android_camera_set_auto_focus_mode(CameraControl* control, AutoFocusMode mo
 void android_camera_set_preview_format(CameraControl* control, CameraPixelFormat format);
 
 void android_camera_set_focus_region(CameraControl* control, FocusRegion* region);
+void android_camera_reset_focus_region(CameraControl* control);
 
-void android_camera_reset_focus_region(CameraControl* control)
-{
-    static FocusRegion region = { 0, 0, 0, 0, 0 };
-    
-    android_camera_set_focus_region(control, &region);
-}
+// Set photo metadata
+void android_camera_set_rotation(CameraControl* control, int rotation);
 
 #ifdef __cplusplus
 }

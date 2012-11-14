@@ -1,4 +1,5 @@
 #include "application_manager.h"
+#include "event_loop.h"
 #include "input_consumer_thread.h"
 
 #include <ubuntu/application/ui/init.h>
@@ -272,39 +273,12 @@ struct Session : public ubuntu::application::ui::Session
         Session* parent;
     };    
 
-    struct EventLoop : public android::Thread
-    {
-        EventLoop(const sp<Looper>& looper) : looper(looper)
-        {
-        }
-
-        bool threadLoop()
-        {            
-            bool result = true;
-            while(true)
-            {
-                switch(looper->pollOnce(5*1000))
-                {
-                    case ALOOPER_POLL_CALLBACK:
-                    case ALOOPER_POLL_TIMEOUT:
-                        result = true;
-                        break;
-                    case ALOOPER_POLL_ERROR:
-                        result = false;
-                        break;
-                }
-            }
-
-            return result;
-        }
-
-        sp<Looper> looper;
-    };
+    
 
     sp<ApplicationManagerSession> app_manager_session;
     sp<SurfaceComposerClient> client;
     sp<Looper> looper;
-    sp<EventLoop> event_loop;
+    sp<ubuntu::application::EventLoop> event_loop;
     Mutex surfaces_guard;
     KeyedVector< int32_t, android::sp<UbuntuSurface> > surfaces;
     
@@ -312,7 +286,7 @@ struct Session : public ubuntu::application::ui::Session
             : app_manager_session(new ApplicationManagerSession(this)),
               client(new android::SurfaceComposerClient()),
               looper(new Looper(true)),
-              event_loop(new EventLoop(looper))
+              event_loop(new ubuntu::application::EventLoop(looper))
     {
         assert(client);
         //============= This has to die =================

@@ -108,6 +108,12 @@ namespace
 android::sp<CameraControl> camera_control_instance;
 }
 
+int android_camera_get_number_of_devices()
+{
+    REPORT_FUNCTION()
+    return android::Camera::getNumberOfCameras();
+}
+
 CameraControl* android_camera_connect_to(CameraType camera_type, CameraControlListener* listener)
 {    
     REPORT_FUNCTION()
@@ -143,6 +149,15 @@ CameraControl* android_camera_connect_to(CameraType camera_type, CameraControlLi
     android::ProcessState::self()->startThreadPool();
 
     return cc;
+}
+
+void android_camera_disconnect(CameraControl* control)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    control->camera->disconnect();
 }
 
 void android_camera_dump_parameters(CameraControl* control)
@@ -508,6 +523,21 @@ void android_camera_start_zoom(CameraControl* control, int32_t zoom)
                                  ignored_argument);
 }
 
+// Adjust the zoom level immediately as opposed to smoothly zoomin gin.
+void android_camera_set_zoom(CameraControl* control, int32_t zoom)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    
+    control->camera_parameters.set(
+        android::CameraParameters::KEY_ZOOM, 
+        zoom);
+    
+    control->camera->setParameters(control->camera_parameters.flatten());
+}
+
 void android_camera_stop_zoom(CameraControl* control)
 {
     REPORT_FUNCTION()
@@ -571,8 +601,8 @@ void android_camera_set_focus_region(
         focus_region_pattern, 
         region->left,
         region->top,
-        region->bottom,
         region->right,
+        region->bottom,
         region->weight);
     
     control->camera_parameters.set(
@@ -581,3 +611,23 @@ void android_camera_set_focus_region(
     
     control->camera->setParameters(control->camera_parameters.flatten());    
 }
+
+void android_camera_reset_focus_region(CameraControl* control)
+{
+    static FocusRegion region = { 0, 0, 0, 0, 0 };
+    
+    android_camera_set_focus_region(control, &region);
+}
+
+void android_camera_set_rotation(CameraControl* control, int rotation)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    control->camera_parameters.set(
+        android::CameraParameters::KEY_ROTATION,
+        rotation);
+    control->camera->setParameters(control->camera_parameters.flatten());
+}
+
