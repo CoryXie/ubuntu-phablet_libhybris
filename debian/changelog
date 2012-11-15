@@ -1,3 +1,16 @@
+libhybris (0.24) UNRELEASED; urgency=low
+
+  * Removing commented functions that were never used by us
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Thu, 15 Nov 2012 13:50:07 -0200
+
+libhybris (0.23) unstable; urgency=low
+
+  * Cover all pthread_attr related functions
+  * Warn about shared mutex or shared condition with Android
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Thu, 15 Nov 2012 12:35:06 -0200
+
 libhybris (0.22) unstable; urgency=low
 
   * Added more hooks for *printf functions.
