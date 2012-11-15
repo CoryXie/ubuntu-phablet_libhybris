@@ -158,6 +158,12 @@ void android_camera_disconnect(CameraControl* control)
 
     android::Mutex::Autolock al(control->guard);
     control->camera->disconnect();
+    control->camera->unlock();
+}
+
+void android_camera_delete(CameraControl* control)
+{
+    delete control;
 }
 
 void android_camera_dump_parameters(CameraControl* control)
