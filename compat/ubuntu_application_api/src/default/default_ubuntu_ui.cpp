@@ -11,64 +11,44 @@ struct SessionLifeCycleObserver : public ubuntu::ui::SessionLifeCycleObserver
     {
     }
 
-    void on_application_born(const ubuntu::ui::SessionProperties::Ptr& props)
+    void on_session_born(const ubuntu::ui::SessionProperties::Ptr& props)
     {
         if (!observer)
             return;
 
-        if (!observer->on_application_born)
+        if (!observer->on_session_born)
             return;
 
-        observer->on_application_born(&props, observer->context);
+        observer->on_session_born(&props, observer->context);
     }
 
-    void on_application_died(const ubuntu::ui::SessionProperties::Ptr& props)
+    void on_session_focused(const ubuntu::ui::SessionProperties::Ptr& props)
     {
         if (!observer)
             return;
 
-        if (!observer->on_application_died)
+        if (!observer->on_session_focused)
             return;
 
-        observer->on_application_died(&props, observer->context);
+        observer->on_session_focused(&props, observer->context);
+    }
+
+    void on_session_died(const ubuntu::ui::SessionProperties::Ptr& props)
+    {
+        if (!observer)
+            return;
+
+        if (!observer->on_session_died)
+            return;
+
+        observer->on_session_died(&props, observer->context);
     }
 
     ubuntu_ui_session_lifecycle_observer* observer;
 };
 
-struct SessionEnumerator : public ubuntu::ui::SessionEnumerator
-{
-    SessionEnumerator(ubuntu_ui_session_enumerator* enumerator) : enumerator(enumerator)
-    {
-    }
-    
-    void init_with_total_session_count(unsigned int count)
-    {
-        if (!enumerator)
-            return;
-
-        if (!enumerator->init_with_total_session_count)
-            return;
-
-        enumerator->init_with_total_session_count(count, enumerator->context);
-    }
-
-    void for_each_session(const ubuntu::ui::SessionProperties::Ptr& props, const ubuntu::ui::SessionPreviewProvider::Ptr& preview_provider)
-    {
-        if (!enumerator)
-            return;
-
-        if (!enumerator->for_each_session)
-            return;
-
-        enumerator->for_each_session(&props, &preview_provider, enumerator->context);
-    }
-
-    ubuntu_ui_session_enumerator* enumerator;
-};
-
 }
-
+        
 const char* ubuntu_ui_session_properties_get_value_for_key(ubuntu_ui_session_properties props, const char* key)
 {
     if (!props)
@@ -82,7 +62,7 @@ const char* ubuntu_ui_session_properties_get_value_for_key(ubuntu_ui_session_pro
     return (*p)->value_for_key(key);
 }
 
-const char* ubuntu_ui_session_properties_get_application_instance_id(ubuntu_ui_session_properties props)
+int ubuntu_ui_session_properties_get_application_instance_id(ubuntu_ui_session_properties props)
 {
     if (!props)
         return NULL;
@@ -90,16 +70,6 @@ const char* ubuntu_ui_session_properties_get_application_instance_id(ubuntu_ui_s
     const ubuntu::ui::SessionProperties::Ptr* p = static_cast<const ubuntu::ui::SessionProperties::Ptr*>(props);
 
     return (*p)->application_instance_id();
-}
-
-const char* ubuntu_ui_session_properties_get_application_name(ubuntu_ui_session_properties props)
-{
-    if (!props)
-        return NULL;
-
-    const ubuntu::ui::SessionProperties::Ptr* p = static_cast<const ubuntu::ui::SessionProperties::Ptr*>(props);
-
-    return (*p)->application_name();
 }
 
 const char* ubuntu_ui_session_properties_get_desktop_file_hint(ubuntu_ui_session_properties props)
@@ -112,7 +82,7 @@ const char* ubuntu_ui_session_properties_get_desktop_file_hint(ubuntu_ui_session
     return (*p)->desktop_file_hint();
 }
 
-bool ubuntu_ui_session_preview_provider_update_session_preview_texture(ubuntu_ui_session_preview_provider pp, GLuint texture, unsigned int* width, unsigned int* height)
+    bool ubuntu_ui_session_preview_provider_update_session_preview_texture(ubuntu_ui_session_preview_provider pp, int id, GLuint texture, unsigned int* width, unsigned int* height)
 {
     if (!pp)
         return false;
@@ -129,7 +99,7 @@ void ubuntu_ui_session_install_session_lifecycle_observer(ubuntu_ui_session_life
     ubuntu::ui::SessionService::instance()->install_session_lifecycle_observer(p);
 }
 
-void ubuntu_ui_session_enumerate_running_sessions(ubuntu_ui_session_enumerator* enumerator){
-    ubuntu::ui::SessionEnumerator::Ptr p(new SessionEnumerator(enumerator));
-    ubuntu::ui::SessionService::instance()->enumerate_running_sessions(p);
+void ubuntu_ui_session_focus_running_session_with_id(int id)
+{
+    ubuntu::ui::SessionService::instance()->focus_running_session_with_id(id);
 }

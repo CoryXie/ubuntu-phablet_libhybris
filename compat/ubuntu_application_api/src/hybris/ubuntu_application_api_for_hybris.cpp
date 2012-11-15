@@ -391,27 +391,66 @@ struct Session : public ubuntu::application::ui::Session
     }
 };
 
-struct SessionService : public ubuntu::ui::SessionService
+struct SessionProperties : public ubuntu::ui::SessionProperties
 {
-    struct SessionProperties : public ubuntu::ui::SessionProperties
+    SessionProperties(int id, const android::String8& desktop_file)
+            : id(id),
+              desktop_file(desktop_file)
     {
-        SessionProperties() 
-        {
-            lut.add(android::String8(SessionProperties::key_application_name()),
-                    android::String8("42"));
-            lut.add(android::String8(SessionProperties::key_application_name()),
-                    android::String8("MyAwesomeApplication"));
-            lut.add(android::String8(SessionProperties::key_desktop_file_hint()),
-                    android::String8("/usr/share/applications/shotwell.desktop"));
-        }
+    }
+    
+    const char* value_for_key(const char* key) const
+    {
+        return NULL;
+    }
+    
+    int id;
+    android::String8 desktop_file;
+};
 
-        const char* value_for_key(const char* key) const
-        {
-            return lut.valueFor(android::String8(key)).string();
-        }
+struct ApplicationManagerObserver : public android::BnApplicationManagerObserver
+{
+    void on_session_born(int id,
+                         const String8& desktop_file)
+    {
+        if (observer == NULL)
+            return;
 
-        android::KeyedVector<android::String8, android::String8> lut;
-    };
+        observer->on_session_born(ubuntu::ui::SessionProperties::Ptr(new SessionProperties(id, desktop_file)));
+    }
+    
+    virtual void on_session_focused(int id, 
+                                    const String8& desktop_file)
+    {
+        if (observer == NULL)
+            return;
+
+        observer->on_session_focused(ubuntu::ui::SessionProperties::Ptr(new SessionProperties(id, desktop_file)));
+    }
+    
+    virtual void on_session_died(int id,
+                                 const String8& desktop_file)
+    {
+        observer->on_session_died(ubuntu::ui::SessionProperties::Ptr(new SessionProperties(id, desktop_file)));
+    }
+
+    void install_session_lifecycle_observer(const ubuntu::ui::SessionLifeCycleObserver::Ptr& observer)
+    {
+        this->observer = observer;
+
+        sp<IServiceManager> service_manager = defaultServiceManager();
+        sp<IBinder> service = service_manager->getService(
+            String16(IApplicationManager::exported_service_name()));
+        BpApplicationManager app_manager(service);
+
+        app_manager.register_an_observer(android::sp<IApplicationManagerObserver>(this));
+    }
+
+    ubuntu::ui::SessionLifeCycleObserver::Ptr observer;
+};
+
+struct SessionService : public ubuntu::ui::SessionService
+{    
 
     struct SessionPreviewProvider : public ubuntu::ui::SessionPreviewProvider
     {
@@ -430,7 +469,7 @@ struct SessionService : public ubuntu::ui::SessionService
         }
     };
 
-    SessionService()
+    SessionService() : observer(new ApplicationManagerObserver())
     {
     }
 
@@ -441,25 +480,17 @@ struct SessionService : public ubuntu::ui::SessionService
         return session;
     }
 
-    void install_session_lifecycle_observer(const ubuntu::ui::SessionLifeCycleObserver::Ptr& observer)
+    void install_session_lifecycle_observer(const ubuntu::ui::SessionLifeCycleObserver::Ptr& lifecycle_observer)
     {
-        (void) observer;
+        this->observer->install_session_lifecycle_observer(lifecycle_observer);
     }
 
-    void enumerate_running_sessions(const ubuntu::ui::SessionEnumerator::Ptr& enumerator)
+    void focus_running_session_with_id(int id)
     {
-        static SessionProperties::Ptr props(new SessionProperties());
-        static SessionPreviewProvider::Ptr preview_provider(new SessionPreviewProvider());
-        
-        static const unsigned int app_count = 5;
-
-        enumerator->init_with_total_session_count(app_count);
-        
-        for(unsigned int i = 0; i < app_count; i++)
-        {
-            enumerator->for_each_session(props, preview_provider); 
-        }
+        (void) id;
     }
+
+    android::sp<ApplicationManagerObserver> observer;
 };
 
 struct MockSetup : public ubuntu::application::ui::Setup

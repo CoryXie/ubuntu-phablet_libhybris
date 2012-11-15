@@ -3,29 +3,43 @@
 #include <stdio.h>
 #include <string.h>
 
-void init_with_total_session_count(unsigned int session_count, void*)
+void on_session_born(ubuntu_ui_session_properties props, void*)
 {
-    printf("%s: %d\n", __PRETTY_FUNCTION__, session_count);
-}
-
-void for_each_session(ubuntu_ui_session_properties props, ubuntu_ui_session_preview_provider, void*)
-{
-    printf("%s:\n\t Id: %s \n\t Name: %s \n\t Desktop file hint: %s \n", 
+    printf("%s:\n\t Id: %d \n\t Desktop file hint: %s \n", 
            __PRETTY_FUNCTION__, 
            ubuntu_ui_session_properties_get_application_instance_id(props),
-           ubuntu_ui_session_properties_get_application_name(props),
+           ubuntu_ui_session_properties_get_desktop_file_hint(props));
+}
+
+void on_session_focused(ubuntu_ui_session_properties props, void*)
+{
+    printf("%s:\n\t Id: %d \n\t Desktop file hint: %s \n", 
+           __PRETTY_FUNCTION__, 
+           ubuntu_ui_session_properties_get_application_instance_id(props),
+           ubuntu_ui_session_properties_get_desktop_file_hint(props));
+}
+
+void on_session_died(ubuntu_ui_session_properties props, void*)
+{
+    printf("%s:\n\t Id: %d \n\t Desktop file hint: %s \n", 
+           __PRETTY_FUNCTION__, 
+           ubuntu_ui_session_properties_get_application_instance_id(props),
            ubuntu_ui_session_properties_get_desktop_file_hint(props));
 }
 
 int main(int argc, char** argv)
 {
-    ubuntu_ui_session_enumerator enumerator;
-    memset(&enumerator, 0, sizeof(enumerator));
-    
-    enumerator.init_with_total_session_count = init_with_total_session_count;
-    enumerator.for_each_session = for_each_session;
+    ubuntu_ui_session_lifecycle_observer observer;
+    memset(&observer, 0, sizeof(observer));
+    observer.on_session_born = on_session_born;
+    observer.on_session_focused = on_session_focused;
+    observer.on_session_died = on_session_died;
 
-    ubuntu_ui_session_enumerate_running_sessions(&enumerator);
+    ubuntu_ui_session_install_session_lifecycle_observer(&observer);
+
+    while(true)
+    {
+    }
 
     return 0;
 }

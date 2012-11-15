@@ -21,9 +21,9 @@ class SessionProperties : public platform::ReferenceCountedBase
 
     virtual const char* value_for_key(const char* key) const = 0;
 
-    const char* application_instance_id() const
+    int application_instance_id() const
     {
-        return value_for_key(SessionProperties::key_application_instance_id());
+        return atoi(value_for_key(SessionProperties::key_application_instance_id()));
     }
 
     const char* application_name() const
@@ -49,9 +49,9 @@ class SessionLifeCycleObserver : public platform::ReferenceCountedBase
   public:
     typedef platform::shared_ptr<SessionLifeCycleObserver> Ptr;
 
-    virtual void on_application_born(const SessionProperties::Ptr& props) = 0;
-    
-    virtual void on_application_died(const SessionProperties::Ptr& props) = 0;
+    virtual void on_session_born(const SessionProperties::Ptr& props) = 0;
+    virtual void on_session_focused(const SessionProperties::Ptr& props) = 0;
+    virtual void on_session_died(const SessionProperties::Ptr& props) = 0;
 
   protected:
     SessionLifeCycleObserver() {}
@@ -76,22 +76,6 @@ class SessionPreviewProvider : public platform::ReferenceCountedBase
     SessionPreviewProvider& operator=(const SessionPreviewProvider&) = delete;
 };
 
-class SessionEnumerator : public platform::ReferenceCountedBase
-{
-  public:
-    typedef platform::shared_ptr<SessionEnumerator> Ptr;
-    
-    virtual void init_with_total_session_count(unsigned int session_count) = 0;
-
-    virtual void for_each_session(const SessionProperties::Ptr& props, const SessionPreviewProvider::Ptr& preview_provider) = 0;
-
-  protected:
-    SessionEnumerator() {}
-    virtual ~SessionEnumerator() {}
-
-    SessionEnumerator(const SessionEnumerator&) = delete;
-    SessionEnumerator& operator=(const SessionEnumerator&) = delete;
-};
 }
 }
 

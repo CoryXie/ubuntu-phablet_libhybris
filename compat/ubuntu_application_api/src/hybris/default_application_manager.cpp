@@ -105,6 +105,11 @@ void ApplicationManager::binderDied(const android::wp<android::IBinder>& who)
     android::Mutex::Autolock al(guard);
     android::sp<android::IBinder> sp = who.promote();
 
+    const android::sp<mir::ApplicationSession>& dead_session = apps.valueFor(sp);
+
+    notify_observers_about_session_died(dead_session->remote_pid,
+                                        dead_session->desktop_file);
+    
     size_t i = 0;
     for(i = 0; i < apps_as_added.size(); i++)
     {
@@ -160,9 +165,13 @@ void ApplicationManager::start_a_new_session(const android::String8& app_name,
     //printf("\t%d \n", out_socket_fd);
     //printf("\t%d \n", in_socket_fd);
     
+    static const android::String8 desktop_file("/usr/share/applications/shotwell.desktop");
+    
     android::sp<mir::ApplicationSession> app_session(new mir::ApplicationSession(
+        android::IPCThreadState::self()->getCallingPid(),
         session,
-        app_name));
+        app_name,
+        desktop_file));
     {
         android::Mutex::Autolock al(guard);
         session->asBinder()->linkToDeath(
@@ -173,13 +182,13 @@ void ApplicationManager::start_a_new_session(const android::String8& app_name,
         // switch_focused_application_locked(apps_as_added.size() - 1);
     }
     
-    //printf("Iterating registered applications now:\n");
-    android::sp<LockingIterator> it = iterator();
+    notify_observers_about_session_born(app_session->remote_pid, app_session->desktop_file);
+    
+    /*android::sp<LockingIterator> it = iterator();
     while(it->is_valid())
     {
-        //printf("\t %s \n", (**it)->app_name.string());
         it->advance();
-    }
+        }*/
 }
 
 void ApplicationManager::register_a_surface(const android::String8& title,
@@ -226,6 +235,14 @@ void ApplicationManager::register_a_surface(const android::String8& title,
     
 }
 
+void ApplicationManager::register_an_observer(
+    const android::sp<android::IApplicationManagerObserver>& observer)
+{
+    printf("%s: %p\n", __PRETTY_FUNCTION__, observer.get());
+    android::Mutex::Autolock al(guard);
+    app_manager_observers.push_back(observer);
+}
+
 void ApplicationManager::switch_focused_application_locked(size_t index_of_next_focused_app)
 {
     //printf("%s: %d vs. current: %d \n", 
@@ -246,12 +263,18 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
     if (focused_application < apps.size())
     {
         //printf("\tRaising application now for idx: %d \n", focused_application);
+        const android::sp<mir::ApplicationSession>& session =
+                apps.valueFor(apps_as_added[focused_application]);
         
-        apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(focused_application_base_layer);
+        session->raise_application_surfaces_to_layer(focused_application_base_layer);
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
-            apps.valueFor(apps_as_added[focused_application])->input_application_handle());
+            session->input_application_handle());
         input_setup->input_manager->getDispatcher()->setInputWindows(
-            apps.valueFor(apps_as_added[focused_application])->input_window_handles());
+            session->input_window_handles());
+
+        notify_observers_about_session_focused(session->remote_pid,
+                                               session->desktop_file);
+            
     }
 }
 
@@ -264,6 +287,33 @@ void ApplicationManager::switch_focus_to_next_application_locked()
     //printf("current: %d, next: %d \n", focused_application, new_idx);
     
     switch_focused_application_locked(new_idx);
+}
+
+void ApplicationManager::notify_observers_about_session_born(int id, const android::String8& desktop_file)
+{
+    android::Mutex::Autolock al(observer_guard);
+    for(unsigned int i = 0; i < app_manager_observers.size(); i++)
+    {
+        app_manager_observers[i]->on_session_born(id, desktop_file);
+    }
+}
+
+void ApplicationManager::notify_observers_about_session_focused(int id, const android::String8& desktop_file)
+{
+    android::Mutex::Autolock al(observer_guard);
+    for(unsigned int i = 0; i < app_manager_observers.size(); i++)
+    {
+        app_manager_observers[i]->on_session_focused(id, desktop_file);
+    }
+}
+
+void ApplicationManager::notify_observers_about_session_died(int id, const android::String8& desktop_file)
+{
+    android::Mutex::Autolock al(observer_guard);
+    for(unsigned int i = 0; i < app_manager_observers.size(); i++)
+    {
+        app_manager_observers[i]->on_session_died(id, desktop_file);
+    }
 }
 
 }

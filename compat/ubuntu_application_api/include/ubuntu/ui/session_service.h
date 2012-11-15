@@ -30,7 +30,7 @@ class SessionService : public platform::ReferenceCountedBase
 
     virtual void install_session_lifecycle_observer(const SessionLifeCycleObserver::Ptr& observer) = 0;
 
-    virtual void enumerate_running_sessions(const SessionEnumerator::Ptr& session_enumerator) = 0;
+    virtual void focus_running_session_with_id(int id) = 0;
     
   protected:
     SessionService() {}

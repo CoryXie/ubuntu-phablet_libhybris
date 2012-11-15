@@ -41,10 +41,14 @@ struct ApplicationSession : public android::RefBase
     };
 
     ApplicationSession(
+        pid_t remote_pid,
         android::sp<android::IApplicationManagerSession> remote_session,
-        const android::String8& app_name)
-            : remote_session(remote_session),
-              app_name(app_name)
+        const android::String8& app_name,
+        const android::String8& desktop_file)
+            : remote_pid(remote_pid),
+            remote_session(remote_session),
+            app_name(app_name),
+            desktop_file(desktop_file)
     {
     }
 
@@ -145,9 +149,12 @@ struct ApplicationSession : public android::RefBase
     {
         registered_surfaces.add(surface->token, surface);
     }
-
+    
+    pid_t remote_pid;
+    
     android::sp<android::IApplicationManagerSession> remote_session;
     android::String8 app_name;
+    android::String8 desktop_file;
     android::KeyedVector<int32_t, android::sp<Surface>> registered_surfaces;
 };
 
