@@ -83,6 +83,9 @@ extern "C" {
     // Disconnects the camera and deletes the pointer
     void android_camera_disconnect(CameraControl* control);
 
+    // Deletes the CameraControl
+    void android_camera_delete(CameraControl* control);
+
     // Passes the rotation r of the display in [°] relative to the camera to the camera HAL. r \in [0, 359].
     void android_camera_set_display_orientation(CameraControl* control, int32_t clockwise_rotation_degree);
 
