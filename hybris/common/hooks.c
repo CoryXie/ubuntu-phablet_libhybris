@@ -350,35 +350,6 @@ static int my_pthread_mutexattr_setpshared(pthread_mutexattr_t *__attr,
  *
  * */
 
-/*
-static int my_pthread_condattr_setpshared(pthread_condattr_t *__attr,
-    int pshared)
-{
-  pthread_condattr_t *realattr = (pthread_condattr_t *) *(int *) __attr;
-  printf("Realattr = %08x\n",realattr);
-
-  return pthread_condattr_setpshared(realattr, pshared);
-}
-
-static int my_pthread_condattr_destroy(pthread_condattr_t *__attr)
-{
-  pthread_condattr_t *realattr = (pthread_condattr_t *) *(int *) __attr;
-  printf("Realattr = %08x\n",realattr);
-
-  return pthread_condattr_destroy(realattr);
-}
-
-static int my_pthread_condattr_init(pthread_condattr_t *__attr)
-{
-
-  printf("Hello\n");
-  pthread_condattr_t *realattr = (pthread_condattr_t *) *(int *) __attr;
-  printf("Realattr = %08x\n",realattr);
-
-  return pthread_condattr_init(realattr);
-}
-*/
-
 static int my_pthread_cond_init(pthread_cond_t *cond,
                                 const pthread_condattr_t *attr)
 {
