@@ -177,13 +177,14 @@ status_t BnApplicationManager::onTransact(uint32_t code,
         case START_A_NEW_SESSION_COMMAND:
             {
                 String8 app_name = data.readString8();
+                String8 desktop_file = data.readString8();
                 sp<IBinder> binder = data.readStrongBinder();
                 sp<BpApplicationManagerSession> session(new BpApplicationManagerSession(binder));
                 int ashmem_fd = data.readFileDescriptor();
                 int out_fd = data.readFileDescriptor();
                 int in_fd = data.readFileDescriptor();
                 
-                start_a_new_session(app_name, session, ashmem_fd, out_fd, in_fd);
+                start_a_new_session(app_name, desktop_file, session, ashmem_fd, out_fd, in_fd);
             }
             break;
         case REGISTER_A_SURFACE_COMMAND:
@@ -217,6 +218,7 @@ BpApplicationManager::~BpApplicationManager()
 }
 
 void BpApplicationManager::start_a_new_session(const String8& app_name,
+                                               const String8& desktop_file,
                                                const sp<IApplicationManagerSession>& session,
                                                int ashmem_fd,
                                                int out_socket_fd,
@@ -226,6 +228,7 @@ void BpApplicationManager::start_a_new_session(const String8& app_name,
     Parcel in, out;
     in.pushAllowFds(true);
     in.writeString8(app_name);
+    in.writeString8(desktop_file);
     in.writeStrongBinder(session->asBinder());
     in.writeFileDescriptor(ashmem_fd);
     in.writeFileDescriptor(out_socket_fd);

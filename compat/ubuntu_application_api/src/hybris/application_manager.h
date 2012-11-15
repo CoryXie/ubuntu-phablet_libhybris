@@ -114,6 +114,7 @@ class IApplicationManager : public IInterface
     }
 
     virtual void start_a_new_session(const String8& app_name,
+                                     const String8& desktop_file,
                                      const sp<IApplicationManagerSession>& session,
                                      int ashmem_fd,
                                      int out_socket_fd,
@@ -156,6 +157,7 @@ class BpApplicationManager : public BpInterface<IApplicationManager>
     ~BpApplicationManager();
     
     void start_a_new_session(const String8& app_name,
+                             const String8& desktop_file,
                              const sp<IApplicationManagerSession>& session,
                              int ashmem_fd,
                              int out_socket_fd,

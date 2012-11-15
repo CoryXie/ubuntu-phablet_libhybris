@@ -74,6 +74,7 @@ struct ApplicationManager : public android::BnApplicationManager,
     android::sp<LockingIterator> iterator();
 
     void start_a_new_session(const android::String8& app_name,
+                             const android::String8& desktop_file,
                              const android::sp<android::IApplicationManagerSession>& session,
                              int ashmem_fd,
                              int out_socket_fd,

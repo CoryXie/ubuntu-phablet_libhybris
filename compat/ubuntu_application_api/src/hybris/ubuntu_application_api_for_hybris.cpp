@@ -26,6 +26,64 @@
 namespace android
 {
 
+struct Setup : public ubuntu::application::ui::Setup
+{
+    Setup() : stage(ubuntu::application::ui::main_stage),
+              form_factor(ubuntu::application::ui::desktop_form_factor)
+    {
+    }
+
+    static android::KeyedVector<android::String8, ubuntu::application::ui::StageHint> init_string_to_stage_hint_lut()
+    {
+        android::KeyedVector<android::String8, ubuntu::application::ui::StageHint> lut;
+        lut.add(android::String8("main_stage"), ubuntu::application::ui::main_stage);
+        lut.add(android::String8("side_stage"), ubuntu::application::ui::side_stage);
+        lut.add(android::String8("share_stage"), ubuntu::application::ui::share_stage);
+
+        return lut;
+    }
+
+    static ubuntu::application::ui::StageHint string_to_stage_hint(const android::String8& s)
+    {
+        static android::KeyedVector<android::String8, ubuntu::application::ui::StageHint> lut = init_string_to_stage_hint_lut();
+
+        return lut.valueFor(s);
+    }
+
+    static android::KeyedVector<android::String8, ubuntu::application::ui::FormFactorHint> init_string_to_form_factor_hint_lut()
+    {
+        android::KeyedVector<android::String8, ubuntu::application::ui::FormFactorHint> lut;
+        lut.add(android::String8("desktop"), ubuntu::application::ui::desktop_form_factor);
+        lut.add(android::String8("phone"), ubuntu::application::ui::phone_form_factor);
+        lut.add(android::String8("tablet"), ubuntu::application::ui::tablet_form_factor);
+
+        return lut;
+    }
+
+    static ubuntu::application::ui::FormFactorHint string_to_form_factor_hint(const android::String8& s)
+    {
+        static android::KeyedVector<android::String8, ubuntu::application::ui::FormFactorHint> lut = init_string_to_form_factor_hint_lut();
+
+        return lut.valueFor(s);
+    }
+
+    ubuntu::application::ui::StageHint stage_hint()
+    {
+        return ubuntu::application::ui::main_stage;
+    }
+
+    ubuntu::application::ui::FormFactorHintFlags form_factor_hint()
+    {
+        return ubuntu::application::ui::desktop_form_factor;
+    }
+
+    ubuntu::application::ui::StageHint stage;
+    ubuntu::application::ui::FormFactorHintFlags form_factor;
+    android::String8 desktop_file;
+};
+
+static Setup::Ptr global_setup(new Setup());
+
 struct PhysicalDisplayInfo : public ubuntu::application::ui::PhysicalDisplayInfo
 {
     explicit PhysicalDisplayInfo(size_t display_id) : display_id(display_id)
@@ -309,6 +367,7 @@ struct Session : public ubuntu::application::ui::Session
         
         app_manager.start_a_new_session(
             String8(creds.application_name),
+            String8("/usr/share/applications/shotwell.desktop"),
             app_manager_session,
             server_channel->getAshmemFd(),
             server_channel->getSendPipeFd(),
@@ -493,20 +552,11 @@ struct SessionService : public ubuntu::ui::SessionService
     android::sp<ApplicationManagerObserver> observer;
 };
 
-struct MockSetup : public ubuntu::application::ui::Setup
-{
-    ubuntu::application::ui::StageHint stage_hint()
-    {
-        return ubuntu::application::ui::main_stage;
-    }
-
-    ubuntu::application::ui::FormFactorHintFlags form_factor_hint()
-    {
-        return ubuntu::application::ui::desktop_form_factor;
-    }
-};
-
 }
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
 
 // We need to inject some platform specific symbols here.
 namespace ubuntu
@@ -517,14 +567,78 @@ namespace ui
 {
 void init(int argc, char** argv)
 {
-    (void) argc;
-    (void) argv;
+    static struct option long_options[] =
+            {
+                {"form_factor_hint", required_argument, 0, 'f'},
+                {"stage_hint", required_argument, 0, 's'},
+                {"desktop_file_hint", required_argument, 0, 'd'},
+                {0, 0, 0, 0}
+            };
+
+    static const int form_factor_hint_index = 0;
+    static const int stage_hint_index = 1;
+    static const int desktop_file_hint_index = 2;
+    
+    android::Setup* setup = new android::Setup();
+
+    while(true)
+    {
+        int option_index = 0;
+        
+        int c = getopt_long(argc, 
+                            argv, 
+                            "s:d:f:",
+                            long_options, 
+                            &option_index);
+        
+        if (c == -1)
+            break;
+        
+        switch (c)
+        {
+            case 0:
+                // If this option set a flag, do nothing else now.
+                if (long_options[option_index].flag != 0)
+                    break;
+                if (optarg)
+                {
+                    switch(option_index)
+                    {
+                        case form_factor_hint_index:
+                            setup->form_factor = android::Setup::string_to_form_factor_hint(android::String8(optarg));
+                            break;
+                        case stage_hint_index:
+                            setup->stage = android::Setup::string_to_stage_hint(android::String8(optarg));
+                            break;
+                        case desktop_file_hint_index:
+                            setup->desktop_file = android::String8(optarg); 
+                            break;
+                    }
+                    printf (" with arg %s", optarg);
+                }
+                printf ("\n");
+                break;                
+            case 's':
+                printf ("option -s with value `%s'\n", optarg);
+                break;                
+            case 'd':
+                printf ("option -d with value `%s'\n", optarg);
+                break;
+            case 'f':
+                printf ("option -f with value `%s'\n", optarg);
+                break;
+                
+            case '?':
+                break;                
+        }
+    }
+
+    android::global_setup = setup;
 }
 
 const ubuntu::application::ui::Setup::Ptr& ubuntu::application::ui::Setup::instance()
 {
-    static ubuntu::application::ui::Setup::Ptr session(new android::MockSetup());
-    return session;
+    return android::global_setup;
 }
 
 }

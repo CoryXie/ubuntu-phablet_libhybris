@@ -153,19 +153,19 @@ android::sp<ApplicationManager::LockingIterator> ApplicationManager::iterator()
     return it;
 }
 
-void ApplicationManager::start_a_new_session(const android::String8& app_name,
-                         const android::sp<android::IApplicationManagerSession>& session,
-                         int ashmem_fd,
-                         int out_socket_fd,
-                         int in_socket_fd)
+void ApplicationManager::start_a_new_session(
+    const android::String8& app_name,
+    const android::String8& desktop_file,
+    const android::sp<android::IApplicationManagerSession>& session,
+    int ashmem_fd,
+    int out_socket_fd,
+    int in_socket_fd)
 {
     //printf("%s \n", __PRETTY_FUNCTION__);
     //printf("\t%s \n", app_name.string());
     //printf("\t%d \n", ashmem_fd);
     //printf("\t%d \n", out_socket_fd);
     //printf("\t%d \n", in_socket_fd);
-    
-    static const android::String8 desktop_file("/usr/share/applications/shotwell.desktop");
     
     android::sp<mir::ApplicationSession> app_session(new mir::ApplicationSession(
         android::IPCThreadState::self()->getCallingPid(),
