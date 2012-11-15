@@ -13,6 +13,7 @@
 #include <errno.h>
 
 #define ANDROID_MUTEX_SHARED_MASK    0x2000
+#define ANDROID_COND_SHARED_MASK     0x0001
 
 static int nvidia_hack = 0;
 
@@ -28,6 +29,17 @@ static int hybris_check_android_shared_mutex(int mutex_addr)
      * address, which is basically just the int values for Android's own
      * pthread_mutex_t */
     if ((mutex_addr <= 0xFFFF) && (mutex_addr & ANDROID_MUTEX_SHARED_MASK))
+        return 1;
+
+    return 0;
+}
+
+static int hybris_check_android_shared_cond(int cond_addr)
+{
+    /* If not initialized or initialized by Android, it should contain a low
+     * address, which is basically just the int values for Android's own
+     * pthread_cond_t */
+    if ((cond_addr <= 0xFFFF) && (cond_addr & ANDROID_COND_SHARED_MASK))
         return 1;
 
     return 0;
@@ -331,8 +343,16 @@ static int my_pthread_mutexattr_setpshared(pthread_mutexattr_t *__attr,
 }
 
 /*
+ * pthread_cond* functions
+ *
+ * Specific implementations to workaround the differences between at the
+ * pthread_cond_t struct differences between Bionic and Glibc.
+ *
+ * */
+
+/*
 static int my_pthread_condattr_setpshared(pthread_condattr_t *__attr,
-    int pshared) 
+    int pshared)
 {
   pthread_condattr_t *realattr = (pthread_condattr_t *) *(int *) __attr;
   printf("Realattr = %08x\n",realattr);
@@ -344,7 +364,7 @@ static int my_pthread_condattr_destroy(pthread_condattr_t *__attr)
 {
   pthread_condattr_t *realattr = (pthread_condattr_t *) *(int *) __attr;
   printf("Realattr = %08x\n",realattr);
-  
+
   return pthread_condattr_destroy(realattr);
 }
 
@@ -359,7 +379,8 @@ static int my_pthread_condattr_init(pthread_condattr_t *__attr)
 }
 */
 
-static int my_pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr)
+static int my_pthread_cond_init(pthread_cond_t *cond,
+                                const pthread_condattr_t *attr)
 {
     pthread_cond_t *realcond = malloc(sizeof(pthread_cond_t));
     *((int *) cond) = (int) realcond;
@@ -367,20 +388,27 @@ static int my_pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *
     return pthread_cond_init(realcond, attr);
 }
 
-static int my_pthread_cond_destroy (pthread_cond_t *cond)
+static int my_pthread_cond_destroy(pthread_cond_t *cond)
 {
+    int ret;
     pthread_cond_t *realcond = (pthread_cond_t *) *(int *) cond;
-    int ret = 0;
+
     ret = pthread_cond_destroy(realcond);
     free(realcond);
+
     return ret;
 }
-
 
 static int my_pthread_cond_broadcast(pthread_cond_t *cond)
 {
     if (nvidia_hack)
         return 0;
+
+    if (hybris_check_android_shared_cond(*(int *) cond))
+    {
+        printf("HYBRIS: shared condition with Android, not broadcasting.\n");
+        return 0;
+    }
 
     pthread_cond_t *realcond = (pthread_cond_t *) *(int *) cond;
     return pthread_cond_broadcast(realcond);
@@ -388,12 +416,25 @@ static int my_pthread_cond_broadcast(pthread_cond_t *cond)
 
 static int my_pthread_cond_signal(pthread_cond_t *cond)
 {
+    if (hybris_check_android_shared_cond(*(int *) cond))
+    {
+        printf("HYBRIS: shared condition with Android, not signaling.\n");
+        return 0;
+    }
+
     pthread_cond_t *realcond = (pthread_cond_t *) *(int *) cond;
     return pthread_cond_signal(realcond);
 }
 
 static int my_pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex)
 {
+    if (hybris_check_android_shared_cond(*(int *) cond) ||
+         hybris_check_android_shared_mutex(*(int *) mutex))
+    {
+        printf("HYBRIS: shared condition/mutex with Android, not waiting.\n");
+        return 0;
+    }
+
     pthread_cond_t *realcond = (pthread_cond_t *) *(int *) cond;
 
     pthread_mutex_t *realmutex = (pthread_mutex_t *) *(int *) mutex;
@@ -407,11 +448,18 @@ static int my_pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex)
     return pthread_cond_wait(realcond, realmutex);
 }
 
-static int my_pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const struct timespec *abstime)
+static int my_pthread_cond_timedwait(pthread_cond_t *cond,
+                pthread_mutex_t *mutex, const struct timespec *abstime)
 {
-
     if (nvidia_hack)
         return 0;
+
+    if (hybris_check_android_shared_cond(*(int *) cond) ||
+         hybris_check_android_shared_mutex(*(int *) mutex))
+    {
+        printf("HYBRIS: shared condition/mutex with Android, not waiting.\n");
+        return 0;
+    }
 
     pthread_cond_t *realcond = (pthread_cond_t *) *(int *) cond;
 
@@ -516,25 +564,25 @@ static struct _hook hooks[] = {
     {"pthread_mutexattr_settype", pthread_mutexattr_settype},
     {"pthread_mutexattr_getpshared", pthread_mutexattr_getpshared},
     {"pthread_mutexattr_setpshared", my_pthread_mutexattr_setpshared},
-    {"pthread_key_delete", pthread_key_delete}, 
-    {"pthread_setname_np", pthread_setname_np},
     {"pthread_condattr_init", pthread_condattr_init},
     {"pthread_condattr_setpshared", pthread_condattr_setpshared},
     {"pthread_condattr_destroy", pthread_condattr_destroy},
     {"pthread_condattr_init", pthread_condattr_init},
     {"pthread_condattr_destroy", pthread_condattr_destroy},
-    {"pthread_once", pthread_once},
-    {"pthread_key_create", pthread_key_create},
-    {"pthread_setspecific", pthread_setspecific},
-    {"pthread_getspecific", pthread_getspecific},
     {"pthread_cond_init", my_pthread_cond_init},
-    {"pthread_cond_broadcast", my_pthread_cond_broadcast},
     {"pthread_cond_destroy", my_pthread_cond_destroy},
+    {"pthread_cond_broadcast", my_pthread_cond_broadcast},
     {"pthread_cond_signal", my_pthread_cond_signal},
     {"pthread_cond_wait", my_pthread_cond_wait},
     {"pthread_cond_timedwait", my_pthread_cond_timedwait},
     {"pthread_cond_timedwait_monotonic", my_pthread_cond_timedwait},
     {"pthread_cond_timedwait_relative_np", my_pthread_cond_timedwait},
+    {"pthread_key_delete", pthread_key_delete},
+    {"pthread_setname_np", pthread_setname_np},
+    {"pthread_once", pthread_once},
+    {"pthread_key_create", pthread_key_create},
+    {"pthread_setspecific", pthread_setspecific},
+    {"pthread_getspecific", pthread_getspecific},
     {"pthread_attr_init", my_pthread_attr_init},
     {"pthread_attr_destroy", my_pthread_attr_destroy},
     {"pthread_attr_setdetachstate", my_pthread_attr_setdetachstate},
