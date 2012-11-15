@@ -30,25 +30,25 @@ extern "C" {
 
     typedef void (*on_msg_set_video_size)(int height, int width, void *context);
 
-    class Player;
+    struct MediaPlayerWrapper;
 
     // ----- Start of C API ----- //
 
-    void android_media_set_video_size_cb(on_msg_set_video_size cb);
+    void android_media_set_video_size_cb(MediaPlayerWrapper *mp, on_msg_set_video_size cb);
 
-    Player *android_media_new_player();
-    int android_media_set_data_source(const char* url);
-    int android_media_set_preview_texture(int texture_id);
-    void android_media_update_surface_texture();
-    void android_media_surface_texture_get_transformation_matrix(GLfloat* matrix);
-    int android_media_play();
-    int android_media_pause();
-    int android_media_stop();
-    bool android_media_is_playing();
+    MediaPlayerWrapper *android_media_new_player();
+    int android_media_set_data_source(MediaPlayerWrapper *mp, const char* url);
+    int android_media_set_preview_texture(MediaPlayerWrapper *mp, int texture_id);
+    void android_media_update_surface_texture(MediaPlayerWrapper *mp);
+    void android_media_surface_texture_get_transformation_matrix(MediaPlayerWrapper *mp, GLfloat* matrix);
+    int android_media_play(MediaPlayerWrapper *mp);
+    int android_media_pause(MediaPlayerWrapper *mp);
+    int android_media_stop(MediaPlayerWrapper *mp);
+    bool android_media_is_playing(MediaPlayerWrapper *mp);
 
-    int android_media_seek_to(int msec);
-    int android_media_get_current_position(int *msec);
-    int android_media_get_duration(int *msec);
+    int android_media_seek_to(MediaPlayerWrapper *mp, int msec);
+    int android_media_get_current_position(MediaPlayerWrapper *mp, int *msec);
+    int android_media_get_duration(MediaPlayerWrapper *mp, int *msec);
 
 #ifdef __cplusplus
 }

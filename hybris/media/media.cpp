@@ -125,25 +125,25 @@ extern "C" {
         f(_1, _2, _3); }
 
 
-IMPLEMENT_FUNCTION0(Player*, android_media_new_player);
-IMPLEMENT_VOID_FUNCTION0(android_media_update_surface_texture);
-IMPLEMENT_FUNCTION0(int, android_media_play);
-IMPLEMENT_FUNCTION0(int, android_media_pause);
-IMPLEMENT_FUNCTION0(int, android_media_stop);
-IMPLEMENT_FUNCTION0(bool, android_media_is_playing);
-IMPLEMENT_FUNCTION1(int, android_media_seek_to, int);
+IMPLEMENT_FUNCTION0(MediaPlayerWrapper *, android_media_new_player);
+IMPLEMENT_VOID_FUNCTION1(android_media_update_surface_texture, MediaPlayerWrapper *);
+IMPLEMENT_FUNCTION1(int, android_media_play, MediaPlayerWrapper *);
+IMPLEMENT_FUNCTION1(int, android_media_pause, MediaPlayerWrapper *);
+IMPLEMENT_FUNCTION1(int, android_media_stop, MediaPlayerWrapper *);
+IMPLEMENT_FUNCTION1(bool, android_media_is_playing, MediaPlayerWrapper *);
+IMPLEMENT_FUNCTION2(int, android_media_seek_to, MediaPlayerWrapper *, int);
 
 // Setters
-IMPLEMENT_FUNCTION1(int, android_media_set_data_source, const char*);
-IMPLEMENT_FUNCTION1(int, android_media_set_preview_texture, int);
+IMPLEMENT_FUNCTION2(int, android_media_set_data_source, MediaPlayerWrapper *, const char*);
+IMPLEMENT_FUNCTION2(int, android_media_set_preview_texture, MediaPlayerWrapper *, int);
 
 // Getters
-IMPLEMENT_VOID_FUNCTION1(android_media_surface_texture_get_transformation_matrix, GLfloat*);
-IMPLEMENT_FUNCTION1(int, android_media_get_current_position, int*);
-IMPLEMENT_FUNCTION1(int, android_media_get_duration, int*);
+IMPLEMENT_VOID_FUNCTION2(android_media_surface_texture_get_transformation_matrix, MediaPlayerWrapper *, GLfloat*);
+IMPLEMENT_FUNCTION2(int, android_media_get_current_position, MediaPlayerWrapper *, int*);
+IMPLEMENT_FUNCTION2(int, android_media_get_duration, MediaPlayerWrapper *, int*);
 
 // Callbacks
-IMPLEMENT_VOID_FUNCTION1(android_media_set_video_size_cb, on_msg_set_video_size);
+IMPLEMENT_VOID_FUNCTION2(android_media_set_video_size_cb, MediaPlayerWrapper *, on_msg_set_video_size);
 
 #ifdef __cplusplus
 }

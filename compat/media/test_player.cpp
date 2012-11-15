@@ -44,6 +44,8 @@ static int Width = 0, Height = 0;
 
 static GLfloat positionCoordinates[8];
 
+MediaPlayerWrapper *player = NULL;
+
 void calculate_position_coordinates()
 {
     // Assuming cropping output for now
@@ -169,8 +171,8 @@ struct RenderData
 {
     static const char *vertex_shader()
     {
+            //"#extension GL_OES_EGL_image_external : require              \n"
         return
-            "#extension GL_OES_EGL_image_external : require              \n"
             "attribute vec4 a_position;                                  \n"
             "attribute vec2 a_texCoord;                                  \n"
             "uniform mat4 m_texMatrix;                                   \n"
@@ -302,9 +304,15 @@ static int setup_video_texture(ClientWithSurface *cs, GLuint *preview_texture_id
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    android_media_set_preview_texture(*preview_texture_id);
+    android_media_set_preview_texture(player, *preview_texture_id);
 
     return 0;
+}
+
+static void print_gl_error(unsigned int line)
+{
+    GLint error = glGetError();
+    printf("GL error: %#04x (line: %d)\n", error, line);
 }
 
 static int update_gl_buffer(RenderData *render_data, EGLDisplay *disp, EGLSurface *surface)
@@ -320,8 +328,6 @@ static int update_gl_buffer(RenderData *render_data, EGLDisplay *disp, EGLSurfac
         0.0f,  0.0f,
         1.0f,  0.0f
     };
-
-    android_media_update_surface_texture();
 
     calculate_position_coordinates();
 
@@ -347,7 +353,7 @@ static int update_gl_buffer(RenderData *render_data, EGLDisplay *disp, EGLSurfac
             textureCoordinates);
 
     GLfloat matrix[16];
-    android_media_surface_texture_get_transformation_matrix(matrix);
+    android_media_surface_texture_get_transformation_matrix(player, matrix);
 
     glUniformMatrix4fv(render_data->matrix_loc, 1, GL_FALSE, matrix);
 
@@ -355,8 +361,7 @@ static int update_gl_buffer(RenderData *render_data, EGLDisplay *disp, EGLSurfac
     // Set the sampler texture unit to 0
     glUniform1i(render_data->sampler_loc, 0);
     glUniform1i(render_data->matrix_loc, 0);
-    // android_camera_update_preview_texture(cc);
-    android_media_update_surface_texture();
+    android_media_update_surface_texture(player);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, indices);
     glDisableVertexAttribArray(render_data->position_loc);
@@ -378,25 +383,25 @@ void set_video_size_cb(int height, int width, void *context)
 
 int main(int argc, char **argv)
 {
-    Player *player = android_media_new_player();
-    if (player == NULL)
-    {
-        printf("Problem creating new media player.\n");
-        return EXIT_FAILURE;
-    }
-
     if (argc < 2)
     {
         printf("Usage: test_player <video_to_play>");
         return EXIT_FAILURE;
     }
 
+    player = android_media_new_player();
+    if (player == NULL)
+    {
+        printf("Problem creating new media player.\n");
+        return EXIT_FAILURE;
+    }
+
     // Set player event cb for when the video size is known:
-    android_media_set_video_size_cb(set_video_size_cb);
+    android_media_set_video_size_cb(player, set_video_size_cb);
 
     printf("Setting data source to: %s.\n", argv[1]);
 
-    if (android_media_set_data_source(argv[1]) != OK)
+    if (android_media_set_data_source(player, argv[1]) != OK)
     {
         printf("Failed to set data source: %s\n", argv[1]);
         return EXIT_FAILURE;
@@ -427,14 +432,15 @@ int main(int argc, char **argv)
     RenderData render_data;
 
     printf("Starting video playback.\n");
-    android_media_play();
+    android_media_play(player);
 
-    while (android_media_is_playing())
+    printf("Updating gl buffer continuously...\n");
+    while (android_media_is_playing(player))
     {
         update_gl_buffer(&render_data, &disp, &surface);
     }
 
-    android_media_stop();
+    android_media_stop(player);
 
     return EXIT_SUCCESS;
 }
