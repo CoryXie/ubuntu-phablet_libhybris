@@ -259,12 +259,6 @@ static int my_pthread_mutex_init(pthread_mutex_t *__mutex,
     return pthread_mutex_init(realmutex, __mutexattr);
 }
 
-<<<<<<< TREE
-static int my_pthread_mutex_lock (pthread_mutex_t *__mutex)
-{
-    //return 0;
-
-=======
 static int my_pthread_mutex_destroy(pthread_mutex_t *__mutex)
 {
     int ret;
@@ -278,16 +272,11 @@ static int my_pthread_mutex_destroy(pthread_mutex_t *__mutex)
 
 static int my_pthread_mutex_lock(pthread_mutex_t *__mutex)
 {
->>>>>>> MERGE-SOURCE
     if (nvidia_hack)
         return 0;
 
     if (!__mutex)
         return 0;
-<<<<<<< TREE
-
-    pthread_mutex_t *realmutex = (pthread_mutex_t *) *(int *) __mutex;
-=======
 
     if (hybris_check_android_shared_mutex(*(int *) __mutex))
     {
@@ -296,7 +285,6 @@ static int my_pthread_mutex_lock(pthread_mutex_t *__mutex)
     }
 
     pthread_mutex_t *realmutex = (pthread_mutex_t *) *(int *) __mutex;
->>>>>>> MERGE-SOURCE
 
     if (realmutex == NULL)
     {
@@ -330,11 +318,6 @@ static int my_pthread_mutex_trylock(pthread_mutex_t *__mutex)
 
 static int my_pthread_mutex_unlock(pthread_mutex_t *__mutex)
 {
-<<<<<<< TREE
-    //return 0;
-
-=======
->>>>>>> MERGE-SOURCE
     if (nvidia_hack)
         return 0;
 
@@ -351,18 +334,6 @@ static int my_pthread_mutex_unlock(pthread_mutex_t *__mutex)
     return pthread_mutex_unlock(realmutex);
 }
 
-<<<<<<< TREE
-static int my_pthread_mutex_destroy (pthread_mutex_t *__mutex)
-{
-    pthread_mutex_t *realmutex = (pthread_mutex_t *) *(int *) __mutex;
-    int ret = 0;
-    ret = pthread_mutex_destroy(realmutex);
-    free(realmutex);
-    return ret;
-}
-
-=======
->>>>>>> MERGE-SOURCE
 static int my_pthread_mutexattr_setpshared(pthread_mutexattr_t *__attr,
                                            int pshared)
 {
