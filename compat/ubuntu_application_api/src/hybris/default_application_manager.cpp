@@ -239,8 +239,29 @@ void ApplicationManager::register_an_observer(
     const android::sp<android::IApplicationManagerObserver>& observer)
 {
     printf("%s: %p\n", __PRETTY_FUNCTION__, observer.get());
-    android::Mutex::Autolock al(guard);
+    android::Mutex::Autolock al(observer_guard);
     app_manager_observers.push_back(observer);
+    {
+        android::Mutex::Autolock al(guard);
+        
+        for(unsigned int i = 0; i < apps_as_added.size(); i++)
+        {
+            const android::sp<mir::ApplicationSession>& session =
+                    apps.valueFor(apps_as_added[i]);
+
+            observer->on_session_born(session->remote_pid,
+                                      session->desktop_file);
+        }
+
+        if (focused_application < apps_as_added.size())
+        {
+            const android::sp<mir::ApplicationSession>& session =
+                    apps.valueFor(apps_as_added[focused_application]);
+
+            observer->on_session_focused(session->remote_pid,
+                                      session->desktop_file);
+        }
+    }
 }
 
 void ApplicationManager::switch_focused_application_locked(size_t index_of_next_focused_app)
