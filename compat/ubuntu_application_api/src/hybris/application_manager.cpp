@@ -153,7 +153,7 @@ void BpApplicationManagerObserver::on_session_died(int id,
     in.writeString8(desktop_file_hint);
 
     remote()->transact(
-        ON_SESSION_FOCUSED_NOTIFICATION,
+        ON_SESSION_DIED_NOTIFICATION,
         in,
         &out,
         android::IBinder::FLAG_ONEWAY);

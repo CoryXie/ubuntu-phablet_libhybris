@@ -21,7 +21,7 @@ class SessionProperties : public platform::ReferenceCountedBase
 
     virtual const char* value_for_key(const char* key) const = 0;
 
-    int application_instance_id() const
+    virtual int application_instance_id() const
     {
         return atoi(value_for_key(SessionProperties::key_application_instance_id()));
     }
@@ -31,7 +31,7 @@ class SessionProperties : public platform::ReferenceCountedBase
         return value_for_key(SessionProperties::key_application_name());
     }
 
-    const char* desktop_file_hint() const
+    virtual const char* desktop_file_hint() const
     {
         return value_for_key(SessionProperties::key_desktop_file_hint());
     }

@@ -458,11 +458,21 @@ struct SessionProperties : public ubuntu::ui::SessionProperties
     {
     }
     
+    int application_instance_id() const
+    {
+        return id;
+    }
+
     const char* value_for_key(const char* key) const
     {
-        return NULL;
+        return "lalelu";
     }
     
+    virtual const char* desktop_file_hint() const
+    {
+        return desktop_file.string();
+    }
+
     int id;
     android::String8 desktop_file;
 };
@@ -490,6 +500,9 @@ struct ApplicationManagerObserver : public android::BnApplicationManagerObserver
     virtual void on_session_died(int id,
                                  const String8& desktop_file)
     {
+        if (observer == NULL)
+            return;
+
         observer->on_session_died(ubuntu::ui::SessionProperties::Ptr(new SessionProperties(id, desktop_file)));
     }
 
@@ -530,6 +543,7 @@ struct SessionService : public ubuntu::ui::SessionService
 
     SessionService() : observer(new ApplicationManagerObserver())
     {
+        android::ProcessState::self()->startThreadPool();
     }
 
     const ubuntu::application::ui::Session::Ptr& start_a_new_session(const ubuntu::application::ui::SessionCredentials& cred)

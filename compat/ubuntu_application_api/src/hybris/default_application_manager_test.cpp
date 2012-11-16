@@ -28,18 +28,45 @@ struct ApplicationManagerSession : public android::BnApplicationManagerSession
         return props;
     }
 };
+
+struct ApplicationManagerObserver : public android::BnApplicationManagerObserver
+{
+    void on_session_born(int id,
+                         const android::String8& desktop_file)
+    {
+        printf("%s: %d, %s \n", __PRETTY_FUNCTION__, id, desktop_file.string());
+    }
+    
+    void on_session_focused(int id, 
+                            const android::String8& desktop_file)
+    {
+        printf("%s: %d, %s \n", __PRETTY_FUNCTION__, id, desktop_file.string());
+    }
+    
+    void on_session_died(int id,
+                         const android::String8& desktop_file)
+    {
+        printf("%s: %d, %s \n", __PRETTY_FUNCTION__, id, desktop_file.string());
+    }
+};
+
 }
 
 int main(int argc, char** argv)
 {
+    android::ProcessState::self()->startThreadPool();
+    
     int test_fd = open("test.file", O_CREAT);
 
+    android::sp<ApplicationManagerObserver> observer(new ApplicationManagerObserver());
     android::sp<ApplicationManagerSession> session(new ApplicationManagerSession());
     android::sp<android::IServiceManager> service_manager = android::defaultServiceManager();
     android::sp<android::IBinder> service = service_manager->getService(
         android::String16(android::IApplicationManager::exported_service_name()));
     android::BpApplicationManager app_manager(service);
     
+    app_manager.register_an_observer(observer);
+
     app_manager.start_a_new_session(
         android::String8("default_application_manager_test"),
         android::String8("default_application_manager_test"),
@@ -48,7 +75,7 @@ int main(int argc, char** argv)
         test_fd,
         test_fd);            
 
-    android::ProcessState::self()->startThreadPool();
+    
 
     for(;;) {}
 }

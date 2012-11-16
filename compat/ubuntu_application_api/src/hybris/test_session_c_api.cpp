@@ -6,7 +6,7 @@
 void on_session_born(ubuntu_ui_session_properties props, void*)
 {
     printf("%s:\n\t Id: %d \n\t Desktop file hint: %s \n", 
-           __PRETTY_FUNCTION__, 
+           __PRETTY_FUNCTION__,
            ubuntu_ui_session_properties_get_application_instance_id(props),
            ubuntu_ui_session_properties_get_desktop_file_hint(props));
 }
@@ -30,6 +30,7 @@ void on_session_died(ubuntu_ui_session_properties props, void*)
 int main(int argc, char** argv)
 {
     ubuntu_ui_session_lifecycle_observer observer;
+    
     memset(&observer, 0, sizeof(observer));
     observer.on_session_born = on_session_born;
     observer.on_session_focused = on_session_focused;

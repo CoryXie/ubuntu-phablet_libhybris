@@ -161,12 +161,6 @@ void ApplicationManager::start_a_new_session(
     int out_socket_fd,
     int in_socket_fd)
 {
-    //printf("%s \n", __PRETTY_FUNCTION__);
-    //printf("\t%s \n", app_name.string());
-    //printf("\t%d \n", ashmem_fd);
-    //printf("\t%d \n", out_socket_fd);
-    //printf("\t%d \n", in_socket_fd);
-    
     android::sp<mir::ApplicationSession> app_session(new mir::ApplicationSession(
         android::IPCThreadState::self()->getCallingPid(),
         session,
@@ -178,17 +172,9 @@ void ApplicationManager::start_a_new_session(
             android::sp<android::IBinder::DeathRecipient>(this));                
         apps.add(session->asBinder(), app_session);            
         apps_as_added.push_back(session->asBinder());
-        // switch_focused_application_locked(apps.indexOfKey(session->asBinder()));
-        // switch_focused_application_locked(apps_as_added.size() - 1);
     }
     
-    notify_observers_about_session_born(app_session->remote_pid, app_session->desktop_file);
-    
-    /*android::sp<LockingIterator> it = iterator();
-    while(it->is_valid())
-    {
-        it->advance();
-        }*/
+    notify_observers_about_session_born(app_session->remote_pid, app_session->desktop_file);    
 }
 
 void ApplicationManager::register_a_surface(const android::String8& title,
@@ -198,12 +184,6 @@ void ApplicationManager::register_a_surface(const android::String8& title,
                                             int out_socket_fd,
                                             int in_socket_fd)
 {
-    //printf("%s \n", __PRETTY_FUNCTION__);
-    //printf("\t%s \n", title.string());
-    //printf("\t%d \n", ashmem_fd);
-    //printf("\t%d \n", out_socket_fd);
-    //printf("\t%d \n", in_socket_fd);
-    
     android::Mutex::Autolock al(guard);
     android::sp<android::InputChannel> input_channel(
         new android::InputChannel(
@@ -222,6 +202,7 @@ void ApplicationManager::register_a_surface(const android::String8& title,
         surface->input_channel,
         surface->make_input_window_handle(),
         false);
+
     apps.valueFor(session->asBinder())->register_surface(surface);
     
     size_t i = 0;
@@ -330,6 +311,8 @@ void ApplicationManager::notify_observers_about_session_focused(int id, const an
 
 void ApplicationManager::notify_observers_about_session_died(int id, const android::String8& desktop_file)
 {
+    printf("%s: %d\n", __PRETTY_FUNCTION__, id);
+
     android::Mutex::Autolock al(observer_guard);
     for(unsigned int i = 0; i < app_manager_observers.size(); i++)
     {
