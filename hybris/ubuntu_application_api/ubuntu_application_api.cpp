@@ -17,7 +17,7 @@
  */
 
 #include <ubuntu/application/ui/ubuntu_application_ui.h>
-#include <ubuntu/ui/session_service.h>
+#include <ubuntu/ui/ubuntu_ui_session_service.h>
 
 #include <assert.h>
 #include <dlfcn.h>
