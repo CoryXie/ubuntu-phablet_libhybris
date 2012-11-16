@@ -10,6 +10,7 @@
 #include <ubuntu/application/ui/surface_factory.h>
 #include <ubuntu/application/ui/surface_properties.h>
 
+#include <ubuntu/ui/session_enumerator.h>
 #include <ubuntu/ui/session_service.h>
 
 #include <binder/IPCThreadState.h>
