@@ -1,3 +1,20 @@
+/*
+ * Copyright © 2012 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Thomas Voß <thomas.voss@canonical.com>
+ */
 #ifndef DEFAULT_APPLICATION_SESSION_H_
 #define DEFAULT_APPLICATION_SESSION_H_
 
@@ -14,22 +31,22 @@ struct ApplicationSession : public android::RefBase
 {
     struct Surface : public android::RefBase
     {
-        Surface(ApplicationSession* parent, 
+        Surface(ApplicationSession* parent,
                 const android::sp<android::InputChannel>& input_channel,
                 int32_t token) : parent(parent),
-                                 input_channel(input_channel),
-                                 token(token)
+            input_channel(input_channel),
+            token(token)
         {
         }
 
         android::IApplicationManagerSession::SurfaceProperties query_properties()
         {
-            android::IApplicationManagerSession::SurfaceProperties props = 
-                    parent->remote_session->query_surface_properties_for_token(token);
-            
+            android::IApplicationManagerSession::SurfaceProperties props =
+                parent->remote_session->query_surface_properties_for_token(token);
+
             return props;
         }
-        
+
         android::sp<android::InputWindowHandle> make_input_window_handle()
         {
             return android::sp<android::InputWindowHandle>(new InputWindowHandle(parent, android::sp<Surface>(this)));
@@ -37,7 +54,7 @@ struct ApplicationSession : public android::RefBase
 
         ApplicationSession* parent;
         android::sp<android::InputChannel> input_channel;
-        int32_t token;            
+        int32_t token;
     };
 
     ApplicationSession(
@@ -45,20 +62,20 @@ struct ApplicationSession : public android::RefBase
         android::sp<android::IApplicationManagerSession> remote_session,
         const android::String8& app_name,
         const android::String8& desktop_file)
-            : remote_pid(remote_pid),
-            remote_session(remote_session),
-            app_name(app_name),
-            desktop_file(desktop_file)
+        : remote_pid(remote_pid),
+          remote_session(remote_session),
+          app_name(app_name),
+          desktop_file(desktop_file)
     {
     }
 
     struct InputApplicationHandle : public android::InputApplicationHandle
     {
         InputApplicationHandle(ApplicationSession* parent) : parent(parent)
-        {                
+        {
             updateInfo();
         }
-        
+
         bool updateInfo()
         {
             if (mInfo == NULL)
@@ -67,21 +84,21 @@ struct ApplicationSession : public android::RefBase
                 mInfo->name = parent->app_name;
                 mInfo->dispatchingTimeout = 10 * 1000 * 1000 * 1000; // TODO(tvoss): Find out sensible value here
             }
-            
+
             return true;
         }
-        
+
         ApplicationSession* parent;
     };
-    
+
     struct InputWindowHandle : public android::InputWindowHandle
     {
-        InputWindowHandle(ApplicationSession* parent, const android::sp<Surface>& surface) 
-                : android::InputWindowHandle(
-                    android::sp<InputApplicationHandle>(
-                        new InputApplicationHandle(parent))),
-                  parent(parent),
-                  surface(surface)
+        InputWindowHandle(ApplicationSession* parent, const android::sp<Surface>& surface)
+            : android::InputWindowHandle(
+                android::sp<InputApplicationHandle>(
+                    new InputApplicationHandle(parent))),
+            parent(parent),
+            surface(surface)
         {
             updateInfo();
         }
@@ -91,10 +108,10 @@ struct ApplicationSession : public android::RefBase
             if (mInfo == NULL)
             {
                 android::IApplicationManagerSession::SurfaceProperties props = surface->query_properties();
-                    
+
                 SkRegion touchable_region;
                 touchable_region.setRect(props.left, props.top, props.right, props.bottom);
-                    
+
                 mInfo = new android::InputWindowInfo();
                 mInfo->name = parent->app_name;
                 mInfo->layoutParamsFlags = android::InputWindowInfo::FLAG_SPLIT_TOUCH | android::InputWindowInfo::FLAG_HARDWARE_ACCELERATED;
@@ -131,7 +148,7 @@ struct ApplicationSession : public android::RefBase
         {
             v.push_back(registered_surfaces.valueAt(i)->make_input_window_handle());
         }
-            
+
         return v;
     }
 
@@ -149,9 +166,9 @@ struct ApplicationSession : public android::RefBase
     {
         registered_surfaces.add(surface->token, surface);
     }
-    
+
     pid_t remote_pid;
-    
+
     android::sp<android::IApplicationManagerSession> remote_session;
     android::String8 app_name;
     android::String8 desktop_file;

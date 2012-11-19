@@ -50,7 +50,7 @@ struct SessionLifeCycleObserver : public ubuntu::ui::SessionLifeCycleObserver
 };
 
 }
-        
+
 const char* ubuntu_ui_session_properties_get_value_for_key(ubuntu_ui_session_properties props, const char* key)
 {
     if (!props)
@@ -58,7 +58,7 @@ const char* ubuntu_ui_session_properties_get_value_for_key(ubuntu_ui_session_pro
 
     if (!key)
         return NULL;
-    
+
     const ubuntu::ui::SessionProperties::Ptr* p = static_cast<const ubuntu::ui::SessionProperties::Ptr*>(props);
 
     return (*p)->value_for_key(key);
@@ -85,13 +85,13 @@ const char* ubuntu_ui_session_properties_get_desktop_file_hint(ubuntu_ui_session
     return (*p)->desktop_file_hint();
 }
 
-    bool ubuntu_ui_session_preview_provider_update_session_preview_texture(ubuntu_ui_session_preview_provider pp, int id, GLuint texture, unsigned int* width, unsigned int* height)
+bool ubuntu_ui_session_preview_provider_update_session_preview_texture(ubuntu_ui_session_preview_provider pp, int id, GLuint texture, unsigned int* width, unsigned int* height)
 {
     if (!pp)
         return false;
 
     const ubuntu::ui::SessionPreviewProvider::Ptr* spp =
-            static_cast<const ubuntu::ui::SessionPreviewProvider::Ptr*>(pp);
+        static_cast<const ubuntu::ui::SessionPreviewProvider::Ptr*>(pp);
 
     return (*spp)->get_or_update_session_preview(texture, *width, *height);
 }

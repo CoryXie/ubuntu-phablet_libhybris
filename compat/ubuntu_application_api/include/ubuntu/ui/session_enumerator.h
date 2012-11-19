@@ -12,7 +12,7 @@ namespace ui
 
 class SessionProperties : public platform::ReferenceCountedBase
 {
-  public:
+public:
     static const char* key_application_instance_id();
     static const char* key_application_name();
     static const char* key_desktop_file_hint();
@@ -36,7 +36,7 @@ class SessionProperties : public platform::ReferenceCountedBase
         return value_for_key(SessionProperties::key_desktop_file_hint());
     }
 
-  protected:
+protected:
     SessionProperties() {}
     virtual ~SessionProperties() {}
 
@@ -46,29 +46,29 @@ class SessionProperties : public platform::ReferenceCountedBase
 
 class SessionLifeCycleObserver : public platform::ReferenceCountedBase
 {
-  public:
+public:
     typedef platform::shared_ptr<SessionLifeCycleObserver> Ptr;
 
     virtual void on_session_born(const SessionProperties::Ptr& props) = 0;
     virtual void on_session_focused(const SessionProperties::Ptr& props) = 0;
     virtual void on_session_died(const SessionProperties::Ptr& props) = 0;
 
-  protected:
+protected:
     SessionLifeCycleObserver() {}
     virtual ~SessionLifeCycleObserver() {}
-    
+
     SessionLifeCycleObserver(const SessionLifeCycleObserver&) = delete;
     SessionLifeCycleObserver& operator=(const SessionLifeCycleObserver&) = delete;
 };
 
 class SessionPreviewProvider : public platform::ReferenceCountedBase
 {
-  public:
+public:
     typedef platform::shared_ptr<SessionPreviewProvider> Ptr;
 
     virtual bool get_or_update_session_preview(GLuint texture, unsigned int& width, unsigned int& height) = 0;
 
-  protected:
+protected:
     SessionPreviewProvider() {}
     virtual ~SessionPreviewProvider() {}
 

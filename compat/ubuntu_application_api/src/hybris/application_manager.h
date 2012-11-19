@@ -1,3 +1,20 @@
+/*
+ * Copyright © 2012 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Thomas Voß <thomas.voss@canonical.com>
+ */
 #ifndef HYBRIS_APPLICATION_MANAGER_H_
 #define HYBRIS_APPLICATION_MANAGER_H_
 
@@ -8,7 +25,7 @@ namespace android
 
 class IApplicationManagerSession : public IInterface
 {
-  public:
+public:
     DECLARE_META_INTERFACE(ApplicationManagerSession);
 
     struct SurfaceProperties
@@ -23,7 +40,7 @@ class IApplicationManagerSession : public IInterface
     virtual void raise_application_surfaces_to_layer(int layer) = 0;
     virtual SurfaceProperties query_surface_properties_for_token(int32_t token) = 0;
 
-  protected:
+protected:
     enum
     {
         RAISE_APPLICATION_SURFACES_TO_LAYER_COMMAND = IBinder::FIRST_CALL_TRANSACTION,
@@ -33,41 +50,41 @@ class IApplicationManagerSession : public IInterface
 
 class BnApplicationManagerSession : public BnInterface<IApplicationManagerSession>
 {
-  public:
+public:
     BnApplicationManagerSession();
     virtual ~BnApplicationManagerSession();
-    
+
     virtual status_t onTransact(uint32_t code,
                                 const Parcel& data,
                                 Parcel* reply,
-                                uint32_t flags = 0);                                   
+                                uint32_t flags = 0);
 };
 
 class BpApplicationManagerSession : public BpInterface<IApplicationManagerSession>
 {
-  public:
+public:
     BpApplicationManagerSession(const sp<IBinder>& impl);
     ~BpApplicationManagerSession();
-    
-    void raise_application_surfaces_to_layer(int layer);        
+
+    void raise_application_surfaces_to_layer(int layer);
     IApplicationManagerSession::SurfaceProperties query_surface_properties_for_token(int32_t token);
 };
 
 class IApplicationManagerObserver : public IInterface
 {
-  public:
+public:
     DECLARE_META_INTERFACE(ApplicationManagerObserver);
-    
+
     virtual void on_session_born(int id,
                                  const String8& desktop_file) = 0;
 
-    virtual void on_session_focused(int id, 
+    virtual void on_session_focused(int id,
                                     const String8& desktop_file) = 0;
 
     virtual void on_session_died(int id,
                                  const String8& desktop_file) = 0;
 
-  protected:
+protected:
     enum
     {
         ON_SESSION_BORN_NOTIFICATION = IBinder::FIRST_CALL_TRANSACTION,
@@ -81,7 +98,7 @@ class IApplicationManagerObserver : public IInterface
 
 class BnApplicationManagerObserver : public BnInterface<IApplicationManagerObserver>
 {
-  public:        
+public:
     status_t onTransact(uint32_t code,
                         const Parcel& data,
                         Parcel* reply,
@@ -90,24 +107,24 @@ class BnApplicationManagerObserver : public BnInterface<IApplicationManagerObser
 
 class BpApplicationManagerObserver : public BpInterface<IApplicationManagerObserver>
 {
-  public:
+public:
     BpApplicationManagerObserver(const sp<IBinder>& impl);
 
     void on_session_born(int id,
                          const String8& desktop_file);
-    
-    void on_session_focused(int id, 
+
+    void on_session_focused(int id,
                             const String8& desktop_file);
-    
+
     void on_session_died(int id,
                          const String8& desktop_file);
 };
 
 class IApplicationManager : public IInterface
 {
-  public:  
+public:
     DECLARE_META_INTERFACE(ApplicationManager);
-  
+
     static const char* exported_service_name()
     {
         return "UbuntuApplicationManager";
@@ -129,7 +146,7 @@ class IApplicationManager : public IInterface
 
     virtual void register_an_observer(const sp<IApplicationManagerObserver>& observer) = 0;
 
-  protected:
+protected:
     enum
     {
         START_A_NEW_SESSION_COMMAND = IBinder::FIRST_CALL_TRANSACTION,
@@ -140,10 +157,10 @@ class IApplicationManager : public IInterface
 
 class BnApplicationManager : public BnInterface<IApplicationManager>
 {
-  public:
+public:
     BnApplicationManager();
     virtual ~BnApplicationManager();
-    
+
     virtual status_t onTransact(uint32_t code,
                                 const Parcel& data,
                                 Parcel* reply,
@@ -152,10 +169,10 @@ class BnApplicationManager : public BnInterface<IApplicationManager>
 
 class BpApplicationManager : public BpInterface<IApplicationManager>
 {
-  public:
+public:
     BpApplicationManager(const sp<IBinder>& impl);
     ~BpApplicationManager();
-    
+
     void start_a_new_session(const String8& app_name,
                              const String8& desktop_file,
                              const sp<IApplicationManagerSession>& session,

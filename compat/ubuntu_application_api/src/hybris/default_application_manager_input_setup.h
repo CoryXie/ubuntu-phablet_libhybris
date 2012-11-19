@@ -1,3 +1,20 @@
+/*
+ * Copyright © 2012 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Thomas Voß <thomas.voss@canonical.com>
+ */
 #ifndef DEFAULT_APPLICATION_MANAGER_INPUT_SETUP_H_
 #define DEFAULT_APPLICATION_MANAGER_INPUT_SETUP_H_
 
@@ -17,7 +34,7 @@ namespace android
 {
 class DefaultPointerControllerPolicy : public android::PointerControllerPolicyInterface
 {
-  public:
+public:
 
     static const size_t bitmap_width = 64;
     static const size_t bitmap_height = 64;
@@ -29,25 +46,25 @@ class DefaultPointerControllerPolicy : public android::PointerControllerPolicyIn
             bitmap_width,
             bitmap_height);
         bitmap.allocPixels();
-        
+
         // Icon for spot touches
         bitmap.eraseARGB(125, 0, 255, 0);
         spotTouchIcon = android::SpriteIcon(
-            bitmap, 
-            bitmap_width/2, 
-            bitmap_height/2);
+                            bitmap,
+                            bitmap_width/2,
+                            bitmap_height/2);
         // Icon for anchor touches
         bitmap.eraseARGB(125, 0, 0, 255);
         spotAnchorIcon = android::SpriteIcon(
-            bitmap, 
-            bitmap_width/2, 
-            bitmap_height/2);
+                             bitmap,
+                             bitmap_width/2,
+                             bitmap_height/2);
         // Icon for hovering touches
         bitmap.eraseARGB(125, 255, 0, 0);
         spotHoverIcon = android::SpriteIcon(
-            bitmap, 
-            bitmap_width/2, 
-            bitmap_height/2);
+                            bitmap,
+                            bitmap_width/2,
+                            bitmap_height/2);
     }
 
     void loadPointerResources(android::PointerResources* outResources)
@@ -65,13 +82,13 @@ class DefaultPointerControllerPolicy : public android::PointerControllerPolicyIn
 
 class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInterface
 {
-  public:
+public:
     static const android::DisplayID internal_display_id = 0;
     static const android::DisplayID external_display_id = 1;
 
-    DefaultInputReaderPolicyInterface(const android::sp<android::Looper>& looper) 
-            : looper(looper),
-              default_layer_for_touch_point_visualization(INT_MAX)
+    DefaultInputReaderPolicyInterface(const android::sp<android::Looper>& looper)
+        : looper(looper),
+          default_layer_for_touch_point_visualization(INT_MAX)
     {
         default_configuration.showTouches = false;
 
@@ -90,7 +107,7 @@ class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInter
         /*android::SurfaceComposerClient::getDisplayInfo(
           external_display_id,
           &default_configuration.mExternalDisplay);
-        
+
           default_configuration.mInternalDisplay.width = info.width;
           default_configuration.mInternalDisplay.height = info.height;
           default_configuratoin.mInternalDisplay.orientation = info.orientation;
@@ -101,14 +118,14 @@ class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInter
     {
         *outConfig = default_configuration;
     }
-    
+
     android::sp<android::PointerControllerInterface> obtainPointerController(int32_t deviceId)
     {
         (void) deviceId;
-        
+
         android::sp<android::SpriteController> sprite_controller(
             new android::SpriteController(
-                looper, 
+                looper,
                 default_layer_for_touch_point_visualization));
         android::sp<android::PointerController> pointer_controller(
             new android::PointerController(
@@ -126,7 +143,7 @@ class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInter
         pointer_controller->setDisplaySize(w, h);
         return pointer_controller;
     }
-  private:
+private:
     android::sp<android::Looper> looper;
     int default_layer_for_touch_point_visualization;
     android::InputReaderConfiguration default_configuration;
@@ -134,10 +151,10 @@ class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInter
 
 class InputFilter : public android::RefBase
 {
-  public:
+public:
     virtual bool filter_event(const android::InputEvent* event) = 0;
 
-  protected:
+protected:
     InputFilter() {}
     virtual ~InputFilter() {}
 
@@ -147,13 +164,13 @@ class InputFilter : public android::RefBase
 
 class DefaultInputDispatcherPolicy : public InputDispatcherPolicyInterface
 {
-  public:
+public:
     DefaultInputDispatcherPolicy(const android::sp<InputFilter>& input_filter)
-            : input_filter(input_filter)
+        : input_filter(input_filter)
     {
     }
 
-    ~DefaultInputDispatcherPolicy() 
+    ~DefaultInputDispatcherPolicy()
     {
     }
 
@@ -218,21 +235,21 @@ class DefaultInputDispatcherPolicy : public InputDispatcherPolicyInterface
 
     nsecs_t interceptKeyBeforeDispatching(
         const sp<InputWindowHandle>& inputWindowHandle,
-        const KeyEvent* keyEvent, 
+        const KeyEvent* keyEvent,
         uint32_t policyFlags)
     {
         REPORT_FUNCTION_CALL();
         (void) inputWindowHandle;
         (void) keyEvent;
         (void) policyFlags;
-        
+
         return 0;
     }
 
     bool dispatchUnhandledKey(
         const sp<InputWindowHandle>& inputWindowHandle,
-        const KeyEvent* keyEvent, 
-        uint32_t policyFlags, 
+        const KeyEvent* keyEvent,
+        uint32_t policyFlags,
         KeyEvent* outFallbackKeyEvent)
     {
         REPORT_FUNCTION_CALL();
@@ -245,8 +262,8 @@ class DefaultInputDispatcherPolicy : public InputDispatcherPolicyInterface
 
     virtual void notifySwitch(
         nsecs_t when,
-        int32_t switchCode, 
-        int32_t switchValue, 
+        int32_t switchCode,
+        int32_t switchValue,
         uint32_t policyFlags)
     {
         REPORT_FUNCTION_CALL();
@@ -260,12 +277,12 @@ class DefaultInputDispatcherPolicy : public InputDispatcherPolicyInterface
     {
         REPORT_FUNCTION_CALL();
         (void) eventTime;
-        (void) eventType;        
+        (void) eventType;
     }
 
     bool checkInjectEventsPermissionNonReentrant(
-            int32_t injectorPid, 
-            int32_t injectorUid)
+        int32_t injectorPid,
+        int32_t injectorUid)
     {
         REPORT_FUNCTION_CALL();
         (void) injectorPid;
@@ -279,33 +296,33 @@ class DefaultInputDispatcherPolicy : public InputDispatcherPolicyInterface
 
 class LooperThread : public android::Thread
 {
-  public:
+public:
     static const int default_poll_timeout_ms = 500;
 
     LooperThread(const android::sp<android::Looper>& looper) : looper(looper)
-    {        
+    {
     }
 
-  private:
+private:
     bool threadLoop()
     {
         if (ALOOPER_POLL_ERROR == looper->pollAll(default_poll_timeout_ms))
             return false;
         return true;
     }
-    
+
     android::sp<android::Looper> looper;
 };
 
 struct InputSetup : public android::RefBase
 {
     InputSetup(const android::sp<InputFilter>& input_filter)
-            : looper(new android::Looper(false)),
-              looper_thread(new LooperThread(looper)),
-              event_hub(new android::EventHub()),
-              input_reader_policy(new DefaultInputReaderPolicyInterface(looper)),
-              input_dispatcher_policy(new DefaultInputDispatcherPolicy(input_filter)),
-              input_manager(new InputManager(event_hub, input_reader_policy, input_dispatcher_policy))
+        : looper(new android::Looper(false)),
+          looper_thread(new LooperThread(looper)),
+          event_hub(new android::EventHub()),
+          input_reader_policy(new DefaultInputReaderPolicyInterface(looper)),
+          input_dispatcher_policy(new DefaultInputDispatcherPolicy(input_filter)),
+          input_manager(new InputManager(event_hub, input_reader_policy, input_dispatcher_policy))
     {
         input_manager->getDispatcher()->setInputFilterEnabled(true);
     }

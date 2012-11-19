@@ -1,3 +1,20 @@
+/*
+ * Copyright © 2012 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Thomas Voß <thomas.voss@canonical.com>
+ */
 #include "camera_compatibility_layer.h"
 #include "camera_compatibility_layer_capabilities.h"
 
@@ -29,36 +46,36 @@ EffectMode next_effect()
     static EffectMode current_effect = EFFECT_MODE_NONE;
 
     EffectMode next = current_effect;
-    
+
     switch(current_effect)
     {
-        case EFFECT_MODE_NONE:
-            next = EFFECT_MODE_MONO;
-            break;
-        case EFFECT_MODE_MONO:
-            next = EFFECT_MODE_NEGATIVE;
-            break;
-        case EFFECT_MODE_NEGATIVE:
-            next = EFFECT_MODE_SOLARIZE;
-            break;
-        case EFFECT_MODE_SOLARIZE:
-            next = EFFECT_MODE_SEPIA;
-            break;
-        case EFFECT_MODE_SEPIA:
-            next = EFFECT_MODE_POSTERIZE;
-            break;
-        case EFFECT_MODE_POSTERIZE:
-            next = EFFECT_MODE_WHITEBOARD;
-            break;
-        case EFFECT_MODE_WHITEBOARD:
-            next = EFFECT_MODE_BLACKBOARD;
-            break;
-        case EFFECT_MODE_BLACKBOARD:
-            next = EFFECT_MODE_AQUA;
-            break;
-        case EFFECT_MODE_AQUA:
-            next = EFFECT_MODE_NONE;
-            break;
+    case EFFECT_MODE_NONE:
+        next = EFFECT_MODE_MONO;
+        break;
+    case EFFECT_MODE_MONO:
+        next = EFFECT_MODE_NEGATIVE;
+        break;
+    case EFFECT_MODE_NEGATIVE:
+        next = EFFECT_MODE_SOLARIZE;
+        break;
+    case EFFECT_MODE_SOLARIZE:
+        next = EFFECT_MODE_SEPIA;
+        break;
+    case EFFECT_MODE_SEPIA:
+        next = EFFECT_MODE_POSTERIZE;
+        break;
+    case EFFECT_MODE_POSTERIZE:
+        next = EFFECT_MODE_WHITEBOARD;
+        break;
+    case EFFECT_MODE_WHITEBOARD:
+        next = EFFECT_MODE_BLACKBOARD;
+        break;
+    case EFFECT_MODE_BLACKBOARD:
+        next = EFFECT_MODE_AQUA;
+        break;
+    case EFFECT_MODE_AQUA:
+        next = EFFECT_MODE_NONE;
+        break;
     }
 
     current_effect = next;
@@ -130,39 +147,40 @@ void on_new_input_event(Event* event, void* context)
         printf("We have got a key event: %d \n", event->details.key.key_code);
 
         CameraControl* cc = static_cast<CameraControl*>(context);
-        
+
         switch(event->details.key.key_code)
         {
-            case ISCL_KEYCODE_VOLUME_UP:
-                printf("\tZooming in now.\n");
-                android_camera_start_zoom(cc, current_zoom_level+1);
-                break;
-            case ISCL_KEYCODE_VOLUME_DOWN:
-                printf("\tZooming out now.\n");
-                android_camera_start_zoom(cc, current_zoom_level-1);
-                break;
-            case ISCL_KEYCODE_POWER:
-                printf("\tTaking a photo now.\n");
-                android_camera_take_snapshot(cc);
-                break;
-            case ISCL_KEYCODE_HEADSETHOOK:
-                printf("\tSwitching effect.\n");
-                android_camera_set_effect_mode(cc, next_effect());
-                
+        case ISCL_KEYCODE_VOLUME_UP:
+            printf("\tZooming in now.\n");
+            android_camera_start_zoom(cc, current_zoom_level+1);
+            break;
+        case ISCL_KEYCODE_VOLUME_DOWN:
+            printf("\tZooming out now.\n");
+            android_camera_start_zoom(cc, current_zoom_level-1);
+            break;
+        case ISCL_KEYCODE_POWER:
+            printf("\tTaking a photo now.\n");
+            android_camera_take_snapshot(cc);
+            break;
+        case ISCL_KEYCODE_HEADSETHOOK:
+            printf("\tSwitching effect.\n");
+            android_camera_set_effect_mode(cc, next_effect());
+
         }
-    } else if (event->type == MOTION_EVENT_TYPE &&
-               event->details.motion.pointer_count == 1)
+    }
+    else if (event->type == MOTION_EVENT_TYPE &&
+             event->details.motion.pointer_count == 1)
     {
         if ((event->action & ISCL_MOTION_EVENT_ACTION_MASK) == ISCL_MOTION_EVENT_ACTION_UP)
         {
-            printf("\tMotion event(Action up): (%f, %f) \n", 
+            printf("\tMotion event(Action up): (%f, %f) \n",
                    event->details.motion.pointer_coordinates[0].x,
                    event->details.motion.pointer_coordinates[0].y);
         }
 
         if ((event->action & ISCL_MOTION_EVENT_ACTION_MASK) == ISCL_MOTION_EVENT_ACTION_DOWN)
         {
-            printf("\tMotion event(Action down): (%f, %f) \n", 
+            printf("\tMotion event(Action down): (%f, %f) \n",
                    event->details.motion.pointer_coordinates[0].x,
                    event->details.motion.pointer_coordinates[0].y);
         }
@@ -222,48 +240,53 @@ struct RenderData
     static const char* vertex_shader()
     {
         return
-                "#extension GL_OES_EGL_image_external : require              \n"
-                "attribute vec4 a_position;                                  \n"
-                "attribute vec2 a_texCoord;                                  \n"
-                "uniform mat4 m_texMatrix;                                   \n"
-                "varying vec2 v_texCoord;                                    \n"
-                "varying float topDown;                                      \n"
-                "void main()                                                 \n"
-                "{                                                           \n"
-                "   gl_Position = a_position;                                \n"
-                "   v_texCoord = a_texCoord;                                 \n"
-                //                "   v_texCoord = (m_texMatrix * vec4(a_texCoord, 0.0, 1.0)).xy;\n"
-                //"   topDown = v_texCoord.y;                                  \n"
-                "}                                                           \n";
+            "#extension GL_OES_EGL_image_external : require              \n"
+            "attribute vec4 a_position;                                  \n"
+            "attribute vec2 a_texCoord;                                  \n"
+            "uniform mat4 m_texMatrix;                                   \n"
+            "varying vec2 v_texCoord;                                    \n"
+            "varying float topDown;                                      \n"
+            "void main()                                                 \n"
+            "{                                                           \n"
+            "   gl_Position = a_position;                                \n"
+            "   v_texCoord = a_texCoord;                                 \n"
+            //                "   v_texCoord = (m_texMatrix * vec4(a_texCoord, 0.0, 1.0)).xy;\n"
+            //"   topDown = v_texCoord.y;                                  \n"
+            "}                                                           \n";
     }
-   
+
     static const char* fragment_shader()
     {
         return
-                "#extension GL_OES_EGL_image_external : require      \n"
-                "precision mediump float;                            \n"
-                "varying vec2 v_texCoord;                            \n"
-                "uniform samplerExternalOES s_texture;               \n"
-                "void main()                                         \n"
-                "{                                                   \n"
-                "  gl_FragColor = texture2D( s_texture, v_texCoord );\n"
-                "}                                                   \n";
+            "#extension GL_OES_EGL_image_external : require      \n"
+            "precision mediump float;                            \n"
+            "varying vec2 v_texCoord;                            \n"
+            "uniform samplerExternalOES s_texture;               \n"
+            "void main()                                         \n"
+            "{                                                   \n"
+            "  gl_FragColor = texture2D( s_texture, v_texCoord );\n"
+            "}                                                   \n";
     }
-    
-    static GLuint loadShader(GLenum shaderType, const char* pSource) {
+
+    static GLuint loadShader(GLenum shaderType, const char* pSource)
+    {
         GLuint shader = glCreateShader(shaderType);
-        
-        if (shader) {
+
+        if (shader)
+        {
             glShaderSource(shader, 1, &pSource, NULL);
             glCompileShader(shader);
             GLint compiled = 0;
             glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-            if (!compiled) {
+            if (!compiled)
+            {
                 GLint infoLen = 0;
                 glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-                if (infoLen) {
+                if (infoLen)
+                {
                     char* buf = (char*) malloc(infoLen);
-                    if (buf) {
+                    if (buf)
+                    {
                         glGetShaderInfoLog(shader, infoLen, NULL, buf);
                         fprintf(stderr, "Could not compile shader %d:\n%s\n",
                                 shaderType, buf);
@@ -281,32 +304,39 @@ struct RenderData
         return shader;
     }
 
-    static GLuint create_program(const char* pVertexSource, const char* pFragmentSource) {
-	GLuint vertexShader = loadShader(GL_VERTEX_SHADER, pVertexSource);
-	if (!vertexShader) {
+    static GLuint create_program(const char* pVertexSource, const char* pFragmentSource)
+    {
+        GLuint vertexShader = loadShader(GL_VERTEX_SHADER, pVertexSource);
+        if (!vertexShader)
+        {
             printf("vertex shader not compiled\n");
             return 0;
-	}
-        
-	GLuint pixelShader = loadShader(GL_FRAGMENT_SHADER, pFragmentSource);
-	if (!pixelShader) {
+        }
+
+        GLuint pixelShader = loadShader(GL_FRAGMENT_SHADER, pFragmentSource);
+        if (!pixelShader)
+        {
             printf("frag shader not compiled\n");
             return 0;
-	}
-        
-	GLuint program = glCreateProgram();
-	if (program) {
+        }
+
+        GLuint program = glCreateProgram();
+        if (program)
+        {
             glAttachShader(program, vertexShader);
             glAttachShader(program, pixelShader);
             glLinkProgram(program);
             GLint linkStatus = GL_FALSE;
             glGetProgramiv(program, GL_LINK_STATUS, &linkStatus);
-            if (linkStatus != GL_TRUE) {
+            if (linkStatus != GL_TRUE)
+            {
                 GLint bufLength = 0;
                 glGetProgramiv(program, GL_INFO_LOG_LENGTH, &bufLength);
-                if (bufLength) {
+                if (bufLength)
+                {
                     char* buf = (char*) malloc(bufLength);
-                    if (buf) {
+                    if (buf)
+                    {
                         glGetProgramInfoLog(program, bufLength, NULL, buf);
                         fprintf(stderr, "Could not link program:\n%s\n", buf);
                         free(buf);
@@ -315,10 +345,10 @@ struct RenderData
                 glDeleteProgram(program);
                 program = 0;
             }
-	}
-	return program;
+        }
+        return program;
     }
-    
+
     RenderData() : program_object(create_program(vertex_shader(), fragment_shader()))
     {
         position_loc = glGetAttribLocation(program_object, "a_position");
@@ -351,7 +381,7 @@ int main(int argc, char** argv)
     listener.on_data_compressed_image_cb = jpeg_data_cb;
     listener.on_preview_texture_needs_update_cb = preview_texture_needs_update_cb;
     CameraControl* cc = android_camera_connect_to(FRONT_FACING_CAMERA_TYPE,
-                                                  &listener);
+                        &listener);
     if (cc == NULL)
     {
         printf("Problem connecting to camera");
@@ -363,12 +393,12 @@ int main(int argc, char** argv)
     AndroidEventListener event_listener;
     event_listener.on_new_event = on_new_input_event;
     event_listener.context = cc;
-    
+
     InputStackConfiguration input_configuration = { true, 25000 };
-    
+
     android_input_stack_initialize(&event_listener, &input_configuration);
     android_input_stack_start();
-        
+
     android_camera_dump_parameters(cc);
     android_camera_enumerate_supported_picture_sizes(cc, size_cb, NULL);
     android_camera_enumerate_supported_preview_sizes(cc, size_cb, NULL);
@@ -380,7 +410,7 @@ int main(int argc, char** argv)
     printf("Current preview fps range: %d\n", current_fps);
 
     android_camera_set_preview_size(cc, 960, 720);
-    
+
     int width, height;
     android_camera_get_preview_size(cc, &width, &height);
     printf("Current preview size: [%d,%d]\n", width, height);
@@ -422,8 +452,8 @@ int main(int argc, char** argv)
 
     EGLDisplay disp = sf_client_get_egl_display(cs.client);
     EGLSurface surface = sf_surface_get_egl_surface(cs.surface);
-    
-    sf_surface_make_current(cs.surface);    
+
+    sf_surface_make_current(cs.surface);
     RenderData render_data;
     GLuint preview_texture_id;
     glGenTextures(1, &preview_texture_id);
@@ -445,27 +475,27 @@ int main(int argc, char** argv)
     glUniformMatrix4fv(render_data.matrix_loc, 1, GL_FALSE, transformation_matrix);
 
     printf("Started camera preview.\n");
-    
+
     while(true)
     {
-                
+
         /*if (new_camera_frame_available)
         {
-            printf("Updating texture");            
+            printf("Updating texture");
             new_camera_frame_available = false;
             }*/
         static GLfloat vVertices[] = { 0.0f, 0.0f, 0.0f, // Position 0
-                0.0f, 0.0f, // TexCoord 0
-                0.0f, 1.0f, 0.0f, // Position 1
-                0.0f, 1.0f, // TexCoord 1
-                1.0f, 1.0f, 0.0f, // Position 2
-                1.0f, 1.0f, // TexCoord 2
-                1.0f, 0.0f, 0.0f, // Position 3
-                1.0f, 0.0f // TexCoord 3
-        };
-        
+                                       0.0f, 0.0f, // TexCoord 0
+                                       0.0f, 1.0f, 0.0f, // Position 1
+                                       0.0f, 1.0f, // TexCoord 1
+                                       1.0f, 1.0f, 0.0f, // Position 2
+                                       1.0f, 1.0f, // TexCoord 2
+                                       1.0f, 0.0f, 0.0f, // Position 3
+                                       1.0f, 0.0f // TexCoord 3
+                                     };
+
         GLushort indices[] = { 0, 1, 2, 0, 2, 3 };
-        
+
         // Set the viewport
         // Clear the color buffer
         glClear(GL_COLOR_BUFFER_BIT);
@@ -475,21 +505,21 @@ int main(int argc, char** argv)
         glEnableVertexAttribArray(render_data.position_loc);
         glEnableVertexAttribArray(render_data.tex_coord_loc);
         // Load the vertex position
-        glVertexAttribPointer(render_data.position_loc, 
-                              3, 
-                              GL_FLOAT, 
-                              GL_FALSE, 
-                              5 * sizeof(GLfloat), 
+        glVertexAttribPointer(render_data.position_loc,
+                              3,
+                              GL_FLOAT,
+                              GL_FALSE,
+                              5 * sizeof(GLfloat),
                               vVertices);
         // Load the texture coordinate
-        glVertexAttribPointer(render_data.tex_coord_loc, 
-                              2, 
+        glVertexAttribPointer(render_data.tex_coord_loc,
+                              2,
                               GL_FLOAT,
-                              GL_FALSE, 
-                              5 * sizeof(GLfloat), 
+                              GL_FALSE,
+                              5 * sizeof(GLfloat),
                               vVertices+3);
-        
-        glActiveTexture(GL_TEXTURE0);        
+
+        glActiveTexture(GL_TEXTURE0);
         // Set the sampler texture unit to 0
         glUniform1i(render_data.sampler_loc, 0);
         glUniform1i(render_data.matrix_loc, 0);

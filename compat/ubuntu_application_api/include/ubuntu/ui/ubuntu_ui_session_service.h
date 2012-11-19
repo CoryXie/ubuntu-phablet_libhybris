@@ -9,7 +9,7 @@ extern "C" {
 
     typedef const void* ubuntu_ui_session_properties;
     typedef const void* ubuntu_ui_session_preview_provider;
-    
+
     typedef struct
     {
         typedef void (*session_born_cb)(ubuntu_ui_session_properties props, void* context);
@@ -28,16 +28,16 @@ extern "C" {
     const char* ubuntu_ui_session_properties_get_desktop_file_hint(ubuntu_ui_session_properties props);
 
     void ubuntu_ui_session_install_session_lifecycle_observer(ubuntu_ui_session_lifecycle_observer* observer);
-    
+
     bool ubuntu_ui_session_preview_provider_update_session_preview_texture_with_id(
-        ubuntu_ui_session_preview_provider pp, 
+        ubuntu_ui_session_preview_provider pp,
         int id,
-        GLuint texture, 
-        unsigned int* width, 
+        GLuint texture,
+        unsigned int* width,
         unsigned int* height);
 
     void ubuntu_ui_session_focus_running_session_with_id(int id);
-    
+
 #ifdef __cplusplus
 }
 #endif
