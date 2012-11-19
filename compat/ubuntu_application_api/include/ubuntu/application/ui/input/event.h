@@ -1,3 +1,20 @@
+/*
+ * Copyright © 2012 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Thomas Voß <thomas.voss@canonical.com>
+ */
 #ifndef UBUNTU_APPLICATION_UI_INPUT_EVENT_H_
 #define UBUNTU_APPLICATION_UI_INPUT_EVENT_H_
 
@@ -39,7 +56,7 @@ extern "C" {
                 int32_t switch_value;
             } hw_switch;
             struct KeyEvent
-            {                
+            {
                 int32_t key_code;
                 int32_t scan_code;
                 int32_t repeat_count;
@@ -57,9 +74,10 @@ extern "C" {
                 float y_precision;
                 nsecs_t down_time;
                 nsecs_t event_time;
-                
+
                 size_t pointer_count;
-                struct PointerCoordinates {
+                struct PointerCoordinates
+                {
                     int id;
                     float x, raw_x;
                     float y, raw_y;
@@ -68,8 +86,8 @@ extern "C" {
                     float size;
                     float pressure;
                     float orientation;
-                }; 
-                PointerCoordinates pointer_coordinates[UBUNTU_APPLICATION_UI_INPUT_EVENT_MAX_POINTER_COUNT];                
+                };
+                PointerCoordinates pointer_coordinates[UBUNTU_APPLICATION_UI_INPUT_EVENT_MAX_POINTER_COUNT];
             } motion;
         } details;
     };

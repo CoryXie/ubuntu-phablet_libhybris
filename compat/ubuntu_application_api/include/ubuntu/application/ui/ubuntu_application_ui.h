@@ -1,3 +1,20 @@
+/*
+ * Copyright © 2012 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Thomas Voß <thomas.voss@canonical.com>
+ */
 #ifndef UBUNTU_APPLICATION_UI_H_
 #define UBUNTU_APPLICATION_UI_H_
 
@@ -17,7 +34,8 @@ extern "C" {
         CONTENT_PICKING_STAGE_HINT,
         SIDE_STAGE_HINT,
         CONFIGURATION_STAGE_HINT
-    } StageHint;
+    }
+    StageHint;
 
     typedef enum
     {
@@ -32,22 +50,22 @@ extern "C" {
         TOOL_SUPPORT_ACTOR_ROLE,
         DIALOG_SUPPORT_ACTOR_ROLE
     } SurfaceRole;
-    
+
     typedef void (*input_event_cb)(void* ctx, const Event* ev);
 
     typedef void* ubuntu_application_ui_physical_display_info;
     typedef void* ubuntu_application_ui_session;
     typedef void* ubuntu_application_ui_surface;
-    
-    void 
+
+    void
     ubuntu_application_ui_init(
-        int argc, 
+        int argc,
         char**argv);
-    
-    StageHint 
+
+    StageHint
     ubuntu_application_ui_setup_get_stage_hint();
 
-    FormFactorHint 
+    FormFactorHint
     ubuntu_application_ui_setup_get_form_factor_hint();
 
     void
@@ -70,7 +88,7 @@ extern "C" {
     ubuntu_application_ui_query_vertical_resolution(
         ubuntu_application_ui_physical_display_info info);
 
-    void 
+    void
     ubuntu_application_ui_create_surface(
         ubuntu_application_ui_surface* out_surface,
         const char* title,
@@ -80,7 +98,7 @@ extern "C" {
         input_event_cb cb,
         void* ctx);
 
-    void 
+    void
     ubuntu_application_ui_destroy_surface(
         ubuntu_application_ui_surface surface);
 

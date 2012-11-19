@@ -1,3 +1,20 @@
+/*
+ * Copyright © 2012 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Thomas Voß <thomas.voss@canonical.com>
+ */
 #include <ubuntu/application/ui/init.h>
 #include <ubuntu/application/ui/session.h>
 #include <ubuntu/application/ui/session_credentials.h>
@@ -19,7 +36,7 @@ ubuntu::application::ui::Session::Ptr session;
 struct CallbackEventListener : public ubuntu::application::ui::input::Listener
 {
     CallbackEventListener(input_event_cb cb, void* context) : cb(cb),
-                                                              context(context)
+        context(context)
     {
     }
 
@@ -51,24 +68,24 @@ Holder<T>* make_holder(const T& value)
 
 }
 
-void 
+void
 ubuntu_application_ui_init(int argc, char**argv)
 {
     ubuntu::application::ui::init(argc, argv);
 }
 
-::StageHint 
+::StageHint
 ubuntu_application_ui_setup_get_stage_hint()
 {
     return static_cast<StageHint>(
-        ubuntu::application::ui::Setup::instance()->stage_hint());
+               ubuntu::application::ui::Setup::instance()->stage_hint());
 }
 
-::FormFactorHint 
+::FormFactorHint
 ubuntu_application_ui_setup_get_form_factor_hint()
 {
     return static_cast<FormFactorHint>(
-        ubuntu::application::ui::Setup::instance()->form_factor_hint());
+               ubuntu::application::ui::Setup::instance()->form_factor_hint());
 }
 
 void
@@ -77,7 +94,7 @@ ubuntu_application_ui_start_a_new_session(const char* name)
     if (session != NULL)
         return;
 
-    ubuntu::application::ui::SessionCredentials creds = 
+    ubuntu::application::ui::SessionCredentials creds =
     {
         "TestSession" // TODO { name }
     };
@@ -91,8 +108,8 @@ ubuntu_application_ui_create_display_info(
     size_t index)
 {
     *info = make_holder(
-        session->physical_display_info(
-            static_cast<ubuntu::application::ui::PhysicalDisplayIdentifier>(index)));    
+                session->physical_display_info(
+                    static_cast<ubuntu::application::ui::PhysicalDisplayIdentifier>(index)));
 }
 
 void
@@ -121,22 +138,22 @@ ubuntu_application_ui_query_vertical_resolution(
 }
 
 
-void 
+void
 ubuntu_application_ui_create_surface(
-        ubuntu_application_ui_surface* out_surface,
-        const char* title,
-        int width,
-        int height,
-        SurfaceRole role,
-        input_event_cb cb,
-        void* ctx)
+    ubuntu_application_ui_surface* out_surface,
+    const char* title,
+    int width,
+    int height,
+    SurfaceRole role,
+    input_event_cb cb,
+    void* ctx)
 {
     if (session == NULL)
     {
         // TODO: Report the error here.
         return;
     }
-    ubuntu::application::ui::SurfaceProperties props = 
+    ubuntu::application::ui::SurfaceProperties props =
     {
         "test",
         width,
@@ -144,16 +161,16 @@ ubuntu_application_ui_create_surface(
         static_cast<ubuntu::application::ui::SurfaceRole>(role)
     };
 
-    ubuntu::application::ui::Surface::Ptr surface = 
-            session->create_surface(
-                props,
-                ubuntu::application::ui::input::Listener::Ptr(
-                    new CallbackEventListener(cb, ctx))); 
-    
+    ubuntu::application::ui::Surface::Ptr surface =
+        session->create_surface(
+            props,
+            ubuntu::application::ui::input::Listener::Ptr(
+                new CallbackEventListener(cb, ctx)));
+
     *out_surface = make_holder(surface);
 }
 
-void 
+void
 ubuntu_application_ui_destroy_surface(
     ubuntu_application_ui_surface surface)
 {

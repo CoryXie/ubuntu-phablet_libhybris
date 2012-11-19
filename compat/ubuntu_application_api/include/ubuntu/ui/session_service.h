@@ -1,3 +1,20 @@
+/*
+ * Copyright © 2012 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Thomas Voß <thomas.voss@canonical.com>
+ */
 #ifndef UBUNTU_UI_SESSION_SERVICE_H_
 #define UBUNTU_UI_SESSION_SERVICE_H_
 
@@ -18,7 +35,7 @@ namespace ui
 {
 class SessionService : public platform::ReferenceCountedBase
 {
-  public:
+public:
     typedef platform::shared_ptr<SessionService> Ptr;
 
     static const Ptr& instance();
@@ -27,7 +44,7 @@ class SessionService : public platform::ReferenceCountedBase
 
     virtual const ubuntu::application::ui::Session::Ptr& start_a_new_session(const ubuntu::application::ui::SessionCredentials& cred) = 0;
 
-  protected:
+protected:
     SessionService() {}
     SessionService(const SessionService&) = delete;
     SessionService& operator=(const SessionService&) = delete;
