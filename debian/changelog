@@ -1,3 +1,9 @@
+libhybris (0.25) UNRELEASED; urgency=low
+
+  * Covering static initializers and rwlock functions
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Mon, 19 Nov 2012 04:11:17 -0200
+
 libhybris (0.24) unstable; urgency=low
 
   [ Ricardo Salveti de Araujo ]
