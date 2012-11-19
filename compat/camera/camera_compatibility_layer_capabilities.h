@@ -96,21 +96,22 @@ extern "C" {
 
     typedef void (*size_callback)(void* ctx, int width, int height);
 
-// Dumps the camera parameters to stdout.
+    // Dumps the camera parameters to stdout.
     void android_camera_dump_parameters(CameraControl* control);
 
-// Query camera parameters
+    // Query camera parameters
 
+    int android_camera_get_number_of_devices();
     void android_camera_enumerate_supported_preview_sizes(CameraControl* control, size_callback cb, void* ctx);
     void android_camera_get_preview_fps_range(CameraControl* control, int* min, int* max);
     void android_camera_get_preview_fps(CameraControl* control, int* fps);
     void android_camera_enumerate_supported_picture_sizes(CameraControl* control, size_callback cb, void* ctx);
     void android_camera_get_preview_size(CameraControl* control, int* width, int* height);
     void android_camera_get_picture_size(CameraControl* control, int* width, int* height);
-
+    
     void android_camera_get_current_zoom(CameraControl* control, int* zoom);
     void android_camera_get_max_zoom(CameraControl* control, int* max_zoom);
-
+    
     void android_camera_get_effect_mode(CameraControl* control, EffectMode* mode);
     void android_camera_get_flash_mode(CameraControl* control, FlashMode* mode);
     void android_camera_get_white_balance_mode(CameraControl* control, WhiteBalanceMode* mode);
@@ -118,7 +119,7 @@ extern "C" {
     void android_camera_get_auto_focus_mode(CameraControl* control, AutoFocusMode* mode);
     void android_camera_get_preview_format(CameraControl* control, CameraPixelFormat* format);
 
-// Adjusts camera parameters
+    // Adjusts camera parameters
     void android_camera_set_preview_size(CameraControl* control, int width, int height);
     void android_camera_set_preview_fps(CameraControl* control, int fps);
     void android_camera_set_picture_size(CameraControl* control, int width, int height);

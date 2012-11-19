@@ -119,7 +119,10 @@ extern "C" {
         f(_1, _2, _3); }
 
 
+IMPLEMENT_FUNCTION0(int, android_camera_get_number_of_devices);
 IMPLEMENT_FUNCTION2(CameraControl*, android_camera_connect_to, CameraType, CameraControlListener*);
+IMPLEMENT_VOID_FUNCTION1(android_camera_disconnect, CameraControl*);
+IMPLEMENT_VOID_FUNCTION1(android_camera_delete, CameraControl*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_dump_parameters, CameraControl*);
 
 // Setters

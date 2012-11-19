@@ -107,7 +107,8 @@ static const char *ldpreload_names[LDPRELOAD_MAX + 1];
 static soinfo *preloads[LDPRELOAD_MAX + 1];
 
 #if LINKER_DEBUG
-int debug_verbosity;
+int debug_verbosity = 0;
+int debug_stdout = 0;
 #endif
 
 static int pid;
@@ -1141,6 +1142,16 @@ init_library(soinfo *si)
 {
     unsigned wr_offset = 0xffffffff;
 
+    const char* env;
+    env = getenv("HYBRIS_DEBUG");
+    if (env)
+        debug_verbosity = atoi(env);
+
+    if (getenv("HYBRIS_STDOUT"))
+        debug_stdout = 1;
+
+    INFO("[ HYBRIS: initializing library '%s']\n", si->name);
+
     /* At this point we know that whatever is loaded @ base is a valid ELF
      * shared library whose segments are properly mapped in. */
     TRACE("[ %5d init_library base=0x%08x sz=0x%08x name='%s') ]\n",
@@ -1253,14 +1264,13 @@ static int reloc_library(soinfo *si, Elf32_Rel *rel, unsigned count)
         unsigned sym_addr = 0;
         char *sym_name = NULL;
 
-        //printf("%5d Processing '%s' relocation at index %d\n", pid,
-        //      si->name, idx);
         if(sym != 0) {
             sym_name = (char *)(strtab + symtab[sym].st_name);
-            //printf("Sym name =%s\n",sym_name);
+            INFO("HYBRIS: '%s' checking hooks for sym '%s'\n", si->name, sym_name);
             sym_addr = NULL;
               if ((sym_addr = get_hooked_symbol(sym_name)) != NULL) {
-                //printf("hooked symbol %s to %x\n", sym_name, sym_addr);
+                INFO("HYBRIS: '%s' hooked symbol %s to %x\n", si->name,
+				                  sym_name, sym_addr);
               }
               else
                 {
