@@ -27,11 +27,11 @@ extern "C" {
 #include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
-    
+
     struct SfClient;
     struct SfSurface;
-    
-    enum 
+
+    enum
     {
         SURFACE_FLINGER_DEFAULT_DISPLAY_ID = 0
     };
@@ -53,7 +53,7 @@ extern "C" {
     EGLConfig sf_client_get_egl_config(SfClient* client);
     void sf_client_begin_transaction(SfClient*);
     void sf_client_end_transaction(SfClient*);
-    
+
     typedef struct
     {
         int x;
@@ -66,17 +66,17 @@ extern "C" {
         bool create_egl_window_surface;
         const char* name;
     } SfSurfaceCreationParameters;
-    
+
     SfSurface* sf_surface_create(SfClient* client, SfSurfaceCreationParameters* params);
     EGLSurface sf_surface_get_egl_surface(SfSurface*);
     EGLNativeWindowType sf_surface_get_egl_native_window(SfSurface*);
     void sf_surface_make_current(SfSurface* surface);
-    
+
     void sf_surface_move_to(SfSurface* surface, int x, int y);
     void sf_surface_set_size(SfSurface* surface, int w, int h);
     void sf_surface_set_layer(SfSurface* surface, int layer);
     void sf_surface_set_alpha(SfSurface* surface, float alpha);
-    
+
 #ifdef __cplusplus
 }
 #endif

@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-    #include <stdint.h>
+#include <stdint.h>
 
     static const size_t MAX_POINTER_COUNT = 16;
 
@@ -56,7 +56,7 @@ extern "C" {
                 int32_t switch_value;
             } hw_switch;
             struct KeyEvent
-            {                
+            {
                 int32_t key_code;
                 int32_t scan_code;
                 int32_t repeat_count;
@@ -74,9 +74,10 @@ extern "C" {
                 float y_precision;
                 nsecs_t down_time;
                 nsecs_t event_time;
-                
+
                 size_t pointer_count;
-                struct PointerCoordinates {
+                struct PointerCoordinates
+                {
                     int id;
                     float x, raw_x;
                     float y, raw_y;
@@ -85,17 +86,17 @@ extern "C" {
                     float size;
                     float pressure;
                     float orientation;
-                }; 
-                PointerCoordinates pointer_coordinates[MAX_POINTER_COUNT];                
+                };
+                PointerCoordinates pointer_coordinates[MAX_POINTER_COUNT];
             } motion;
         } details;
     };
-    
+
     struct AndroidEventListener
     {
         typedef void (*on_new_event_callback)(Event* event, void* context);
 
-        on_new_event_callback on_new_event;        
+        on_new_event_callback on_new_event;
         void* context;
     };
 
@@ -106,9 +107,9 @@ extern "C" {
     };
 
     void android_input_stack_initialize(
-        AndroidEventListener* listener, 
+        AndroidEventListener* listener,
         InputStackConfiguration* input_stack_configuration);
-    
+
     void android_input_stack_loop_once();
     void android_input_stack_start();
     void android_input_stack_start_waiting_for_flag(bool* flag);

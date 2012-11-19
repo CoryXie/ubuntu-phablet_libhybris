@@ -1,3 +1,20 @@
+/*
+ * Copyright © 2012 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Thomas Voß <thomas.voss@canonical.com>
+ */
 #ifndef DEFAULT_APPLICATION_MANAGER_H_
 #define DEFAULT_APPLICATION_MANAGER_H_
 
@@ -17,7 +34,7 @@
 namespace mir
 {
 struct ApplicationManager : public android::BnApplicationManager,
-                            public android::IBinder::DeathRecipient
+    public android::IBinder::DeathRecipient
 {
     static const int shell_components_base_layer = 200;
     static const int focused_application_base_layer = 100;
@@ -26,12 +43,12 @@ struct ApplicationManager : public android::BnApplicationManager,
 
     class InputFilter : public android::InputFilter
     {
-      public:
+    public:
         InputFilter(ApplicationManager* manager);
-        
+
         bool filter_event(const android::InputEvent* event);
-                
-      private:
+
+    private:
         ApplicationManager* manager;
 
         bool handle_key_event(const android::KeyEvent* event);
@@ -39,16 +56,16 @@ struct ApplicationManager : public android::BnApplicationManager,
 
     class LockingIterator : public android::RefBase
     {
-      public:
+    public:
         void advance() ;
 
         bool is_valid() const;
 
         void make_current();
-        
+
         const android::sp<mir::ApplicationSession>& operator*();
 
-      protected:
+    protected:
         friend class ApplicationManager;
 
         LockingIterator(
@@ -56,8 +73,8 @@ struct ApplicationManager : public android::BnApplicationManager,
             size_t index);
 
         virtual ~LockingIterator();
-        
-      private:
+
+    private:
         ApplicationManager* manager;
         size_t it;
     };
@@ -78,18 +95,18 @@ struct ApplicationManager : public android::BnApplicationManager,
                              int ashmem_fd,
                              int out_socket_fd,
                              int in_socket_fd);
-    
+
     void register_a_surface(const android::String8& title,
                             const android::sp<android::IApplicationManagerSession>& session,
                             int32_t token,
                             int ashmem_fd,
                             int out_socket_fd,
                             int in_socket_fd);
-    
+
     void switch_focused_application_locked(size_t index_of_next_focused_app);
     void switch_focus_to_next_application_locked();
 
-  private:
+private:
     android::sp<android::InputListenerInterface> input_listener;
     android::sp<InputFilter> input_filter;
     android::sp<android::InputSetup> input_setup;

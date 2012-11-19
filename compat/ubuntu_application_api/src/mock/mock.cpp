@@ -1,3 +1,20 @@
+/*
+ * Copyright © 2012 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Thomas Voß <thomas.voss@canonical.com>
+ */
 #include <ubuntu/application/ui/init.h>
 #include <ubuntu/application/ui/session.h>
 #include <ubuntu/application/ui/session_credentials.h>
@@ -87,11 +104,11 @@ struct MockSessionService : public ubuntu::ui::SessionService
 
 struct MockSurface : public ubuntu::application::ui::Surface
 {
-    MockSurface(const ubuntu::application::ui::input::Listener::Ptr& listener) 
-            : ubuntu::application::ui::Surface(listener)
+    MockSurface(const ubuntu::application::ui::input::Listener::Ptr& listener)
+        : ubuntu::application::ui::Surface(listener)
     {
     }
-    
+
     bool is_visible() const
     {
         return true;
@@ -101,7 +118,7 @@ struct MockSurface : public ubuntu::application::ui::Surface
     {
         (void) visible;
     }
-    
+
     void set_alpha(float alpha)
     {
         (void) alpha;
