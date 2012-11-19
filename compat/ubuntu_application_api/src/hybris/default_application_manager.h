@@ -91,6 +91,7 @@ struct ApplicationManager : public android::BnApplicationManager,
     android::sp<LockingIterator> iterator();
 
     void start_a_new_session(const android::String8& app_name,
+                             const android::String8& desktop_file,
                              const android::sp<android::IApplicationManagerSession>& session,
                              int ashmem_fd,
                              int out_socket_fd,
@@ -103,16 +104,24 @@ struct ApplicationManager : public android::BnApplicationManager,
                             int out_socket_fd,
                             int in_socket_fd);
 
+    void register_an_observer(const android::sp<android::IApplicationManagerObserver>& observer);
+
     void switch_focused_application_locked(size_t index_of_next_focused_app);
     void switch_focus_to_next_application_locked();
 
 private:
+    void notify_observers_about_session_born(int id, const android::String8& desktop_file);
+    void notify_observers_about_session_focused(int id, const android::String8& desktop_file);
+    void notify_observers_about_session_died(int id, const android::String8& desktop_file);
+
     android::sp<android::InputListenerInterface> input_listener;
     android::sp<InputFilter> input_filter;
     android::sp<android::InputSetup> input_setup;
     android::Mutex guard;
     android::KeyedVector< android::sp<android::IBinder>, android::sp<mir::ApplicationSession> > apps;
     android::Vector< android::sp<android::IBinder> > apps_as_added;
+    android::Mutex observer_guard;
+    android::Vector< android::sp<android::IApplicationManagerObserver> > app_manager_observers;
     size_t focused_application;
 };
 

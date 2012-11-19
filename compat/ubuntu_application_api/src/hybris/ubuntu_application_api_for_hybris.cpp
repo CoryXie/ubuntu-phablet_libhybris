@@ -27,6 +27,7 @@
 #include <ubuntu/application/ui/surface_factory.h>
 #include <ubuntu/application/ui/surface_properties.h>
 
+#include <ubuntu/ui/session_enumerator.h>
 #include <ubuntu/ui/session_service.h>
 
 #include <binder/IPCThreadState.h>
@@ -42,6 +43,64 @@
 
 namespace android
 {
+
+struct Setup : public ubuntu::application::ui::Setup
+{
+    Setup() : stage(ubuntu::application::ui::main_stage),
+        form_factor(ubuntu::application::ui::desktop_form_factor)
+    {
+    }
+
+    static android::KeyedVector<android::String8, ubuntu::application::ui::StageHint> init_string_to_stage_hint_lut()
+    {
+        android::KeyedVector<android::String8, ubuntu::application::ui::StageHint> lut;
+        lut.add(android::String8("main_stage"), ubuntu::application::ui::main_stage);
+        lut.add(android::String8("side_stage"), ubuntu::application::ui::side_stage);
+        lut.add(android::String8("share_stage"), ubuntu::application::ui::share_stage);
+
+        return lut;
+    }
+
+    static ubuntu::application::ui::StageHint string_to_stage_hint(const android::String8& s)
+    {
+        static android::KeyedVector<android::String8, ubuntu::application::ui::StageHint> lut = init_string_to_stage_hint_lut();
+
+        return lut.valueFor(s);
+    }
+
+    static android::KeyedVector<android::String8, ubuntu::application::ui::FormFactorHint> init_string_to_form_factor_hint_lut()
+    {
+        android::KeyedVector<android::String8, ubuntu::application::ui::FormFactorHint> lut;
+        lut.add(android::String8("desktop"), ubuntu::application::ui::desktop_form_factor);
+        lut.add(android::String8("phone"), ubuntu::application::ui::phone_form_factor);
+        lut.add(android::String8("tablet"), ubuntu::application::ui::tablet_form_factor);
+
+        return lut;
+    }
+
+    static ubuntu::application::ui::FormFactorHint string_to_form_factor_hint(const android::String8& s)
+    {
+        static android::KeyedVector<android::String8, ubuntu::application::ui::FormFactorHint> lut = init_string_to_form_factor_hint_lut();
+
+        return lut.valueFor(s);
+    }
+
+    ubuntu::application::ui::StageHint stage_hint()
+    {
+        return ubuntu::application::ui::main_stage;
+    }
+
+    ubuntu::application::ui::FormFactorHintFlags form_factor_hint()
+    {
+        return ubuntu::application::ui::desktop_form_factor;
+    }
+
+    ubuntu::application::ui::StageHint stage;
+    ubuntu::application::ui::FormFactorHintFlags form_factor;
+    android::String8 desktop_file;
+};
+
+static Setup::Ptr global_setup(new Setup());
 
 struct PhysicalDisplayInfo : public ubuntu::application::ui::PhysicalDisplayInfo
 {
@@ -327,6 +386,7 @@ struct Session : public ubuntu::application::ui::Session
 
         app_manager.start_a_new_session(
             String8(creds.application_name),
+            String8("/usr/share/applications/shotwell.desktop"),
             app_manager_session,
             server_channel->getAshmemFd(),
             server_channel->getSendPipeFd(),
@@ -409,10 +469,100 @@ struct Session : public ubuntu::application::ui::Session
     }
 };
 
+struct SessionProperties : public ubuntu::ui::SessionProperties
+{
+    SessionProperties(int id, const android::String8& desktop_file)
+        : id(id),
+          desktop_file(desktop_file)
+    {
+    }
+
+    int application_instance_id() const
+    {
+        return id;
+    }
+
+    const char* value_for_key(const char* key) const
+    {
+        return "lalelu";
+    }
+
+    virtual const char* desktop_file_hint() const
+    {
+        return desktop_file.string();
+    }
+
+    int id;
+    android::String8 desktop_file;
+};
+
+struct ApplicationManagerObserver : public android::BnApplicationManagerObserver
+{
+    void on_session_born(int id,
+                         const String8& desktop_file)
+    {
+        if (observer == NULL)
+            return;
+
+        observer->on_session_born(ubuntu::ui::SessionProperties::Ptr(new SessionProperties(id, desktop_file)));
+    }
+
+    virtual void on_session_focused(int id,
+                                    const String8& desktop_file)
+    {
+        if (observer == NULL)
+            return;
+
+        observer->on_session_focused(ubuntu::ui::SessionProperties::Ptr(new SessionProperties(id, desktop_file)));
+    }
+
+    virtual void on_session_died(int id,
+                                 const String8& desktop_file)
+    {
+        if (observer == NULL)
+            return;
+
+        observer->on_session_died(ubuntu::ui::SessionProperties::Ptr(new SessionProperties(id, desktop_file)));
+    }
+
+    void install_session_lifecycle_observer(const ubuntu::ui::SessionLifeCycleObserver::Ptr& observer)
+    {
+        this->observer = observer;
+
+        sp<IServiceManager> service_manager = defaultServiceManager();
+        sp<IBinder> service = service_manager->getService(
+                                  String16(IApplicationManager::exported_service_name()));
+        BpApplicationManager app_manager(service);
+
+        app_manager.register_an_observer(android::sp<IApplicationManagerObserver>(this));
+    }
+
+    ubuntu::ui::SessionLifeCycleObserver::Ptr observer;
+};
+
 struct SessionService : public ubuntu::ui::SessionService
 {
-    SessionService()
+
+    struct SessionPreviewProvider : public ubuntu::ui::SessionPreviewProvider
     {
+        SessionPreviewProvider()
+        {
+        }
+
+        bool get_or_update_session_preview(GLuint texture, unsigned int& w, unsigned int& h)
+        {
+            (void) texture;
+
+            w = 1024;
+            h = 768;
+
+            return true;
+        }
+    };
+
+    SessionService() : observer(new ApplicationManagerObserver())
+    {
+        android::ProcessState::self()->startThreadPool();
     }
 
     const ubuntu::application::ui::Session::Ptr& start_a_new_session(const ubuntu::application::ui::SessionCredentials& cred)
@@ -421,22 +571,25 @@ struct SessionService : public ubuntu::ui::SessionService
         static ubuntu::application::ui::Session::Ptr session(new Session(cred));
         return session;
     }
-};
 
-struct MockSetup : public ubuntu::application::ui::Setup
-{
-    ubuntu::application::ui::StageHint stage_hint()
+    void install_session_lifecycle_observer(const ubuntu::ui::SessionLifeCycleObserver::Ptr& lifecycle_observer)
     {
-        return ubuntu::application::ui::main_stage;
+        this->observer->install_session_lifecycle_observer(lifecycle_observer);
     }
 
-    ubuntu::application::ui::FormFactorHintFlags form_factor_hint()
+    void focus_running_session_with_id(int id)
     {
-        return ubuntu::application::ui::desktop_form_factor;
+        (void) id;
     }
+
+    android::sp<ApplicationManagerObserver> observer;
 };
 
 }
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <getopt.h>
 
 // We need to inject some platform specific symbols here.
 namespace ubuntu
@@ -447,14 +600,78 @@ namespace ui
 {
 void init(int argc, char** argv)
 {
-    (void) argc;
-    (void) argv;
+    static struct option long_options[] =
+    {
+        {"form_factor_hint", required_argument, 0, 'f'},
+        {"stage_hint", required_argument, 0, 's'},
+        {"desktop_file_hint", required_argument, 0, 'd'},
+        {0, 0, 0, 0}
+    };
+
+    static const int form_factor_hint_index = 0;
+    static const int stage_hint_index = 1;
+    static const int desktop_file_hint_index = 2;
+
+    android::Setup* setup = new android::Setup();
+
+    while(true)
+    {
+        int option_index = 0;
+
+        int c = getopt_long(argc,
+                            argv,
+                            "s:d:f:",
+                            long_options,
+                            &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+        case 0:
+            // If this option set a flag, do nothing else now.
+            if (long_options[option_index].flag != 0)
+                break;
+            if (optarg)
+            {
+                switch(option_index)
+                {
+                case form_factor_hint_index:
+                    setup->form_factor = android::Setup::string_to_form_factor_hint(android::String8(optarg));
+                    break;
+                case stage_hint_index:
+                    setup->stage = android::Setup::string_to_stage_hint(android::String8(optarg));
+                    break;
+                case desktop_file_hint_index:
+                    setup->desktop_file = android::String8(optarg);
+                    break;
+                }
+                printf (" with arg %s", optarg);
+            }
+            printf ("\n");
+            break;
+        case 's':
+            printf ("option -s with value `%s'\n", optarg);
+            break;
+        case 'd':
+            printf ("option -d with value `%s'\n", optarg);
+            break;
+        case 'f':
+            printf ("option -f with value `%s'\n", optarg);
+            break;
+
+        case '?':
+            break;
+        }
+    }
+
+    android::global_setup = setup;
 }
 
 const ubuntu::application::ui::Setup::Ptr& ubuntu::application::ui::Setup::instance()
 {
-    static ubuntu::application::ui::Setup::Ptr session(new android::MockSetup());
-    return session;
+    return android::global_setup;
 }
 
 }
@@ -465,6 +682,24 @@ const ubuntu::ui::SessionService::Ptr& ubuntu::ui::SessionService::instance()
 {
     static ubuntu::ui::SessionService::Ptr instance(new android::SessionService());
     return instance;
+}
+
+const char* SessionProperties::key_application_instance_id()
+{
+    static const char* key = "application_instance_id";
+    return key;
+}
+
+const char* SessionProperties::key_application_name()
+{
+    static const char* key = "application_name";
+    return key;
+}
+
+const char* SessionProperties::key_desktop_file_hint()
+{
+    static const char* key = "desktop_file_hint";
+    return key;
 }
 }
 }

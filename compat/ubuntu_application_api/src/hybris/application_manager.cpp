@@ -22,6 +22,7 @@
 
 namespace android
 {
+IMPLEMENT_META_INTERFACE(ApplicationManagerObserver, "UbuntuApplicationManagerObserver");
 IMPLEMENT_META_INTERFACE(ApplicationManagerSession, "UbuntuApplicationManagerSession");
 IMPLEMENT_META_INTERFACE(ApplicationManager, "UbuntuApplicationManager");
 
@@ -101,6 +102,79 @@ IApplicationManagerSession::SurfaceProperties BpApplicationManagerSession::query
     return props;
 }
 
+status_t BnApplicationManagerObserver::onTransact(uint32_t code,
+        const Parcel& data,
+        Parcel* reply,
+        uint32_t flags)
+{
+    int id = data.readInt32();
+    String8 desktop_file = data.readString8();
+
+    switch(code)
+    {
+    case ON_SESSION_BORN_NOTIFICATION:
+        on_session_born(id, desktop_file);
+        break;
+
+    case ON_SESSION_FOCUSED_NOTIFICATION:
+        on_session_focused(id, desktop_file);
+        break;
+
+    case ON_SESSION_DIED_NOTIFICATION:
+        on_session_died(id, desktop_file);
+        break;
+    }
+
+    return NO_ERROR;
+}
+
+BpApplicationManagerObserver::BpApplicationManagerObserver(const sp<IBinder>& impl)
+    : BpInterface<IApplicationManagerObserver>(impl)
+{
+}
+
+void BpApplicationManagerObserver::on_session_born(int id,
+        const String8& desktop_file_hint)
+{
+    Parcel in, out;
+    in.writeInt32(id);
+    in.writeString8(desktop_file_hint);
+
+    remote()->transact(
+        ON_SESSION_BORN_NOTIFICATION,
+        in,
+        &out,
+        android::IBinder::FLAG_ONEWAY);
+}
+
+void BpApplicationManagerObserver::on_session_focused(int id,
+        const String8& desktop_file_hint)
+{
+    Parcel in, out;
+    in.writeInt32(id);
+    in.writeString8(desktop_file_hint);
+
+    remote()->transact(
+        ON_SESSION_FOCUSED_NOTIFICATION,
+        in,
+        &out,
+        android::IBinder::FLAG_ONEWAY);
+}
+
+void BpApplicationManagerObserver::on_session_died(int id,
+        const String8& desktop_file_hint)
+{
+    Parcel in, out;
+    in.writeInt32(id);
+    in.writeString8(desktop_file_hint);
+
+    remote()->transact(
+        ON_SESSION_DIED_NOTIFICATION,
+        in,
+        &out,
+        android::IBinder::FLAG_ONEWAY);
+}
+
 BnApplicationManager::BnApplicationManager()
 {
 }
@@ -119,13 +193,14 @@ status_t BnApplicationManager::onTransact(uint32_t code,
     case START_A_NEW_SESSION_COMMAND:
     {
         String8 app_name = data.readString8();
+        String8 desktop_file = data.readString8();
         sp<IBinder> binder = data.readStrongBinder();
         sp<BpApplicationManagerSession> session(new BpApplicationManagerSession(binder));
         int ashmem_fd = data.readFileDescriptor();
         int out_fd = data.readFileDescriptor();
         int in_fd = data.readFileDescriptor();
 
-        start_a_new_session(app_name, session, ashmem_fd, out_fd, in_fd);
+        start_a_new_session(app_name, desktop_file, session, ashmem_fd, out_fd, in_fd);
     }
     break;
     case REGISTER_A_SURFACE_COMMAND:
@@ -141,6 +216,10 @@ status_t BnApplicationManager::onTransact(uint32_t code,
         register_a_surface(title, session, surface_token, ashmem_fd, out_fd, in_fd);
     }
     break;
+    case REGISTER_AN_OBSERVER_COMMAND:
+        sp<IBinder> binder = data.readStrongBinder();
+        sp<BpApplicationManagerObserver> observer(new BpApplicationManagerObserver(binder));
+        register_an_observer(observer);
     }
     return NO_ERROR;
 }
@@ -155,6 +234,7 @@ BpApplicationManager::~BpApplicationManager()
 }
 
 void BpApplicationManager::start_a_new_session(const String8& app_name,
+        const String8& desktop_file,
         const sp<IApplicationManagerSession>& session,
         int ashmem_fd,
         int out_socket_fd,
@@ -164,6 +244,7 @@ void BpApplicationManager::start_a_new_session(const String8& app_name,
     Parcel in, out;
     in.pushAllowFds(true);
     in.writeString8(app_name);
+    in.writeString8(desktop_file);
     in.writeStrongBinder(session->asBinder());
     in.writeFileDescriptor(ashmem_fd);
     in.writeFileDescriptor(out_socket_fd);
@@ -192,6 +273,16 @@ void BpApplicationManager::register_a_surface(const String8& title,
     in.writeFileDescriptor(in_socket_fd);
 
     remote()->transact(REGISTER_A_SURFACE_COMMAND,
+                       in,
+                       &out);
+}
+
+void BpApplicationManager::register_an_observer(const sp<IApplicationManagerObserver>& observer)
+{
+    Parcel in, out;
+    in.writeStrongBinder(observer->asBinder());
+
+    remote()->transact(REGISTER_AN_OBSERVER_COMMAND,
                        in,
                        &out);
 }
