@@ -237,7 +237,6 @@ void ApplicationManager::register_a_surface(const android::String8& title,
 void ApplicationManager::register_an_observer(
     const android::sp<android::IApplicationManagerObserver>& observer)
 {
-    printf("%s: %p\n", __PRETTY_FUNCTION__, observer.get());
     android::Mutex::Autolock al(observer_guard);
     app_manager_observers.push_back(observer);
     {
@@ -329,8 +328,6 @@ void ApplicationManager::notify_observers_about_session_focused(int id, const an
 
 void ApplicationManager::notify_observers_about_session_died(int id, const android::String8& desktop_file)
 {
-    printf("%s: %d\n", __PRETTY_FUNCTION__, id);
-
     android::Mutex::Autolock al(observer_guard);
     for(unsigned int i = 0; i < app_manager_observers.size(); i++)
     {
