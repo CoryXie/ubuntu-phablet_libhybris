@@ -1,3 +1,20 @@
+/*
+ * Copyright © 2012 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Thomas Voß <thomas.voss@canonical.com>
+ */
 #include "event_loop.h"
 
 #include <ubuntu/application/sensors/sensor_service.h>
@@ -22,17 +39,17 @@ namespace hybris
 {
 
 typedef android::KeyedVector<
-    ubuntu::application::sensors::SensorType,
-    uint32_t> ForwardSensorTypeLut;
+ubuntu::application::sensors::SensorType,
+       uint32_t> ForwardSensorTypeLut;
 
 typedef android::KeyedVector<
-    uint32_t,
-    ubuntu::application::sensors::SensorType> BackwardSensorTypeLut;
+uint32_t,
+ubuntu::application::sensors::SensorType> BackwardSensorTypeLut;
 
 static ForwardSensorTypeLut init_forward_sensor_type_lut()
 {
     static ForwardSensorTypeLut lut;
-    
+
     lut.add(sensor_type_accelerometer, ASENSOR_TYPE_ACCELEROMETER);
     lut.add(sensor_type_magnetic_field, ASENSOR_TYPE_MAGNETIC_FIELD);
     lut.add(sensor_type_gyroscope, ASENSOR_TYPE_GYROSCOPE);
@@ -67,9 +84,9 @@ struct Sensor : public ubuntu::application::sensors::Sensor
     typedef ubuntu::platform::shared_ptr<Sensor> Ptr;
 
     Sensor(
-        const android::Sensor* sensor, 
+        const android::Sensor* sensor,
         const android::sp<android::SensorEventQueue>& queue) : sensor(sensor),
-                                                               sensor_event_queue(queue)
+        sensor_event_queue(queue)
     {
     };
 
@@ -90,7 +107,7 @@ struct Sensor : public ubuntu::application::sensors::Sensor
 
     void register_listener(const SensorListener::Ptr& listener)
     {
-        this->listener = listener;        
+        this->listener = listener;
     }
 
     const SensorListener::Ptr& registered_listener()
@@ -112,7 +129,7 @@ struct Sensor : public ubuntu::application::sensors::Sensor
     {
         return backward_sensor_type_lut.valueFor(sensor->getType());
     }
-    
+
     float min_value()
     {
         return sensor->getMinValue();
@@ -148,19 +165,19 @@ void print_vector(const ASensorVector& vec)
     printf("Status: %d \n", vec.status);
     printf("\t\t %f, %f, %f \n", vec.v[0], vec.v[1], vec.v[2]);
     printf("\t\t %f, %f, %f \n", vec.x, vec.y, vec.z);
-    printf("\t\t %f, %f, %f \n", vec.azimuth, vec.pitch, vec.roll);    
+    printf("\t\t %f, %f, %f \n", vec.azimuth, vec.pitch, vec.roll);
 }
 
 struct SensorService : public ubuntu::application::sensors::SensorService
-{    
+{
     static int looper_callback(int receiveFd, int events, void* ctxt)
     {
-        printf("%s: %d, %d, %p \n", 
+        printf("%s: %d, %d, %p \n",
                __PRETTY_FUNCTION__,
                receiveFd,
                events,
                ctxt);
-        
+
         static const int success_and_continue = 1;
         static const int error_and_abort = 0;
 
@@ -168,7 +185,7 @@ struct SensorService : public ubuntu::application::sensors::SensorService
 
         if (!thiz)
             return error_and_abort;
-        
+
         if (thiz->sensor_event_queue->getFd() != receiveFd)
             return success_and_continue;
 
@@ -187,35 +204,35 @@ struct SensorService : public ubuntu::application::sensors::SensorService
         reading->timestamp = event.timestamp;
         switch (event.type)
         {
-            case ASENSOR_TYPE_ACCELEROMETER:
-                memcpy(
-                    reading->acceleration.v, 
-                    event.acceleration.v, 
-                    sizeof(reading->acceleration.v));
-                break;
-            case ASENSOR_TYPE_MAGNETIC_FIELD:
-                memcpy(
-                    reading->magnetic.v, 
-                    event.magnetic.v, 
-                    sizeof(reading->magnetic.v));
-                break;
-            case ASENSOR_TYPE_GYROSCOPE:
-                memcpy(
-                    reading->acceleration.v, 
-                    event.acceleration.v, 
-                    sizeof(reading->acceleration.v));
-                break;
-            case ASENSOR_TYPE_LIGHT:
-                reading->light = event.light;
-                break;
-            case ASENSOR_TYPE_PROXIMITY:
-                reading->distance = event.distance;
-                break;
-            case SENSOR_TYPE_ORIENTATION:
-                reading->vector.v[0] = event.vector.azimuth;
-                reading->vector.v[1] = event.vector.pitch;
-                reading->vector.v[2] = event.vector.roll;
-                break;
+        case ASENSOR_TYPE_ACCELEROMETER:
+            memcpy(
+                reading->acceleration.v,
+                event.acceleration.v,
+                sizeof(reading->acceleration.v));
+            break;
+        case ASENSOR_TYPE_MAGNETIC_FIELD:
+            memcpy(
+                reading->magnetic.v,
+                event.magnetic.v,
+                sizeof(reading->magnetic.v));
+            break;
+        case ASENSOR_TYPE_GYROSCOPE:
+            memcpy(
+                reading->acceleration.v,
+                event.acceleration.v,
+                sizeof(reading->acceleration.v));
+            break;
+        case ASENSOR_TYPE_LIGHT:
+            reading->light = event.light;
+            break;
+        case ASENSOR_TYPE_PROXIMITY:
+            reading->distance = event.distance;
+            break;
+        case SENSOR_TYPE_ORIENTATION:
+            reading->vector.v[0] = event.vector.azimuth;
+            reading->vector.v[1] = event.vector.pitch;
+            reading->vector.v[2] = event.vector.roll;
+            break;
         }
 
         if (sensor->registered_listener() != NULL)
@@ -224,13 +241,13 @@ struct SensorService : public ubuntu::application::sensors::SensorService
         return success_and_continue;
     }
 
-    SensorService() : 
-            sensor_event_queue(android::SensorManager::getInstance().createEventQueue()),
-            looper(new android::Looper(false)),
-            event_loop(new ubuntu::application::EventLoop(looper))
+    SensorService() :
+        sensor_event_queue(android::SensorManager::getInstance().createEventQueue()),
+        looper(new android::Looper(false)),
+        event_loop(new ubuntu::application::EventLoop(looper))
     {
         looper->addFd(
-            sensor_event_queue->getFd(), 
+            sensor_event_queue->getFd(),
             0,
             ALOOPER_EVENT_INPUT,
             looper_callback,
@@ -252,10 +269,10 @@ ubuntu::platform::shared_ptr<SensorService> instance;
 ubuntu::application::sensors::Sensor::Ptr ubuntu::application::sensors::SensorService::sensor_for_type(
     ubuntu::application::sensors::SensorType type)
 {
-    const android::Sensor* sensor = 
-            android::SensorManager::getInstance().getDefaultSensor(
-                hybris::forward_sensor_type_lut.valueFor(type));
-    
+    const android::Sensor* sensor =
+        android::SensorManager::getInstance().getDefaultSensor(
+            hybris::forward_sensor_type_lut.valueFor(type));
+
     if (sensor == NULL)
         return Sensor::Ptr();
 
@@ -266,7 +283,7 @@ ubuntu::application::sensors::Sensor::Ptr ubuntu::application::sensors::SensorSe
         new hybris::Sensor(
             sensor,
             hybris::instance->sensor_event_queue));
-    
+
     if (sensor)
         hybris::instance->sensor_registry.add(p->id(), p);
 

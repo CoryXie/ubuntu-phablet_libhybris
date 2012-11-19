@@ -1,3 +1,20 @@
+/*
+ * Copyright © 2012 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Thomas Voß <thomas.voss@canonical.com>
+ */
 #include "input_stack_compatibility_layer.h"
 
 #include "InputListener.h"
@@ -21,7 +38,7 @@ namespace
 
 class DefaultPointerControllerPolicy : public android::PointerControllerPolicyInterface
 {
-  public:
+public:
 
     static const size_t bitmap_width = 64;
     static const size_t bitmap_height = 64;
@@ -33,25 +50,25 @@ class DefaultPointerControllerPolicy : public android::PointerControllerPolicyIn
             bitmap_width,
             bitmap_height);
         bitmap.allocPixels();
-        
+
         // Icon for spot touches
         bitmap.eraseARGB(125, 0, 255, 0);
         spotTouchIcon = android::SpriteIcon(
-            bitmap, 
-            bitmap_width/2, 
-            bitmap_height/2);
+                            bitmap,
+                            bitmap_width/2,
+                            bitmap_height/2);
         // Icon for anchor touches
         bitmap.eraseARGB(125, 0, 0, 255);
         spotAnchorIcon = android::SpriteIcon(
-            bitmap, 
-            bitmap_width/2, 
-            bitmap_height/2);
+                             bitmap,
+                             bitmap_width/2,
+                             bitmap_height/2);
         // Icon for hovering touches
         bitmap.eraseARGB(125, 255, 0, 0);
         spotHoverIcon = android::SpriteIcon(
-            bitmap, 
-            bitmap_width/2, 
-            bitmap_height/2);
+                            bitmap,
+                            bitmap_width/2,
+                            bitmap_height/2);
     }
 
     void loadPointerResources(android::PointerResources* outResources)
@@ -69,15 +86,15 @@ class DefaultPointerControllerPolicy : public android::PointerControllerPolicyIn
 
 class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInterface
 {
-  public:
+public:
     static const android::DisplayID internal_display_id = 0;
     static const android::DisplayID external_display_id = 1;
 
     DefaultInputReaderPolicyInterface(
-        InputStackConfiguration* configuration, 
-        const android::sp<android::Looper>& looper) 
-            : looper(looper),
-              default_layer_for_touch_point_visualization(configuration->default_layer_for_touch_point_visualization)
+        InputStackConfiguration* configuration,
+        const android::sp<android::Looper>& looper)
+        : looper(looper),
+          default_layer_for_touch_point_visualization(configuration->default_layer_for_touch_point_visualization)
     {
         default_configuration.showTouches = configuration->enable_touch_point_visualization;
 
@@ -96,7 +113,7 @@ class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInter
         /*android::SurfaceComposerClient::getDisplayInfo(
             external_display_id,
             &default_configuration.mExternalDisplay);
-        
+
         default_configuration.mInternalDisplay.width = info.width;
         default_configuration.mInternalDisplay.height = info.height;
         default_configuratoin.mInternalDisplay.orientation = info.orientation;
@@ -107,14 +124,14 @@ class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInter
     {
         *outConfig = default_configuration;
     }
-    
+
     android::sp<android::PointerControllerInterface> obtainPointerController(int32_t deviceId)
     {
         (void) deviceId;
-        
+
         android::sp<android::SpriteController> sprite_controller(
             new android::SpriteController(
-                looper, 
+                looper,
                 default_layer_for_touch_point_visualization));
         android::sp<android::PointerController> pointer_controller(
             new android::PointerController(
@@ -132,7 +149,7 @@ class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInter
         pointer_controller->setDisplaySize(w, h);
         return pointer_controller;
     }
-  private:
+private:
     android::sp<android::Looper> looper;
     int default_layer_for_touch_point_visualization;
     android::InputReaderConfiguration default_configuration;
@@ -140,11 +157,11 @@ class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInter
 
 class ExportedInputListener : public android::InputListenerInterface
 {
-  public:
+public:
     ExportedInputListener(AndroidEventListener* external_listener) : external_listener(external_listener)
     {
     }
-    
+
     void notifyConfigurationChanged(const android::NotifyConfigurationChangedArgs* args)
     {
         REPORT_FUNCTION();
@@ -166,16 +183,16 @@ class ExportedInputListener : public android::InputListenerInterface
         current_event.details.key.scan_code = args->scanCode;
         current_event.details.key.down_time = args->downTime;
         current_event.details.key.event_time = args->eventTime;
-        
+
         current_event.details.key.is_system_key = false;
-        
+
         external_listener->on_new_event(&current_event, external_listener->context);
     }
 
     void notifyMotion(const android::NotifyMotionArgs* args)
     {
         REPORT_FUNCTION();
-        
+
         current_event.type = MOTION_EVENT_TYPE;
         current_event.device_id = args->deviceId;
         current_event.source_id = args->source;
@@ -190,27 +207,27 @@ class ExportedInputListener : public android::InputListenerInterface
         current_event.details.motion.x_precision = args->xPrecision;
         current_event.details.motion.y_precision = args->yPrecision;
         current_event.details.motion.pointer_count = args->pointerCount;
-        
+
         for(unsigned int i = 0; i < current_event.details.motion.pointer_count; i++)
         {
-            current_event.details.motion.pointer_coordinates[i].id = args->pointerProperties[i].id; 
-            current_event.details.motion.pointer_coordinates[i].x 
-                    = current_event.details.motion.pointer_coordinates[i].raw_x
-                    = args->pointerCoords[i].getX();
-            current_event.details.motion.pointer_coordinates[i].y 
-                    = current_event.details.motion.pointer_coordinates[i].raw_y
-                    = args->pointerCoords[i].getY();
+            current_event.details.motion.pointer_coordinates[i].id = args->pointerProperties[i].id;
+            current_event.details.motion.pointer_coordinates[i].x
+            = current_event.details.motion.pointer_coordinates[i].raw_x
+              = args->pointerCoords[i].getX();
+            current_event.details.motion.pointer_coordinates[i].y
+            = current_event.details.motion.pointer_coordinates[i].raw_y
+              = args->pointerCoords[i].getY();
             current_event.details.motion.pointer_coordinates[i].touch_major
-                    = args->pointerCoords[i].getAxisValue(AMOTION_EVENT_AXIS_TOUCH_MAJOR);
+            = args->pointerCoords[i].getAxisValue(AMOTION_EVENT_AXIS_TOUCH_MAJOR);
             current_event.details.motion.pointer_coordinates[i].touch_minor
-                    = args->pointerCoords[i].getAxisValue(AMOTION_EVENT_AXIS_TOUCH_MINOR);
+            = args->pointerCoords[i].getAxisValue(AMOTION_EVENT_AXIS_TOUCH_MINOR);
             current_event.details.motion.pointer_coordinates[i].pressure
-                    = args->pointerCoords[i].getAxisValue(AMOTION_EVENT_AXIS_PRESSURE);
+            = args->pointerCoords[i].getAxisValue(AMOTION_EVENT_AXIS_PRESSURE);
             current_event.details.motion.pointer_coordinates[i].size
-                    = args->pointerCoords[i].getAxisValue(AMOTION_EVENT_AXIS_SIZE);
+            = args->pointerCoords[i].getAxisValue(AMOTION_EVENT_AXIS_SIZE);
             current_event.details.motion.pointer_coordinates[i].orientation
-                    = args->pointerCoords[i].getAxisValue(AMOTION_EVENT_AXIS_ORIENTATION);
-            
+            = args->pointerCoords[i].getAxisValue(AMOTION_EVENT_AXIS_ORIENTATION);
+
         }
 
         external_listener->on_new_event(&current_event, external_listener->context);
@@ -221,7 +238,7 @@ class ExportedInputListener : public android::InputListenerInterface
     {
         REPORT_FUNCTION();
         current_event.type = HW_SWITCH_EVENT_TYPE;
-        
+
         current_event.details.hw_switch.event_time = args->eventTime;
         current_event.details.hw_switch.policy_flags = args->policyFlags;
         current_event.details.hw_switch.switch_code = args->switchCode;
@@ -236,45 +253,45 @@ class ExportedInputListener : public android::InputListenerInterface
         (void) args;
     }
 
-  private:
+private:
     AndroidEventListener* external_listener;
     Event current_event;
 };
 
 class LooperThread : public android::Thread
 {
-  public:
+public:
     static const int default_poll_timeout_ms = 500;
 
     LooperThread(const android::sp<android::Looper>& looper) : looper(looper)
-    {        
+    {
     }
 
-  private:
+private:
     bool threadLoop()
     {
         if (ALOOPER_POLL_ERROR == looper->pollAll(default_poll_timeout_ms))
             return false;
         return true;
     }
-    
+
     android::sp<android::Looper> looper;
 };
 
 struct State : public android::RefBase
 {
     State(AndroidEventListener* listener,
-          InputStackConfiguration* configuration) 
-            : looper(new android::Looper(false)),
-              looper_thread(new LooperThread(looper)),
-              event_hub(new android::EventHub()),
-              input_reader_policy(new DefaultInputReaderPolicyInterface(configuration, looper)),
-              input_listener(new ExportedInputListener(listener)),
-              input_reader(new android::InputReader(
-                  event_hub, 
-                  input_reader_policy,
-                  input_listener)),
-              input_reader_thread(new android::InputReaderThread(input_reader))
+          InputStackConfiguration* configuration)
+        : looper(new android::Looper(false)),
+          looper_thread(new LooperThread(looper)),
+          event_hub(new android::EventHub()),
+          input_reader_policy(new DefaultInputReaderPolicyInterface(configuration, looper)),
+          input_listener(new ExportedInputListener(listener)),
+          input_reader(new android::InputReader(
+                           event_hub,
+                           input_reader_policy,
+                           input_listener)),
+          input_reader_thread(new android::InputReaderThread(input_reader))
     {
     }
 
@@ -284,7 +301,7 @@ struct State : public android::RefBase
     }
     android::sp<android::Looper> looper;
     android::sp<LooperThread> looper_thread;
-    
+
     android::sp<android::EventHubInterface> event_hub;
     android::sp<android::InputReaderPolicyInterface> input_reader_policy;
     android::sp<android::InputListenerInterface> input_listener;

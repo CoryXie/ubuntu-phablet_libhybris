@@ -80,11 +80,11 @@ size_t sf_get_display_height(size_t display_id)
 
 SfClient* sf_client_create_full(bool egl_support)
 {
-    
+
     SfClient* client = new SfClient();
-        
+
     client->client = new android::SurfaceComposerClient();
-    if (client->client == NULL) 
+    if (client->client == NULL)
     {
         report_failed_to_allocate_surface_flinger_composer_client_on_creation();
         delete client;
@@ -104,38 +104,44 @@ SfClient* sf_client_create_full(bool egl_support)
 
         int major, minor;
         int rc = eglInitialize(client->egl_display, &major, &minor);
-        if (rc == EGL_FALSE) {
+        if (rc == EGL_FALSE)
+        {
             report_failed_to_initialize_egl_on_creation();
             delete client;
             return NULL;
         }
 
-        EGLint attribs[] = {
+        EGLint attribs[] =
+        {
             EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
             EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-            EGL_NONE };
+            EGL_NONE
+        };
 
         int n;
         if (eglChooseConfig(
-                client->egl_display, 
-                attribs, 
-                &client->egl_config, 
-                1, 
-                &n) == EGL_FALSE) {
-          report_failed_to_choose_egl_config_on_creation();
-          delete client;
-          return NULL;
+                    client->egl_display,
+                    attribs,
+                    &client->egl_config,
+                    1,
+                    &n) == EGL_FALSE)
+        {
+            report_failed_to_choose_egl_config_on_creation();
+            delete client;
+            return NULL;
         }
 
-        EGLint context_attribs[] = { 
-            EGL_CONTEXT_CLIENT_VERSION, 2, 
-              EGL_NONE };
+        EGLint context_attribs[] =
+        {
+            EGL_CONTEXT_CLIENT_VERSION, 2,
+            EGL_NONE
+        };
 
         client->egl_context = eglCreateContext(
-            client->egl_display, 
-            client->egl_config, 
-            EGL_NO_CONTEXT, 
-            context_attribs);
+                                  client->egl_display,
+                                  client->egl_config,
+                                  EGL_NO_CONTEXT,
+                                  context_attribs);
     }
 
     return client;
@@ -143,7 +149,7 @@ SfClient* sf_client_create_full(bool egl_support)
 
 SfClient* sf_client_create()
 {
-  return sf_client_create_full(true);
+    return sf_client_create_full(true);
 }
 
 EGLDisplay sf_client_get_egl_display(SfClient* client)
@@ -190,16 +196,16 @@ SfSurface* sf_surface_create(SfClient* client, SfSurfaceCreationParameters* para
 {
     assert(client);
     assert(params);
-    
+
     SfSurface* surface = new SfSurface();
     surface->client = client;
     surface->surface_control = surface->client->client->createSurface(
-        android::String8(params->name), 
-        0, 
-        params->w, 
-        params->h, 
-        android::PIXEL_FORMAT_RGBA_8888,
-        0x300);
+                                   android::String8(params->name),
+                                   0,
+                                   params->w,
+                                   params->h,
+                                   android::PIXEL_FORMAT_RGBA_8888,
+                                   0x300);
 
     if (surface->surface_control == NULL)
     {
@@ -222,7 +228,7 @@ SfSurface* sf_surface_create(SfClient* client, SfSurfaceCreationParameters* para
         surface->surface_control->setPosition(params->x, params->y);
         surface->surface_control->setLayer(params->layer);
         surface->surface_control->setAlpha(params->alpha);
-    } 
+    }
     sf_client_end_transaction(client);
 
     if (params->create_egl_window_surface)
@@ -231,14 +237,14 @@ SfSurface* sf_surface_create(SfClient* client, SfSurfaceCreationParameters* para
         {
             android::sp<ANativeWindow> anw(surface->surface);
             surface->egl_surface = eglCreateWindowSurface(
-                surface->client->egl_display,
-                surface->client->egl_config,
-                anw.get(),
-                NULL);
+                                       surface->client->egl_display,
+                                       surface->client->egl_config,
+                                       anw.get(),
+                                       NULL);
         }
         else
-          fprintf(stderr, "Warning: params->create_egl_window_surface not "
-                  "supported, EGL support disabled\n");
+            fprintf(stderr, "Warning: params->create_egl_window_surface not "
+                    "supported, EGL support disabled\n");
     }
 
     return surface;
