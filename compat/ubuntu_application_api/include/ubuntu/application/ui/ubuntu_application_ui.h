@@ -48,7 +48,12 @@ extern "C" {
     {
         MAIN_ACTOR_ROLE,
         TOOL_SUPPORT_ACTOR_ROLE,
-        DIALOG_SUPPORT_ACTOR_ROLE
+        DIALOG_SUPPORT_ACTOR_ROLE,
+        DASH_ACTOR_ROLE,
+        LAUNCHER_ACTOR_ROLE,
+        INDICATOR_ACTOR_ROLE,
+        MENUBAR_ACTOR_ROLE,
+        ON_SCREEN_KEYBOARD_ACTOR_ROLE
     } SurfaceRole;
 
     typedef void (*input_event_cb)(void* ctx, const Event* ev);
