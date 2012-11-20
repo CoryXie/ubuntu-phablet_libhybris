@@ -82,7 +82,7 @@ struct ApplicationSession : public android::RefBase
             {
                 mInfo = new android::InputApplicationInfo();
                 mInfo->name = parent->app_name;
-                mInfo->dispatchingTimeout = 10 * 1000 * 1000 * 1000; // TODO(tvoss): Find out sensible value here
+                mInfo->dispatchingTimeout = INT_MAX;
             }
 
             return true;
@@ -128,7 +128,7 @@ struct ApplicationSession : public android::RefBase
                 mInfo->hasWallpaper = false;
                 mInfo->paused = false;
                 mInfo->layer = 100;
-                mInfo->dispatchingTimeout = 100 * 1000 * 1000 * 1000;
+                mInfo->dispatchingTimeout = INT_MAX;
                 mInfo->ownerPid = 0;
                 mInfo->ownerUid = 0;
                 mInfo->inputFeatures = 0;
