@@ -30,7 +30,12 @@ enum SurfaceRole
 {
     main_actor_role = MAIN_ACTOR_ROLE,
     tool_support_actor_role = TOOL_SUPPORT_ACTOR_ROLE,
-    dialog_support_actor_role = DIALOG_SUPPORT_ACTOR_ROLE
+    dialog_support_actor_role = DIALOG_SUPPORT_ACTOR_ROLE,
+    dash_actor_role = DASH_ACTOR_ROLE,
+    launcher_actor_role = LAUNCHER_ACTOR_ROLE,
+    indicator_actor_role = INDICATOR_ACTOR_ROLE,
+    menubar_actor_role = MENUBAR_ACTOR_ROLE,
+    on_screen_keyboard_actor_role = ON_SCREEN_KEYBOARD_ACTOR_ROLE
 };
 }
 }
