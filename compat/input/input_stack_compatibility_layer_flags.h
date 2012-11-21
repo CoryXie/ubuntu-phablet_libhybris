@@ -26,7 +26,8 @@
  * Constants that identify tool types.
  * Refer to the documentation on the MotionEvent class for descriptions of each tool type.
  */
-enum {
+enum
+{
     ISCL_MOTION_EVENT_TOOL_TYPE_UNKNOWN = 0,
     ISCL_MOTION_EVENT_TOOL_TYPE_FINGER = 1,
     ISCL_MOTION_EVENT_TOOL_TYPE_STYLUS = 2,
@@ -40,7 +41,8 @@ enum {
  * Refer to the documentation on android.view.InputDevice for more details about input sources
  * and their correct interpretation.
  */
-enum {
+enum
+{
     ISCL_INPUT_SOURCE_CLASS_MASK = 0x000000ff,
 
     ISCL_INPUT_SOURCE_CLASS_BUTTON = 0x00000001,
@@ -50,7 +52,8 @@ enum {
     ISCL_INPUT_SOURCE_CLASS_JOYSTICK = 0x00000010,
 };
 
-enum {
+enum
+{
     ISCL_INPUT_SOURCE_UNKNOWN = 0x00000000,
 
     ISCL_INPUT_SOURCE_KEYBOARD = 0x00000100 | ISCL_INPUT_SOURCE_CLASS_BUTTON,

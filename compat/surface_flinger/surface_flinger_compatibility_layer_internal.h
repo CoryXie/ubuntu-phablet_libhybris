@@ -47,7 +47,7 @@ struct SfSurface
     SfSurface() : client(NULL)
     {
     }
-    
+
     SfClient* client;
     android::sp<android::SurfaceControl> surface_control;
     android::sp<android::Surface> surface;

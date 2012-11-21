@@ -10,6 +10,7 @@ LOCAL_SRC_FILES := \
 	ubuntu_application_api_for_hybris.cpp \
 	ubuntu_application_sensors_for_hybris.cpp \
 	../default/default_ubuntu_application_ui.cpp \
+	../default/default_ubuntu_ui.cpp \
 	application_manager.cpp
 
 LOCAL_MODULE := libubuntu_application_api
@@ -58,6 +59,28 @@ LOCAL_SRC_FILES:= \
 	test_c_api.cpp \
 
 LOCAL_MODULE:= direct_ubuntu_application_c_api_for_hybris_test
+LOCAL_MODULE_TAGS := optional
+
+LOCAL_SHARED_LIBRARIES := \
+	libui \
+	libutils \
+	libEGL \
+	libGLESv2 \
+	libubuntu_application_api
+
+include $(BUILD_EXECUTABLE)
+
+include $(CLEAR_VARS)
+
+LOCAL_CFLAGS += -std=gnu++0x
+
+LOCAL_C_INCLUDES := \
+	canonical/hybris/compat/ubuntu_application_api/include
+
+LOCAL_SRC_FILES:= \
+	test_session_c_api.cpp \
+
+LOCAL_MODULE:= direct_ubuntu_application_session_c_api_for_hybris_test
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := \

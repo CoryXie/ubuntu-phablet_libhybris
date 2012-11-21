@@ -17,6 +17,7 @@
  */
 
 #include <ubuntu/application/ui/ubuntu_application_ui.h>
+#include <ubuntu/ui/ubuntu_ui_session_service.h>
 
 #include <assert.h>
 #include <dlfcn.h>
@@ -138,6 +139,11 @@ extern "C" {
     IMPLEMENT_FUNCTION1(EGLNativeWindowType, ubuntu_application_ui_surface_to_native_window_type, ubuntu_application_ui_surface);
     IMPLEMENT_VOID_FUNCTION3(ubuntu_application_ui_move_surface_to, ubuntu_application_ui_surface, int, int);
     IMPLEMENT_VOID_FUNCTION3(ubuntu_application_ui_resize_surface_to, ubuntu_application_ui_surface, int, int);
+
+// Session service
+IMPLEMENT_FUNCTION1(int, ubuntu_ui_session_properties_get_application_instance_id, ubuntu_ui_session_properties);
+IMPLEMENT_FUNCTION1(const char*, ubuntu_ui_session_properties_get_desktop_file_hint, ubuntu_ui_session_properties);
+IMPLEMENT_VOID_FUNCTION1(ubuntu_ui_session_install_session_lifecycle_observer, ubuntu_ui_session_lifecycle_observer*);
 
 #ifdef __cplusplus
 }

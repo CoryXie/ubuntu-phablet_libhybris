@@ -1,8 +1,19 @@
-libhybris (0.24) UNRELEASED; urgency=low
+libhybris (0.25) unstable; urgency=low
 
+  [ Ricardo Salveti de Araujo ]
+  * Covering static initializers and rwlock functions
+
+  [ Thomas Voß ]
+  * ubuntu_application_api: Add means for querying running sessions
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Mon, 19 Nov 2012 16:40:26 -0200
+
+libhybris (0.24) unstable; urgency=low
+
+  [ Ricardo Salveti de Araujo ]
   * Removing commented functions that were never used by us
 
- -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Thu, 15 Nov 2012 13:50:07 -0200
+ -- Michael Frey <michael.frey@canonical.com>  Fri, 16 Nov 2012 09:46:34 -0500
 
 libhybris (0.23) unstable; urgency=low
 

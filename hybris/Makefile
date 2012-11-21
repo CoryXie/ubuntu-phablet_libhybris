@@ -15,8 +15,7 @@ COMMON_SOURCES=common/strlcpy.c common/hooks.c common/properties.c
 
 ICS_SOURCES=ics/linker.c ics/dlfcn.c ics/rt.c ics/linker_environ.c ics/linker_format.c ics/init.c
 
-all:  libhybris_ics.so libEGL.so.1 libGLESv2.so.2 libcamera.so libmediaplayer.so libhardware.so libis.so libsf.so libubuntu_application_api.so test_camera test_media_player test_sf test_egl test_hw test_sensors test_ubuntu_app_api test_glesv2
-
+all:  libhybris_ics.so libEGL.so.1 libGLESv2.so.2 libcamera.so libmediaplayer.so libhardware.so libis.so libsf.so libubuntu_application_api.so test_camera test_media_player test_sf test_egl test_hw test_sensors test_ubuntu_app_api test_ubuntu_session_api test_glesv2
 
 libhybris_ics.so: $(COMMON_SOURCES) $(ICS_SOURCES)
 	$(CC) -g -shared -o $@ -ldl -pthread -fPIC -Iics -Icommon -DLINKER_DEBUG=1 -DLINKER_TEXT_BASE=0xB0000100 -DLINKER_AREA_SIZE=0x01000000 $(ARCHFLAGS) \
@@ -52,6 +51,9 @@ libubuntu_application_api.so.1.0: ubuntu_application_api/ubuntu_application_api.
 
 test_ubuntu_app_api: 
 	$(CXX) -g -o $@ ubuntu_application_api/test_c_api.cpp libubuntu_application_api.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/ubuntu_application_api/include
+
+test_ubuntu_session_api: 
+	$(CXX) -g -o $@ ubuntu_application_api/test_session_c_api.cpp libubuntu_application_api.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/ubuntu_application_api/include
 
 libEGL.so.1: libEGL.so.1.0
 	ln -sf libEGL.so.1.0 libEGL.so.1

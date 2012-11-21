@@ -12,8 +12,28 @@
 #include <signal.h>
 #include <errno.h>
 
-#define ANDROID_MUTEX_SHARED_MASK    0x2000
-#define ANDROID_COND_SHARED_MASK     0x0001
+/* TODO:
+*  - Check if the int arguments at attr_set/get match the ones at Android
+*  - Check how to deal with memory leaks (specially with static initializers)
+*  - Check for shared rwlock
+*/
+
+/* Base address to check for Android specifics */
+#define ANDROID_TOP_ADDR_VALUE_MUTEX  0xFFFF
+#define ANDROID_TOP_ADDR_VALUE_COND   0xFFFF
+#define ANDROID_TOP_ADDR_VALUE_RWLOCK 0xFFFF
+
+#define ANDROID_MUTEX_SHARED_MASK      0x2000
+#define ANDROID_COND_SHARED_MASK       0x0001
+#define ANDROID_RWLOCKATTR_SHARED_MASK 0x0010
+
+/* For the static initializer types */
+#define ANDROID_PTHREAD_MUTEX_INITIALIZER            0
+#define ANDROID_PTHREAD_RECURSIVE_MUTEX_INITIALIZER  0x4000
+#define ANDROID_PTHREAD_ERRORCHECK_MUTEX_INITIALIZER 0x8000
+#define ANDROID_PTHREAD_COND_INITIALIZER             0
+#define ANDROID_PTHREAD_RWLOCK_INITIALIZER           0
+
 
 static int nvidia_hack = 0;
 
@@ -28,7 +48,8 @@ static int hybris_check_android_shared_mutex(int mutex_addr)
     /* If not initialized or initialized by Android, it should contain a low
      * address, which is basically just the int values for Android's own
      * pthread_mutex_t */
-    if ((mutex_addr <= 0xFFFF) && (mutex_addr & ANDROID_MUTEX_SHARED_MASK))
+    if ((mutex_addr <= ANDROID_TOP_ADDR_VALUE_MUTEX) &&
+                    (mutex_addr & ANDROID_MUTEX_SHARED_MASK))
         return 1;
 
     return 0;
@@ -39,10 +60,50 @@ static int hybris_check_android_shared_cond(int cond_addr)
     /* If not initialized or initialized by Android, it should contain a low
      * address, which is basically just the int values for Android's own
      * pthread_cond_t */
-    if ((cond_addr <= 0xFFFF) && (cond_addr & ANDROID_COND_SHARED_MASK))
+    if ((cond_addr <= ANDROID_TOP_ADDR_VALUE_COND) &&
+                    (cond_addr & ANDROID_COND_SHARED_MASK))
         return 1;
 
     return 0;
+}
+
+static void hybris_set_mutex_attr(int android_value, pthread_mutexattr_t *attr)
+{
+    /* Init already sets as PTHREAD_MUTEX_NORMAL */
+    pthread_mutexattr_init(attr);
+
+    if (android_value & ANDROID_PTHREAD_RECURSIVE_MUTEX_INITIALIZER) {
+        pthread_mutexattr_settype(attr, PTHREAD_MUTEX_RECURSIVE);
+    } else if (android_value & ANDROID_PTHREAD_ERRORCHECK_MUTEX_INITIALIZER) {
+        pthread_mutexattr_settype(attr, PTHREAD_MUTEX_ERRORCHECK);
+    }
+}
+
+static pthread_mutex_t* hybris_alloc_init_mutex(int android_mutex)
+{
+    pthread_mutex_t *realmutex = malloc(sizeof(pthread_mutex_t));
+    pthread_mutexattr_t attr;
+    hybris_set_mutex_attr(android_mutex, &attr);
+    pthread_mutex_init(realmutex, &attr);
+    return realmutex;
+}
+
+static pthread_cond_t* hybris_alloc_init_cond(void)
+{
+    pthread_cond_t *realcond = malloc(sizeof(pthread_cond_t));
+    pthread_condattr_t attr;
+    pthread_condattr_init(&attr);
+    pthread_cond_init(realcond, &attr);
+    return realcond;
+}
+
+static pthread_rwlock_t* hybris_alloc_init_rwlock(void)
+{
+    pthread_rwlock_t *realrwlock = malloc(sizeof(pthread_rwlock_t));
+    pthread_rwlockattr_t attr;
+    pthread_rwlockattr_init(&attr);
+    pthread_rwlock_init(realrwlock, &attr);
+    return realrwlock;
 }
 
 /*
@@ -275,23 +336,22 @@ static int my_pthread_mutex_lock(pthread_mutex_t *__mutex)
     if (nvidia_hack)
         return 0;
 
-    if (!__mutex)
+    if (!__mutex) {
+        printf("HYBRIS: null mutex lock, not locking.\n");
         return 0;
+    }
 
-    if (hybris_check_android_shared_mutex(*(int *) __mutex))
-    {
+    int value = (*(int *) __mutex);
+    if (hybris_check_android_shared_mutex(value)) {
         printf("HYBRIS: shared mutex with Android, not locking.\n");
         return 0;
     }
 
-    pthread_mutex_t *realmutex = (pthread_mutex_t *) *(int *) __mutex;
+    pthread_mutex_t *realmutex = (pthread_mutex_t *) value;
 
-    if (realmutex == NULL)
-    {
-        /* Not initialized or initialized by Android, and not shared */
-        realmutex = malloc(sizeof(pthread_mutex_t));
+    if (value <= ANDROID_TOP_ADDR_VALUE_MUTEX) {
+        realmutex = hybris_alloc_init_mutex(value);
         *((int *)__mutex) = (int) realmutex;
-        pthread_mutex_init(realmutex, NULL);
     }
 
     return pthread_mutex_lock(realmutex);
@@ -299,20 +359,20 @@ static int my_pthread_mutex_lock(pthread_mutex_t *__mutex)
 
 static int my_pthread_mutex_trylock(pthread_mutex_t *__mutex)
 {
-    if (hybris_check_android_shared_mutex(*(int *) __mutex))
-    {
+    int value = (*(int *) __mutex);
+
+    if (hybris_check_android_shared_mutex(value)) {
         printf("HYBRIS: shared mutex with Android, not try locking.\n");
         return 0;
     }
 
-    pthread_mutex_t *realmutex = (pthread_mutex_t *) *(int *) __mutex;
+    pthread_mutex_t *realmutex = (pthread_mutex_t *) value;
 
-    if (realmutex == NULL)
-    {
-        realmutex = malloc(sizeof(pthread_mutex_t));
+    if (value <= ANDROID_TOP_ADDR_VALUE_MUTEX) {
+        realmutex = hybris_alloc_init_mutex(value);
         *((int *)__mutex) = (int) realmutex;
-        pthread_mutex_init(realmutex, NULL);
     }
+
     return pthread_mutex_trylock(realmutex);
 }
 
@@ -321,16 +381,24 @@ static int my_pthread_mutex_unlock(pthread_mutex_t *__mutex)
     if (nvidia_hack)
         return 0;
 
-    if (!__mutex)
+    if (!__mutex) {
+        printf("HYBRIS: null mutex lock, not unlocking.\n");
         return 0;
+    }
 
-    if (hybris_check_android_shared_mutex(*(int *) __mutex))
-    {
+    int value = (*(int *) __mutex);
+    if (hybris_check_android_shared_mutex(value)) {
         printf("HYBRIS: shared mutex with Android, not unlocking.\n");
         return 0;
     }
 
-    pthread_mutex_t *realmutex = (pthread_mutex_t *) *(int *) __mutex;
+    if (value <= ANDROID_TOP_ADDR_VALUE_MUTEX) {
+        printf("HYBRIS: trying to unlock a lock that's not locked/initialized"
+               " by Hybris, not unlocking.\n");
+        return 0;
+    }
+
+    pthread_mutex_t *realmutex = (pthread_mutex_t *) value;
     return pthread_mutex_unlock(realmutex);
 }
 
@@ -376,45 +444,63 @@ static int my_pthread_cond_broadcast(pthread_cond_t *cond)
     if (nvidia_hack)
         return 0;
 
-    if (hybris_check_android_shared_cond(*(int *) cond))
-    {
+    int value = (*(int *) cond);
+    if (hybris_check_android_shared_cond(value)) {
         printf("HYBRIS: shared condition with Android, not broadcasting.\n");
         return 0;
     }
 
-    pthread_cond_t *realcond = (pthread_cond_t *) *(int *) cond;
+    pthread_cond_t *realcond = (pthread_cond_t *) value;
+
+    if (value <= ANDROID_TOP_ADDR_VALUE_COND) {
+        realcond = hybris_alloc_init_cond();
+        *((int *) cond) = (int) realcond;
+    }
+
     return pthread_cond_broadcast(realcond);
 }
 
 static int my_pthread_cond_signal(pthread_cond_t *cond)
 {
-    if (hybris_check_android_shared_cond(*(int *) cond))
-    {
+    int value = (*(int *) cond);
+
+    if (hybris_check_android_shared_cond(value)) {
         printf("HYBRIS: shared condition with Android, not signaling.\n");
         return 0;
     }
 
-    pthread_cond_t *realcond = (pthread_cond_t *) *(int *) cond;
+    pthread_cond_t *realcond = (pthread_cond_t *) value;
+
+    if (value <= ANDROID_TOP_ADDR_VALUE_COND) {
+        realcond = hybris_alloc_init_cond();
+        *((int *) cond) = (int) realcond;
+    }
+
     return pthread_cond_signal(realcond);
 }
 
 static int my_pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex)
 {
-    if (hybris_check_android_shared_cond(*(int *) cond) ||
-         hybris_check_android_shared_mutex(*(int *) mutex))
-    {
+    /* Both cond and mutex can be statically initialized, check for both */
+    int cvalue = (*(int *) cond);
+    int mvalue = (*(int *) mutex);
+
+    if (hybris_check_android_shared_cond(cvalue) ||
+         hybris_check_android_shared_mutex(mvalue)) {
         printf("HYBRIS: shared condition/mutex with Android, not waiting.\n");
         return 0;
     }
 
-    pthread_cond_t *realcond = (pthread_cond_t *) *(int *) cond;
+    pthread_cond_t *realcond = (pthread_cond_t *) cvalue;
+    if (cvalue <= ANDROID_TOP_ADDR_VALUE_COND) {
+        realcond = hybris_alloc_init_cond();
+        *((int *) cond) = (int) realcond;
+    }
 
-    pthread_mutex_t *realmutex = (pthread_mutex_t *) *(int *) mutex;
-    if (realmutex == NULL)
-    {
-        realmutex = malloc(sizeof(pthread_mutex_t));
-        *((int *)mutex) = (int) realmutex;
-        pthread_mutex_init(realmutex, NULL);
+    pthread_mutex_t *realmutex = (pthread_mutex_t *) mvalue;
+    if (mvalue <= ANDROID_TOP_ADDR_VALUE_MUTEX) {
+        realmutex = hybris_alloc_init_mutex(mvalue);
+        *((int *) mutex) = (int) realmutex;
     }
 
     return pthread_cond_wait(realcond, realmutex);
@@ -426,25 +512,163 @@ static int my_pthread_cond_timedwait(pthread_cond_t *cond,
     if (nvidia_hack)
         return 0;
 
-    if (hybris_check_android_shared_cond(*(int *) cond) ||
-         hybris_check_android_shared_mutex(*(int *) mutex))
-    {
+    /* Both cond and mutex can be statically initialized, check for both */
+    int cvalue = (*(int *) cond);
+    int mvalue = (*(int *) mutex);
+
+    if (hybris_check_android_shared_cond(cvalue) ||
+         hybris_check_android_shared_mutex(mvalue)) {
         printf("HYBRIS: shared condition/mutex with Android, not waiting.\n");
         return 0;
     }
 
-    pthread_cond_t *realcond = (pthread_cond_t *) *(int *) cond;
+    pthread_cond_t *realcond = (pthread_cond_t *) cvalue;
+    if (cvalue <= ANDROID_TOP_ADDR_VALUE_COND) {
+        realcond = hybris_alloc_init_cond();
+        *((int *) cond) = (int) realcond;
+    }
 
-    pthread_mutex_t *realmutex = (pthread_mutex_t *) *(int *) mutex;
-    if (realmutex == NULL)
-    {
-        realmutex = malloc(sizeof(pthread_mutex_t));
-        *((int *)mutex) = (int) realmutex;
-        pthread_mutex_init(realmutex, NULL);
+    pthread_mutex_t *realmutex = (pthread_mutex_t *) mvalue;
+    if (mvalue <= ANDROID_TOP_ADDR_VALUE_MUTEX) {
+        realmutex = hybris_alloc_init_mutex(mvalue);
+        *((int *) mutex) = (int) realmutex;
     }
 
     return pthread_cond_timedwait(realcond, realmutex, abstime);
 }
+
+/*
+ * pthread_rwlockattr_* functions
+ *
+ * Specific implementations to workaround the differences between at the
+ * pthread_rwlockattr_t struct differences between Bionic and Glibc.
+ *
+ * */
+
+static int my_pthread_rwlockattr_init(pthread_rwlockattr_t *__attr)
+{
+    pthread_rwlockattr_t *realattr;
+
+    realattr = malloc(sizeof(pthread_rwlockattr_t));
+    *((int *)__attr) = (int) realattr;
+
+    return pthread_rwlockattr_init(realattr);
+}
+
+static int my_pthread_rwlockattr_destroy(pthread_rwlockattr_t *__attr)
+{
+    int ret;
+    pthread_rwlockattr_t *realattr = (pthread_rwlockattr_t *) *(int *) __attr;
+
+    ret = pthread_rwlockattr_destroy(realattr);
+    free(realattr);
+
+    return ret;
+}
+
+static int my_pthread_rwlockattr_setpshared(pthread_rwlockattr_t *__attr,
+                                            int pshared)
+{
+    pthread_rwlockattr_t *realattr = (pthread_rwlockattr_t *) *(int *) __attr;
+    return pthread_rwlockattr_setpshared(realattr, pshared);
+}
+
+static int my_pthread_rwlockattr_getpshared(pthread_rwlockattr_t *__attr,
+                                            int *pshared)
+{
+    pthread_rwlockattr_t *realattr = (pthread_rwlockattr_t *) *(int *) __attr;
+    return pthread_rwlockattr_getpshared(realattr, pshared);
+}
+
+/*
+ * pthread_rwlock_* functions
+ *
+ * Specific implementations to workaround the differences between at the
+ * pthread_rwlock_t struct differences between Bionic and Glibc.
+ *
+ * */
+
+static int my_pthread_rwlock_init(pthread_rwlock_t *__rwlock,
+                                  __const pthread_rwlockattr_t *__attr)
+{
+    pthread_rwlock_t *realrwlock = malloc(sizeof(pthread_rwlock_t));
+    pthread_rwlockattr_t *realattr = (pthread_rwlockattr_t *) *(int *) __attr;
+    *((int *)__rwlock) = (int) realrwlock;
+    return pthread_rwlock_init(realrwlock, realattr);
+}
+
+static int my_pthread_rwlock_destroy(pthread_rwlock_t *__rwlock)
+{
+    int ret;
+    pthread_rwlock_t *realrwlock = (pthread_rwlock_t *) *(int *) __rwlock;
+
+    ret = pthread_rwlock_destroy(realrwlock);
+    free(realrwlock);
+
+    return ret;
+}
+
+static pthread_rwlock_t* hybris_set_realrwlock(pthread_rwlock_t *rwlock)
+{
+    int value = (*(int *) rwlock);
+    pthread_rwlock_t *realrwlock = (pthread_rwlock_t *) value;
+    if (value <= ANDROID_TOP_ADDR_VALUE_RWLOCK) {
+        realrwlock = hybris_alloc_init_rwlock();
+        *((int *)rwlock) = (int) realrwlock;
+    }
+    return realrwlock;
+}
+
+static int my_pthread_rwlock_rdlock(pthread_rwlock_t *__rwlock)
+{
+    pthread_rwlock_t *realrwlock = hybris_set_realrwlock(__rwlock);
+    return pthread_rwlock_rdlock(realrwlock);
+}
+
+static int my_pthread_rwlock_tryrdlock(pthread_rwlock_t *__rwlock)
+{
+    pthread_rwlock_t *realrwlock = hybris_set_realrwlock(__rwlock);
+    return pthread_rwlock_tryrdlock(realrwlock);
+}
+
+static int my_pthread_rwlock_timedrdlock(pthread_rwlock_t *__rwlock,
+                                         __const struct timespec *abs_timeout)
+{
+    pthread_rwlock_t *realrwlock = hybris_set_realrwlock(__rwlock);
+    return pthread_rwlock_timedrdlock(realrwlock, abs_timeout);
+}
+
+static int my_pthread_rwlock_wrlock(pthread_rwlock_t *__rwlock)
+{
+    pthread_rwlock_t *realrwlock = hybris_set_realrwlock(__rwlock);
+    return pthread_rwlock_wrlock(realrwlock);
+}
+
+static int my_pthread_rwlock_trywrlock(pthread_rwlock_t *__rwlock)
+{
+    pthread_rwlock_t *realrwlock = hybris_set_realrwlock(__rwlock);
+    return pthread_rwlock_trywrlock(realrwlock);
+}
+
+static int my_pthread_rwlock_timedwrlock(pthread_rwlock_t *__rwlock,
+                                         __const struct timespec *abs_timeout)
+{
+    pthread_rwlock_t *realrwlock = hybris_set_realrwlock(__rwlock);
+    return pthread_rwlock_timedwrlock(realrwlock, abs_timeout);
+}
+
+static int my_pthread_rwlock_unlock(pthread_rwlock_t *__rwlock)
+{
+    int value = (*(int *) __rwlock);
+    if (value <= ANDROID_TOP_ADDR_VALUE_RWLOCK) {
+        printf("HYBRIS: trying to unlock a rwlock that's not locked/initialized"
+               " by Hybris, not unlocking.\n");
+        return 0;
+    }
+    pthread_rwlock_t *realrwlock = (pthread_rwlock_t *) value;
+    return pthread_rwlock_unlock(realrwlock);
+}
+
 
 static int my_set_errno(int oi_errno)
 {
@@ -537,9 +761,8 @@ static struct _hook hooks[] = {
     {"pthread_mutexattr_getpshared", pthread_mutexattr_getpshared},
     {"pthread_mutexattr_setpshared", my_pthread_mutexattr_setpshared},
     {"pthread_condattr_init", pthread_condattr_init},
+    {"pthread_condattr_getpshared", pthread_condattr_getpshared},
     {"pthread_condattr_setpshared", pthread_condattr_setpshared},
-    {"pthread_condattr_destroy", pthread_condattr_destroy},
-    {"pthread_condattr_init", pthread_condattr_init},
     {"pthread_condattr_destroy", pthread_condattr_destroy},
     {"pthread_cond_init", my_pthread_cond_init},
     {"pthread_cond_destroy", my_pthread_cond_destroy},
@@ -574,11 +797,19 @@ static struct _hook hooks[] = {
     {"pthread_attr_setscope", my_pthread_attr_setscope},
     {"pthread_attr_setscope", my_pthread_attr_getscope},
     {"pthread_getattr_np", my_pthread_getattr_np},
-    {"pthread_rwlock_init", pthread_rwlock_init},
-    {"pthread_rwlock_destroy", pthread_rwlock_destroy},
-    {"pthread_rwlock_unlock", pthread_rwlock_unlock},
-    {"pthread_rwlock_wrlock", pthread_rwlock_wrlock},
-    {"pthread_rwlock_rdlock", pthread_rwlock_rdlock},
+    {"pthread_rwlockattr_init", my_pthread_rwlockattr_init},
+    {"pthread_rwlockattr_destroy", my_pthread_rwlockattr_destroy},
+    {"pthread_rwlockattr_setpshared", my_pthread_rwlockattr_setpshared},
+    {"pthread_rwlockattr_getpshared", my_pthread_rwlockattr_getpshared},
+    {"pthread_rwlock_init", my_pthread_rwlock_init},
+    {"pthread_rwlock_destroy", my_pthread_rwlock_destroy},
+    {"pthread_rwlock_unlock", my_pthread_rwlock_unlock},
+    {"pthread_rwlock_wrlock", my_pthread_rwlock_wrlock},
+    {"pthread_rwlock_rdlock", my_pthread_rwlock_rdlock},
+    {"pthread_rwlock_tryrdlock", my_pthread_rwlock_tryrdlock},
+    {"pthread_rwlock_trywrlock", my_pthread_rwlock_trywrlock},
+    {"pthread_rwlock_timedrdlock", my_pthread_rwlock_timedrdlock},
+    {"pthread_rwlock_timedwrlock", my_pthread_rwlock_timedwrlock},
     {"fopen", fopen},
     {"fgets", fgets},
     {"fclose", fclose},

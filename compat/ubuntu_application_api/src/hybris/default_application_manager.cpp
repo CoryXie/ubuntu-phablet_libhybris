@@ -1,3 +1,20 @@
+/*
+ * Copyright © 2012 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Thomas Voß <thomas.voss@canonical.com>
+ */
 #include "default_application_manager.h"
 
 #include "default_application_manager_input_setup.h"
@@ -25,48 +42,48 @@ ApplicationManager::InputFilter::InputFilter(ApplicationManager* manager) : mana
 bool ApplicationManager::InputFilter::filter_event(const android::InputEvent* event)
 {
     bool result = true;
-    
+
     switch (event->getType())
     {
-        case AINPUT_EVENT_TYPE_KEY:
-            result = handle_key_event(static_cast<const android::KeyEvent*>(event));
-            break;
+    case AINPUT_EVENT_TYPE_KEY:
+        result = handle_key_event(static_cast<const android::KeyEvent*>(event));
+        break;
     }
-    
+
     return result;
 }
 
 bool ApplicationManager::InputFilter::handle_key_event(const android::KeyEvent* event)
 {
     //printf("%s: %p\n", __PRETTY_FUNCTION__, event);
-    
+
     bool result = true;
-    
+
     if (!event)
         return result;
-    
+
     if (event->getAction() == AKEY_EVENT_ACTION_DOWN)
     {
         if (event->getKeyCode() == AKEYCODE_VOLUME_UP)
-        {   
+        {
             manager->lock();
             manager->switch_focus_to_next_application_locked();
             manager->unlock();
             result = false;
         }
     }
-    
+
     return result;
 }
 
 ApplicationManager::LockingIterator::LockingIterator(
     ApplicationManager* manager,
     size_t index) : manager(manager),
-                    it(index)
+    it(index)
 {
 }
 
-void ApplicationManager::LockingIterator::advance() 
+void ApplicationManager::LockingIterator::advance()
 {
     it += 1;
 }
@@ -80,20 +97,20 @@ void ApplicationManager::LockingIterator::make_current()
 {
     //printf("%s \n", __PRETTY_FUNCTION__);
 }
-        
+
 const android::sp<mir::ApplicationSession>& ApplicationManager::LockingIterator::operator*()
 {
     return manager->apps.valueFor(manager->apps_as_added[it]);
 }
 
-ApplicationManager::LockingIterator::~LockingIterator() 
+ApplicationManager::LockingIterator::~LockingIterator()
 {
     manager->unlock();
 }
-        
+
 ApplicationManager::ApplicationManager() : input_filter(new InputFilter(this)),
-                                           input_setup(new android::InputSetup(input_filter)),
-                                           focused_application(0)
+    input_setup(new android::InputSetup(input_filter)),
+    focused_application(0)
 {
     input_setup->start();
 }
@@ -105,6 +122,11 @@ void ApplicationManager::binderDied(const android::wp<android::IBinder>& who)
     android::Mutex::Autolock al(guard);
     android::sp<android::IBinder> sp = who.promote();
 
+    const android::sp<mir::ApplicationSession>& dead_session = apps.valueFor(sp);
+
+    notify_observers_about_session_died(dead_session->remote_pid,
+                                        dead_session->desktop_file);
+
     size_t i = 0;
     for(i = 0; i < apps_as_added.size(); i++)
     {
@@ -113,20 +135,21 @@ void ApplicationManager::binderDied(const android::wp<android::IBinder>& who)
     }
 
     size_t next_focused_app = 0;
-    next_focused_app = apps_as_added.removeAt(i);        
+    next_focused_app = apps_as_added.removeAt(i);
     apps.removeItem(sp);
 
     if (next_focused_app >= apps_as_added.size())
         next_focused_app = 0;
 
     if (i == focused_application)
-    {              
+    {
         switch_focused_application_locked(next_focused_app);
-    } else if(focused_application > i)
+    }
+    else if(focused_application > i)
     {
         focused_application--;
-    }    
-    
+    }
+
 }
 
 void ApplicationManager::lock()
@@ -144,57 +167,41 @@ android::sp<ApplicationManager::LockingIterator> ApplicationManager::iterator()
     lock();
     android::sp<ApplicationManager::LockingIterator> it(
         new ApplicationManager::LockingIterator(this, 0));
-        
+
     return it;
 }
 
-void ApplicationManager::start_a_new_session(const android::String8& app_name,
-                         const android::sp<android::IApplicationManagerSession>& session,
-                         int ashmem_fd,
-                         int out_socket_fd,
-                         int in_socket_fd)
+void ApplicationManager::start_a_new_session(
+    const android::String8& app_name,
+    const android::String8& desktop_file,
+    const android::sp<android::IApplicationManagerSession>& session,
+    int ashmem_fd,
+    int out_socket_fd,
+    int in_socket_fd)
 {
-    //printf("%s \n", __PRETTY_FUNCTION__);
-    //printf("\t%s \n", app_name.string());
-    //printf("\t%d \n", ashmem_fd);
-    //printf("\t%d \n", out_socket_fd);
-    //printf("\t%d \n", in_socket_fd);
-    
     android::sp<mir::ApplicationSession> app_session(new mir::ApplicationSession(
-        session,
-        app_name));
+                android::IPCThreadState::self()->getCallingPid(),
+                session,
+                app_name,
+                desktop_file));
     {
         android::Mutex::Autolock al(guard);
         session->asBinder()->linkToDeath(
-            android::sp<android::IBinder::DeathRecipient>(this));                
-        apps.add(session->asBinder(), app_session);            
+            android::sp<android::IBinder::DeathRecipient>(this));
+        apps.add(session->asBinder(), app_session);
         apps_as_added.push_back(session->asBinder());
-        // switch_focused_application_locked(apps.indexOfKey(session->asBinder()));
-        // switch_focused_application_locked(apps_as_added.size() - 1);
     }
-    
-    //printf("Iterating registered applications now:\n");
-    android::sp<LockingIterator> it = iterator();
-    while(it->is_valid())
-    {
-        //printf("\t %s \n", (**it)->app_name.string());
-        it->advance();
-    }
+
+    notify_observers_about_session_born(app_session->remote_pid, app_session->desktop_file);
 }
 
 void ApplicationManager::register_a_surface(const android::String8& title,
-                                            const android::sp<android::IApplicationManagerSession>& session,
-                                            int32_t token,
-                                            int ashmem_fd,
-                                            int out_socket_fd,
-                                            int in_socket_fd)
+        const android::sp<android::IApplicationManagerSession>& session,
+        int32_t token,
+        int ashmem_fd,
+        int out_socket_fd,
+        int in_socket_fd)
 {
-    //printf("%s \n", __PRETTY_FUNCTION__);
-    //printf("\t%s \n", title.string());
-    //printf("\t%d \n", ashmem_fd);
-    //printf("\t%d \n", out_socket_fd);
-    //printf("\t%d \n", in_socket_fd);
-    
     android::Mutex::Autolock al(guard);
     android::sp<android::InputChannel> input_channel(
         new android::InputChannel(
@@ -202,56 +209,91 @@ void ApplicationManager::register_a_surface(const android::String8& title,
             dup(ashmem_fd),
             dup(in_socket_fd),
             dup(out_socket_fd)));
-    
+
     android::sp<mir::ApplicationSession::Surface> surface(
         new mir:: ApplicationSession::Surface(
-            apps.valueFor(session->asBinder()).get(), 
-            input_channel, 
+            apps.valueFor(session->asBinder()).get(),
+            input_channel,
             token));
-    
+
     input_setup->input_manager->getDispatcher()->registerInputChannel(
         surface->input_channel,
         surface->make_input_window_handle(),
         false);
+
     apps.valueFor(session->asBinder())->register_surface(surface);
-    
+
     size_t i = 0;
     for(i = 0; i < apps_as_added.size(); i++)
     {
         if (apps_as_added[i] == session->asBinder())
             break;
     }
-    
+
     switch_focused_application_locked(i);
-    
+
+}
+
+void ApplicationManager::register_an_observer(
+    const android::sp<android::IApplicationManagerObserver>& observer)
+{
+    android::Mutex::Autolock al(observer_guard);
+    app_manager_observers.push_back(observer);
+    {
+        android::Mutex::Autolock al(guard);
+
+        for(unsigned int i = 0; i < apps_as_added.size(); i++)
+        {
+            const android::sp<mir::ApplicationSession>& session =
+                apps.valueFor(apps_as_added[i]);
+
+            observer->on_session_born(session->remote_pid,
+                                      session->desktop_file);
+        }
+
+        if (focused_application < apps_as_added.size())
+        {
+            const android::sp<mir::ApplicationSession>& session =
+                apps.valueFor(apps_as_added[focused_application]);
+
+            observer->on_session_focused(session->remote_pid,
+                                         session->desktop_file);
+        }
+    }
 }
 
 void ApplicationManager::switch_focused_application_locked(size_t index_of_next_focused_app)
 {
-    //printf("%s: %d vs. current: %d \n", 
-    //       __PRETTY_FUNCTION__, 
-    //       index_of_next_focused_app, 
+    //printf("%s: %d vs. current: %d \n",
+    //       __PRETTY_FUNCTION__,
+    //       index_of_next_focused_app,
     //       focused_application);
-    
-    if (apps.size() > 1 && 
-        focused_application < apps.size() &&
-        focused_application != index_of_next_focused_app)
+
+    if (apps.size() > 1 &&
+            focused_application < apps.size() &&
+            focused_application != index_of_next_focused_app)
     {
         //printf("\tLowering current application now for idx: %d \n", focused_application);
         apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(non_focused_application_layer);
     }
-    
+
     focused_application = index_of_next_focused_app;
-    
+
     if (focused_application < apps.size())
     {
         //printf("\tRaising application now for idx: %d \n", focused_application);
-        
-        apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(focused_application_base_layer);
+        const android::sp<mir::ApplicationSession>& session =
+            apps.valueFor(apps_as_added[focused_application]);
+
+        session->raise_application_surfaces_to_layer(focused_application_base_layer);
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
-            apps.valueFor(apps_as_added[focused_application])->input_application_handle());
+            session->input_application_handle());
         input_setup->input_manager->getDispatcher()->setInputWindows(
-            apps.valueFor(apps_as_added[focused_application])->input_window_handles());
+            session->input_window_handles());
+
+        notify_observers_about_session_focused(session->remote_pid,
+                                               session->desktop_file);
+
     }
 }
 
@@ -260,10 +302,37 @@ void ApplicationManager::switch_focus_to_next_application_locked()
     size_t new_idx = focused_application + 1;
     if (new_idx >= apps.size())
         new_idx = 0;
-    
+
     //printf("current: %d, next: %d \n", focused_application, new_idx);
-    
+
     switch_focused_application_locked(new_idx);
+}
+
+void ApplicationManager::notify_observers_about_session_born(int id, const android::String8& desktop_file)
+{
+    android::Mutex::Autolock al(observer_guard);
+    for(unsigned int i = 0; i < app_manager_observers.size(); i++)
+    {
+        app_manager_observers[i]->on_session_born(id, desktop_file);
+    }
+}
+
+void ApplicationManager::notify_observers_about_session_focused(int id, const android::String8& desktop_file)
+{
+    android::Mutex::Autolock al(observer_guard);
+    for(unsigned int i = 0; i < app_manager_observers.size(); i++)
+    {
+        app_manager_observers[i]->on_session_focused(id, desktop_file);
+    }
+}
+
+void ApplicationManager::notify_observers_about_session_died(int id, const android::String8& desktop_file)
+{
+    android::Mutex::Autolock al(observer_guard);
+    for(unsigned int i = 0; i < app_manager_observers.size(); i++)
+    {
+        app_manager_observers[i]->on_session_died(id, desktop_file);
+    }
 }
 
 }
@@ -271,12 +340,12 @@ void ApplicationManager::switch_focus_to_next_application_locked()
 int main(int argc, char** argv)
 {
     android::sp<mir::ApplicationManager> app_manager(new mir::ApplicationManager());
-    
+
     // Register service
     android::sp<android::IServiceManager> service_manager = android::defaultServiceManager();
     if (android::NO_ERROR != service_manager->addService(
-            android::String16(android::IApplicationManager::exported_service_name()),
-            app_manager))
+                android::String16(android::IApplicationManager::exported_service_name()),
+                app_manager))
     {
         //printf("Error registering service with the system ... exiting now.");
         return EXIT_FAILURE;
