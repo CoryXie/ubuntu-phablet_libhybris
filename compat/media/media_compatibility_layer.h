@@ -29,18 +29,20 @@ extern "C" {
 #endif
 
     typedef void (*on_msg_set_video_size)(int height, int width, void *context);
+    typedef void (*on_video_texture_needs_update)(void *context);
 
     struct MediaPlayerWrapper;
 
     // ----- Start of C API ----- //
 
-    void android_media_set_video_size_cb(MediaPlayerWrapper *mp, on_msg_set_video_size cb);
+    void android_media_set_video_size_cb(MediaPlayerWrapper *mp, on_msg_set_video_size cb, void *context);
+    void android_media_set_video_texture_needs_update_cb(MediaPlayerWrapper *mp, on_video_texture_needs_update cb, void *context);
 
     MediaPlayerWrapper *android_media_new_player();
     int android_media_set_data_source(MediaPlayerWrapper *mp, const char* url);
     int android_media_set_preview_texture(MediaPlayerWrapper *mp, int texture_id);
     void android_media_update_surface_texture(MediaPlayerWrapper *mp);
-    void android_media_surface_texture_get_transformation_matrix(MediaPlayerWrapper *mp, GLfloat* matrix);
+    void android_media_surface_texture_get_transformation_matrix(MediaPlayerWrapper *mp, GLfloat*matrix);
     int android_media_play(MediaPlayerWrapper *mp);
     int android_media_pause(MediaPlayerWrapper *mp);
     int android_media_stop(MediaPlayerWrapper *mp);

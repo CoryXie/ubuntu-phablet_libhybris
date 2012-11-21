@@ -143,7 +143,8 @@ IMPLEMENT_FUNCTION2(int, android_media_get_current_position, MediaPlayerWrapper 
 IMPLEMENT_FUNCTION2(int, android_media_get_duration, MediaPlayerWrapper *, int*);
 
 // Callbacks
-IMPLEMENT_VOID_FUNCTION2(android_media_set_video_size_cb, MediaPlayerWrapper *, on_msg_set_video_size);
+IMPLEMENT_VOID_FUNCTION3(android_media_set_video_size_cb, MediaPlayerWrapper *, on_msg_set_video_size, void *);
+IMPLEMENT_VOID_FUNCTION3(android_media_set_video_texture_needs_update_cb, MediaPlayerWrapper *, on_video_texture_needs_update, void *);
 
 #ifdef __cplusplus
 }

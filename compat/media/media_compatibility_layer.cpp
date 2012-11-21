@@ -36,12 +36,26 @@
 
 struct FrameAvailableListener : public android::SurfaceTexture::FrameAvailableListener
 {
+public:
     // From android::SurfaceTexture::FrameAvailableListener
     void onFrameAvailable()
     {
         // REPORT_FUNCTION();
+        if (mSetVideoTextureNeedsUpdateCb != NULL)
+            mSetVideoTextureNeedsUpdateCb(mVideoTextureNeedsUpdateContext);
     }
 
+    void setVideoTextureNeedsUpdateCb(on_video_texture_needs_update cb, void *context)
+    {
+        REPORT_FUNCTION();
+
+        mSetVideoTextureNeedsUpdateCb = cb;
+        mVideoTextureNeedsUpdateContext = context;
+    }
+
+private:
+    on_video_texture_needs_update mSetVideoTextureNeedsUpdateCb;
+    void *mVideoTextureNeedsUpdateContext;
 };
 
 class MediaPlayerListenerWrapper : public android::MediaPlayerListener
@@ -68,7 +82,7 @@ public:
             case android::MEDIA_SET_VIDEO_SIZE:
                 ALOGV("\tMEDIA_SET_VIDEO_SIZE msg\n");
                 if (mSetVideoSizeCb != NULL)
-                    mSetVideoSizeCb(ext1, ext2, NULL);
+                    mSetVideoSizeCb(ext1, ext2, mVideoSizeContext);
                 else
                     LOGE("Failed to set video size. mSetVideoSizeCb is NULL.");
 
@@ -87,15 +101,18 @@ public:
         }
     }
 
-    void setVideoSizeCb(on_msg_set_video_size cb)
+    void setVideoSizeCb(on_msg_set_video_size cb, void *context)
     {
         REPORT_FUNCTION();
 
         mSetVideoSizeCb = cb;
+        mVideoSizeContext = context;
     }
+
 
 private:
     on_msg_set_video_size mSetVideoSizeCb;
+    void *mVideoSizeContext;
 };
 
 // ----- MediaPlayer Wrapper ----- //
@@ -106,8 +123,8 @@ public:
     MediaPlayerWrapper()
         : MediaPlayer(),
           mTexture(NULL),
-          mMPListener(new MediaPlayerListenerWrapper())//,
-          //mFrameListener(new FrameAvailableListener)
+          mMPListener(new MediaPlayerListenerWrapper()),
+          mFrameListener(new FrameAvailableListener)
     {
         setListener(mMPListener);
     }
@@ -140,12 +157,20 @@ public:
         mTexture->getTransformMatrix(matrix);
     }
 
-    void setVideoSizeCb(on_msg_set_video_size cb)
+    void setVideoSizeCb(on_msg_set_video_size cb, void *context)
     {
         REPORT_FUNCTION();
 
         assert(mMPListener != NULL);
-        mMPListener->setVideoSizeCb(cb);
+        mMPListener->setVideoSizeCb(cb, context);
+    }
+
+    void setVideoTextureNeedsUpdateCb(on_video_texture_needs_update cb, void *context)
+    {
+        REPORT_FUNCTION();
+
+        assert(mFrameListener != NULL);
+        mFrameListener->setVideoTextureNeedsUpdateCb(cb, context);
     }
 
 public:
@@ -166,7 +191,7 @@ namespace
     static int fd = -1;
 } // namespace
 
-void android_media_set_video_size_cb(MediaPlayerWrapper *mp, on_msg_set_video_size cb)
+void android_media_set_video_size_cb(MediaPlayerWrapper *mp, on_msg_set_video_size cb, void *context)
 {
     REPORT_FUNCTION()
 
@@ -177,7 +202,21 @@ void android_media_set_video_size_cb(MediaPlayerWrapper *mp, on_msg_set_video_si
     }
 
     Mutex::Autolock al(mp->mguard);
-    mp->setVideoSizeCb(cb);
+    mp->setVideoSizeCb(cb, context);
+}
+
+void android_media_set_video_texture_needs_update_cb(MediaPlayerWrapper *mp, on_video_texture_needs_update cb, void *context)
+{
+    REPORT_FUNCTION()
+
+    if (mp == NULL)
+    {
+        LOGE("mp must not be NULL");
+        return;
+    }
+
+    Mutex::Autolock al(mp->mguard);
+    mp->setVideoTextureNeedsUpdateCb(cb, context);
 }
 
 MediaPlayerWrapper *android_media_new_player()
