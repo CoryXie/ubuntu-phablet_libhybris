@@ -7,6 +7,14 @@
 extern "C" {
 #endif
 
+    typedef enum
+    {
+        UNKNOWN_APP = -1,
+        CAMERA_APP = 0,
+        GALLERY_APP = 1,
+        BROWSER_APP = 2
+    } ubuntu_ui_well_known_application;
+
     typedef const void* ubuntu_ui_session_properties;
     typedef const void* ubuntu_ui_session_preview_provider;
 
@@ -37,6 +45,8 @@ extern "C" {
         unsigned int* height);
 
     void ubuntu_ui_session_focus_running_session_with_id(int id);
+
+    void ubuntu_ui_session_trigger_switch_to_well_known_application(ubuntu_ui_well_known_application app);
 
 #ifdef __cplusplus
 }
