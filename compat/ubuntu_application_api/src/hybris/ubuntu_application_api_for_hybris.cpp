@@ -383,8 +383,8 @@ struct Session : public ubuntu::application::ui::Session
         BpApplicationManager app_manager(service);
 
         app_manager.start_a_new_session(
-            creds.session_type,
-            String8(creds.application_name),
+            creds.session_type(),
+            String8(creds.application_name()),
             String8("/usr/share/applications/shotwell.desktop"),
             app_manager_session,
             server_channel->getAshmemFd(),

@@ -34,24 +34,32 @@ enum SessionType
     system_session_type = SYSTEM_SESSION_TYPE
 };
 
-struct SessionCredentials
+enum MenuBarSupport
 {
-    SessionCredentials(SessionType session_type, const char* app_name) : session_type(session_type)
+    application_supports_overlayed_menubar = APPLICATION_SUPPORTS_OVERLAYED_MENUBAR,
+    application_does_not_support_overlayed_menubar = APPLICATION_DOES_NOT_SUPPORT_OVERLAYED_MENUBAR
+};
+
+class SessionCredentials
+{
+public:
+    SessionCredentials(::SessionCredentials* parent) : parent(parent)
     {
-        strncpy(application_name, app_name, max_application_name_length); 
     }
 
-    SessionCredentials() : session_type(user_session_type)
+    SessionType session_type() const
     {
-        snprintf(
-            application_name, 
-            max_application_name_length,
-            "unknown_application");
+        return static_cast<SessionType>(parent->session_type);
     }
+
+    const char* application_name() const
+    {
+        return parent->application_name;
+    }
+
     
-    SessionType session_type;
-    enum { max_application_name_length = 512 };
-    char application_name[max_application_name_length];
+private:
+    ::SessionCredentials* parent;
 };
 }
 }
