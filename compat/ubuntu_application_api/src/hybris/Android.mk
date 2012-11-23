@@ -4,7 +4,7 @@ include $(CLEAR_VARS)
 LOCAL_CFLAGS += -std=gnu++0x
 
 LOCAL_C_INCLUDES := \
-	canonical/add_means_for_switching_focus_to_well_known_applications/compat/ubuntu_application_api/include
+	canonical/hybris/compat/ubuntu_application_api/include
 
 LOCAL_SRC_FILES := \
 	ubuntu_application_api_for_hybris.cpp \
@@ -31,7 +31,7 @@ include $(CLEAR_VARS)
 LOCAL_CFLAGS += -std=gnu++0x
 
 LOCAL_C_INCLUDES := \
-	canonical/add_means_for_switching_focus_to_well_known_applications/compat/ubuntu_application_api/include
+	canonical/hybris/compat/ubuntu_application_api/include
 
 LOCAL_SRC_FILES:= \
 	test.cpp \
@@ -53,7 +53,7 @@ include $(CLEAR_VARS)
 LOCAL_CFLAGS += -std=gnu++0x
 
 LOCAL_C_INCLUDES := \
-	canonical/add_means_for_switching_focus_to_well_known_applications/compat/ubuntu_application_api/include
+	canonical/hybris/compat/ubuntu_application_api/include
 
 LOCAL_SRC_FILES:= \
 	test_c_api.cpp \
@@ -75,7 +75,7 @@ include $(CLEAR_VARS)
 LOCAL_CFLAGS += -std=gnu++0x
 
 LOCAL_C_INCLUDES := \
-	canonical/add_means_for_switching_focus_to_well_known_applications/compat/ubuntu_application_api/include
+	canonical/hybris/compat/ubuntu_application_api/include
 
 LOCAL_SRC_FILES:= \
 	test_session_c_api.cpp \
@@ -97,7 +97,7 @@ include $(CLEAR_VARS)
 LOCAL_CFLAGS += -std=gnu++0x
 
 LOCAL_C_INCLUDES := \
-	canonical/add_means_for_switching_focus_to_well_known_applications/compat/ubuntu_application_api/include
+	canonical/hybris/compat/ubuntu_application_api/include
 
 LOCAL_SRC_FILES:= \
 	test_sensors.cpp \
@@ -121,7 +121,7 @@ LOCAL_CFLAGS += -std=gnu++0x
 LOCAL_C_INCLUDES := \
 	external/skia/include/core \
 	frameworks/base/services \
-	canonical/add_means_for_switching_focus_to_well_known_applications/compat/ubuntu_application_api/include
+	canonical/hybris/compat/ubuntu_application_api/include
 
 LOCAL_SRC_FILES:= \
 	application_manager.cpp \
@@ -148,7 +148,7 @@ include $(CLEAR_VARS)
 LOCAL_CFLAGS += -std=gnu++0x
 
 LOCAL_C_INCLUDES := \
-	canonical/add_means_for_switching_focus_to_well_known_applications/compat/ubuntu_application_api/include
+	canonical/hybris/compat/ubuntu_application_api/include
 
 LOCAL_SRC_FILES:= \
 	application_manager.cpp \
