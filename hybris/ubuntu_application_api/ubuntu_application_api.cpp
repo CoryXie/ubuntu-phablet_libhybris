@@ -16,6 +16,7 @@
  * Authored by: Thomas Voss <thomas.voss@canonical.com>
  */
 
+#include <ubuntu/application/sensors/ubuntu_application_sensors.h>
 #include <ubuntu/application/ui/ubuntu_application_ui.h>
 #include <ubuntu/ui/ubuntu_ui_session_service.h>
 
@@ -146,6 +147,8 @@ IMPLEMENT_FUNCTION1(const char*, ubuntu_ui_session_properties_get_desktop_file_h
 IMPLEMENT_VOID_FUNCTION1(ubuntu_ui_session_install_session_lifecycle_observer, ubuntu_ui_session_lifecycle_observer*);
 IMPLEMENT_VOID_FUNCTION1(ubuntu_ui_session_focus_running_session_with_id, int);
 IMPLEMENT_VOID_FUNCTION1(ubuntu_ui_session_trigger_switch_to_well_known_application, ubuntu_ui_well_known_application);
+// Accelerometer service
+IMPLEMENT_VOID_FUNCTION1(ubuntu_sensor_install_accelerometer_observer, ubuntu_accelerometer_observer*);
 
 
 
