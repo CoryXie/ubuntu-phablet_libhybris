@@ -100,6 +100,7 @@ int main(int argc, char** argv)
 
     ubuntu::application::ui::SessionCredentials creds =
     {
+        ubuntu::application::ui::user_session_type,
         "HybrisUbuntuApplicationAPIIntegrationTest"
     };
 

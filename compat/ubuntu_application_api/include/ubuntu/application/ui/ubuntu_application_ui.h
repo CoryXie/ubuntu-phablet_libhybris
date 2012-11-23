@@ -28,6 +28,12 @@ extern "C" {
 
     typedef enum
     {
+        USER_SESSION_TYPE,
+        SYSTEM_SESSION_TYPE
+    } SessionType;
+
+    typedef enum
+    {
         MAIN_STAGE_HINT,
         INTEGRATION_STAGE_HINT,
         SHARE_STAGE_HINT,
@@ -74,7 +80,7 @@ extern "C" {
     ubuntu_application_ui_setup_get_form_factor_hint();
 
     void
-    ubuntu_application_ui_start_a_new_session(const char* app_name);
+    ubuntu_application_ui_start_a_new_session(SessionType sessionType, const char* app_name);
 
     void
     ubuntu_application_ui_create_display_info(

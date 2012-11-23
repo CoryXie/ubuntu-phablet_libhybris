@@ -270,10 +270,8 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
     void set_layer(int layer)
     {
         client->openGlobalTransaction();
-        if (layer == -1)
-            surface_control->hide();
-        else
-            surface_control->show(layer);
+        printf("%s: %d \n", __PRETTY_FUNCTION__, layer);
+        printf("\t Result: %d \n", surface_control->setLayer(layer));
         client->closeGlobalTransaction();
         properties.layer = layer;
     }
@@ -385,6 +383,7 @@ struct Session : public ubuntu::application::ui::Session
         BpApplicationManager app_manager(service);
 
         app_manager.start_a_new_session(
+            creds.session_type,
             String8(creds.application_name),
             String8("/usr/share/applications/shotwell.desktop"),
             app_manager_session,
@@ -439,6 +438,7 @@ struct Session : public ubuntu::application::ui::Session
         app_manager.register_a_surface(
             String8(props.title),
             app_manager_session,
+            props.role,
             token,
             server_channel->getAshmemFd(),
             server_channel->getSendPipeFd(),

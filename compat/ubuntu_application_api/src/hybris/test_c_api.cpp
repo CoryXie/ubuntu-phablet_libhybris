@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 {
     ubuntu_application_ui_init(argc, argv);
 
-    ubuntu_application_ui_start_a_new_session("UbuntuApplicationCAPITest");
+    ubuntu_application_ui_start_a_new_session(USER_SESSION_TYPE, "UbuntuApplicationCAPITest");
 
     ubuntu_application_ui_surface surface;
     ubuntu_application_ui_create_surface(

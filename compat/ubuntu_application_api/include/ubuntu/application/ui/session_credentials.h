@@ -18,16 +18,40 @@
 #ifndef UBUNTU_APPLICATION_UI_SESSION_CREDENTIALS_H_
 #define UBUNTU_APPLICATION_UI_SESSION_CREDENTIALS_H_
 
+#include "ubuntu_application_ui.h"
+
+#include <cstdio>
+
 namespace ubuntu
 {
 namespace application
 {
 namespace ui
 {
+enum SessionType
+{
+    user_session_type = USER_SESSION_TYPE,
+    system_session_type = SYSTEM_SESSION_TYPE
+};
+
 struct SessionCredentials
 {
+    SessionCredentials(SessionType session_type, const char* app_name) : session_type(session_type)
+    {
+        strncpy(application_name, app_name, max_application_name_length); 
+    }
+
+    SessionCredentials() : session_type(user_session_type)
+    {
+        snprintf(
+            application_name, 
+            max_application_name_length,
+            "unknown_application");
+    }
+    
+    SessionType session_type;
     enum { max_application_name_length = 512 };
-    const char application_name[max_application_name_length];
+    char application_name[max_application_name_length];
 };
 }
 }

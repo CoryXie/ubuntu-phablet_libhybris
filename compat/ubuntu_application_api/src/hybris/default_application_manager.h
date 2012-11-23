@@ -33,8 +33,9 @@
 
 namespace mir
 {
-struct ApplicationManager : public android::BnApplicationManager,
-    public android::IBinder::DeathRecipient
+struct ApplicationManager : 
+        public android::BnApplicationManager,
+        public android::IBinder::DeathRecipient
 {
     static const int shell_components_base_layer = 200;
     static const int focused_application_base_layer = 100;
@@ -90,19 +91,23 @@ struct ApplicationManager : public android::BnApplicationManager,
 
     android::sp<LockingIterator> iterator();
 
-    void start_a_new_session(const android::String8& app_name,
-                             const android::String8& desktop_file,
-                             const android::sp<android::IApplicationManagerSession>& session,
-                             int ashmem_fd,
-                             int out_socket_fd,
-                             int in_socket_fd);
+    void start_a_new_session(
+        int32_t session_type,
+        const android::String8& app_name,
+        const android::String8& desktop_file,
+        const android::sp<android::IApplicationManagerSession>& session,
+        int ashmem_fd,
+        int out_socket_fd,
+        int in_socket_fd);
 
-    void register_a_surface(const android::String8& title,
-                            const android::sp<android::IApplicationManagerSession>& session,
-                            int32_t token,
-                            int ashmem_fd,
-                            int out_socket_fd,
-                            int in_socket_fd);
+    void register_a_surface(
+        const android::String8& title,
+        const android::sp<android::IApplicationManagerSession>& session,
+        int32_t surface_role,
+        int32_t token,
+        int ashmem_fd,
+        int out_socket_fd,
+        int in_socket_fd);
 
     void register_an_observer(const android::sp<android::IApplicationManagerObserver>& observer);
 

@@ -130,7 +130,8 @@ public:
         return "UbuntuApplicationManager";
     }
 
-    virtual void start_a_new_session(const String8& app_name,
+    virtual void start_a_new_session(int32_t session_type,
+                                     const String8& app_name,
                                      const String8& desktop_file,
                                      const sp<IApplicationManagerSession>& session,
                                      int ashmem_fd,
@@ -139,6 +140,7 @@ public:
 
     virtual void register_a_surface(const String8& title,
                                     const sp<IApplicationManagerSession>& session,
+                                    int32_t surface_role,
                                     int32_t token,
                                     int ashmem_fd,
                                     int out_socket_fd,
@@ -173,7 +175,8 @@ public:
     BpApplicationManager(const sp<IBinder>& impl);
     ~BpApplicationManager();
 
-    void start_a_new_session(const String8& app_name,
+    void start_a_new_session(int32_t session_type,
+                             const String8& app_name,
                              const String8& desktop_file,
                              const sp<IApplicationManagerSession>& session,
                              int ashmem_fd,
@@ -182,6 +185,7 @@ public:
 
     void register_a_surface(const String8& title,
                             const android::sp<android::IApplicationManagerSession>& session,
+                            int32_t surface_role,
                             int32_t token,
                             int ashmem_fd,
                             int out_socket_fd,
