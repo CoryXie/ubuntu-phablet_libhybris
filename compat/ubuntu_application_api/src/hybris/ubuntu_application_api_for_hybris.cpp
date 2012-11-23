@@ -29,6 +29,7 @@
 
 #include <ubuntu/ui/session_enumerator.h>
 #include <ubuntu/ui/session_service.h>
+#include <ubuntu/ui/well_known_applications.h>
 
 #include <binder/IPCThreadState.h>
 #include <binder/IServiceManager.h>

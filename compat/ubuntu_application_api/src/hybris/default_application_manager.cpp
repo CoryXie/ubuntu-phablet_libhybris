@@ -132,9 +132,7 @@ void ApplicationManager::binderDied(const android::wp<android::IBinder>& who)
         {
             if (well_known_application_registry.instance_for_type(app) == sp)
             {
-                well_known_application_registry.unregister_application_instance_for_type(
-                    app,
-                    sp);
+                well_known_application_registry.unregister_application_instance_for_type(app);
             }
         }
     }

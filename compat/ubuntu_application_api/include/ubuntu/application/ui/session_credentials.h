@@ -27,7 +27,7 @@ namespace ui
 struct SessionCredentials
 {
     enum { max_application_name_length = 512 };
-    const char application_name[max_application_name_length];
+    char application_name[max_application_name_length];
 };
 }
 }
