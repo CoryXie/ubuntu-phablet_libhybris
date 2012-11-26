@@ -109,6 +109,8 @@ struct ApplicationManager : public android::BnApplicationManager,
 
     void focus_running_session_with_id(int id);
 
+    int32_t query_snapshot_layer_for_session_with_id(int id);
+
     void switch_to_well_known_application(int32_t app);
 
     void switch_focused_application_locked(size_t index_of_next_focused_app);

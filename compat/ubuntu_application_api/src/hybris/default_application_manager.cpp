@@ -299,6 +299,18 @@ void ApplicationManager::focus_running_session_with_id(int id)
     }
 }
 
+int32_t ApplicationManager::query_snapshot_layer_for_session_with_id(int id)
+{
+    size_t idx = session_id_to_index(id);
+
+    if (idx < apps_as_added.size())
+    {
+        return apps.valueFor(apps_as_added[idx])->layer();
+    }
+
+    return INT_MAX;
+}
+
 void ApplicationManager::switch_to_well_known_application(int32_t app)
 {
     android::Mutex::Autolock al(guard);

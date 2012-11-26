@@ -148,8 +148,9 @@ public:
 
     virtual void focus_running_session_with_id(int id) = 0;
 
-    virtual void switch_to_well_known_application(int32_t app) = 0;
-
+    virtual int32_t query_snapshot_layer_for_session_with_id(int id) = 0;
+    
+    virtual void switch_to_well_known_application(int32_t app) = 0;    
 protected:
     enum
     {
@@ -157,6 +158,7 @@ protected:
         REGISTER_A_SURFACE_COMMAND,
         REGISTER_AN_OBSERVER_COMMAND,
         FOCUS_RUNNING_SESSION_WITH_ID_COMMAND,
+        QUERY_SNAPSHOT_LAYER_FOR_SESSION_WITH_ID_COMMAND,
         SWITCH_TO_WELL_KNOWN_APPLICATION_COMMAND
     };
 };
@@ -196,6 +198,8 @@ public:
     void register_an_observer(const sp<IApplicationManagerObserver>& observer);
 
     void focus_running_session_with_id(int id);
+    
+    int32_t query_snapshot_layer_for_session_with_id(int id);
 
     void switch_to_well_known_application(int32_t app);
 };
