@@ -87,8 +87,8 @@ extern "C" {
         char application_name[MAX_APPLICATION_NAME_LENGTH];
 
         // Lifecycle callbacks
-        on_application_resumed on_application_started_cb;
-        on_application_suspended on_application_stopped_cb;
+        on_application_resumed on_application_resumed_cb;
+        on_application_suspended on_application_suspended_cb;
         on_application_focused on_application_focused_cb;
         on_application_unfocused on_application_unfocused_cb;
         
