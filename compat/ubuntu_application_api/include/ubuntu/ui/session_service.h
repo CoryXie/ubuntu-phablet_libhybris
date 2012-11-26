@@ -21,6 +21,7 @@
 #include "ubuntu/application/ui/session.h"
 #include "ubuntu/platform/shared_ptr.h"
 #include "ubuntu/ui/session_enumerator.h"
+#include "ubuntu/ui/well_known_applications.h"
 
 namespace ubuntu
 {
@@ -44,6 +45,8 @@ public:
     virtual ~SessionService() {}
 
     virtual const ubuntu::application::ui::Session::Ptr& start_a_new_session(const ubuntu::application::ui::SessionCredentials& cred) = 0;
+
+    virtual void trigger_switch_to_well_known_application(WellKnownApplication app) = 0;
 
     virtual void install_session_lifecycle_observer(const SessionLifeCycleObserver::Ptr& observer) = 0;
 

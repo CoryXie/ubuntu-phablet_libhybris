@@ -105,3 +105,9 @@ void ubuntu_ui_session_focus_running_session_with_id(int id)
 {
     ubuntu::ui::SessionService::instance()->focus_running_session_with_id(id);
 }
+
+void ubuntu_ui_session_trigger_switch_to_well_known_application(ubuntu_ui_well_known_application app)
+{
+    ubuntu::ui::SessionService::instance()->trigger_switch_to_well_known_application(
+        static_cast<ubuntu::ui::WellKnownApplication>(app));
+}

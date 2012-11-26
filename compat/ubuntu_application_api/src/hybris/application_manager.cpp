@@ -219,9 +219,24 @@ status_t BnApplicationManager::onTransact(uint32_t code,
     }
     break;
     case REGISTER_AN_OBSERVER_COMMAND:
+    {
         sp<IBinder> binder = data.readStrongBinder();
         sp<BpApplicationManagerObserver> observer(new BpApplicationManagerObserver(binder));
         register_an_observer(observer);
+        break;
+    }
+    case FOCUS_RUNNING_SESSION_WITH_ID_COMMAND:
+    {
+        int32_t id = data.readInt32();
+        focus_running_session_with_id(id);
+        break;
+    }
+    case SWITCH_TO_WELL_KNOWN_APPLICATION_COMMAND:
+    {
+        int32_t app = data.readInt32();
+        switch_to_well_known_application(app);
+        break;
+    }
     }
     return NO_ERROR;
 }
@@ -291,6 +306,26 @@ void BpApplicationManager::register_an_observer(const sp<IApplicationManagerObse
     in.writeStrongBinder(observer->asBinder());
 
     remote()->transact(REGISTER_AN_OBSERVER_COMMAND,
+                       in,
+                       &out);
+}
+
+void BpApplicationManager::focus_running_session_with_id(int id)
+{
+    Parcel in, out;
+    in.writeInt32(id);
+
+    remote()->transact(FOCUS_RUNNING_SESSION_WITH_ID_COMMAND,
+                       in,
+                       &out);
+}
+
+void BpApplicationManager::switch_to_well_known_application(int32_t app)
+{
+    Parcel in, out;
+    in.writeInt32(app);
+
+    remote()->transact(SWITCH_TO_WELL_KNOWN_APPLICATION_COMMAND,
                        in,
                        &out);
 }

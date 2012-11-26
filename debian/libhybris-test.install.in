@@ -6,3 +6,4 @@ hybris/test_sf		#BINDIR#
 hybris/test_camera	#BINDIR#
 hybris/test_ubuntu_app_api	#BINDIR#
 hybris/test_ubuntu_session_api	#BINDIR#
+hybris/test_sensors_api	#BINDIR#

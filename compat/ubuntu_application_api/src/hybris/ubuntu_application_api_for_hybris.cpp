@@ -29,6 +29,7 @@
 
 #include <ubuntu/ui/session_enumerator.h>
 #include <ubuntu/ui/session_service.h>
+#include <ubuntu/ui/well_known_applications.h>
 
 #include <binder/IPCThreadState.h>
 #include <binder/IServiceManager.h>
@@ -47,7 +48,8 @@ namespace android
 struct Setup : public ubuntu::application::ui::Setup
 {
     Setup() : stage(ubuntu::application::ui::main_stage),
-        form_factor(ubuntu::application::ui::desktop_form_factor)
+        form_factor(ubuntu::application::ui::desktop_form_factor),
+        desktop_file("/usr/share/applications/shotwell.desktop")
     {
     }
 
@@ -93,6 +95,11 @@ struct Setup : public ubuntu::application::ui::Setup
     ubuntu::application::ui::FormFactorHintFlags form_factor_hint()
     {
         return ubuntu::application::ui::desktop_form_factor;
+    }
+
+    const char* desktop_file_hint()
+    {
+        return desktop_file.string();
     }
 
     ubuntu::application::ui::StageHint stage;
@@ -348,8 +355,6 @@ struct Session : public ubuntu::application::ui::Session
         Session* parent;
     };
 
-
-
     sp<ApplicationManagerSession> app_manager_session;
     sp<SurfaceComposerClient> client;
     sp<Looper> looper;
@@ -385,7 +390,7 @@ struct Session : public ubuntu::application::ui::Session
         app_manager.start_a_new_session(
             creds.session_type(),
             String8(creds.application_name()),
-            String8("/usr/share/applications/shotwell.desktop"),
+            String8(ubuntu::application::ui::Setup::instance()->desktop_file_hint()),
             app_manager_session,
             server_channel->getAshmemFd(),
             server_channel->getSendPipeFd(),
@@ -580,6 +585,15 @@ struct SessionService : public ubuntu::ui::SessionService
     void focus_running_session_with_id(int id)
     {
         (void) id;
+    }
+
+    void trigger_switch_to_well_known_application(ubuntu::ui::WellKnownApplication app)
+    {
+        sp<IServiceManager> service_manager = defaultServiceManager();
+        sp<IBinder> service = service_manager->getService(
+                                  String16(IApplicationManager::exported_service_name()));
+        BpApplicationManager app_manager(service);
+        app_manager.switch_to_well_known_application(app);
     }
 
     android::sp<ApplicationManagerObserver> observer;
