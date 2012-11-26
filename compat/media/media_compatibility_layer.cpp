@@ -61,6 +61,14 @@ private:
 class MediaPlayerListenerWrapper : public android::MediaPlayerListener
 {
 public:
+    MediaPlayerListenerWrapper()
+        : mSetVideoSizeCb(NULL),
+          mVideoSizeContext(NULL),
+          mErrorCb(NULL),
+          mErrorContext(NULL)
+    {
+    }
+
     void notify(int msg, int ext1, int ext2, const android::Parcel *obj)
     {
         printf("\tmsg: %d, ext1: %d, ext2: %d \n", msg, ext1, ext2);
@@ -92,6 +100,9 @@ public:
                 break;
             case android::MEDIA_ERROR:
                 ALOGV("\tMEDIA_ERROR msg\n");
+                // TODO: Extend this cb to include the error message
+                if (mErrorCb != NULL)
+                    mErrorCb(mErrorContext);
                 break;
             case android::MEDIA_INFO:
                 ALOGV("\tMEDIA_INFO msg\n");
@@ -109,10 +120,19 @@ public:
         mVideoSizeContext = context;
     }
 
+    void setErrorCb(on_msg_error cb, void *context)
+    {
+        REPORT_FUNCTION();
+
+        mErrorCb = cb;
+        mErrorContext = context;
+    }
 
 private:
     on_msg_set_video_size mSetVideoSizeCb;
     void *mVideoSizeContext;
+    on_msg_error mErrorCb;
+    void *mErrorContext;
 };
 
 // ----- MediaPlayer Wrapper ----- //
@@ -124,9 +144,13 @@ public:
         : MediaPlayer(),
           mTexture(NULL),
           mMPListener(new MediaPlayerListenerWrapper()),
-          mFrameListener(new FrameAvailableListener)
+          mFrameListener(new FrameAvailableListener),
+          mLeftVolume(0.2), // Set vol to a default sane value
+          mRightVolume(0.2)
     {
         setListener(mMPListener);
+        // Update the live volume with the cached values
+        MediaPlayer::setVolume(mLeftVolume, mRightVolume);
     }
 
     ~MediaPlayerWrapper()
@@ -173,6 +197,29 @@ public:
         mFrameListener->setVideoTextureNeedsUpdateCb(cb, context);
     }
 
+    void setErrorCb(on_msg_error cb, void *context)
+    {
+        REPORT_FUNCTION();
+
+        assert(mMPListener != NULL);
+        mMPListener->setErrorCb(cb, context);
+    }
+
+    void getVolume(float *leftVolume, float *rightVolume)
+    {
+        *leftVolume = mLeftVolume;
+        *rightVolume = mRightVolume;
+    }
+
+    android::status_t setVolume(float leftVolume, float rightVolume)
+    {
+        REPORT_FUNCTION();
+
+        mLeftVolume = leftVolume;
+        mRightVolume = rightVolume;
+        return MediaPlayer::setVolume(leftVolume, rightVolume);
+    }
+
 public:
     android::Mutex mguard;
 
@@ -180,6 +227,8 @@ private:
     android::sp<android::SurfaceTexture> mTexture;
     android::sp<MediaPlayerListenerWrapper> mMPListener;
     android::sp<FrameAvailableListener> mFrameListener;
+    float mLeftVolume;
+    float mRightVolume;
 }; // MediaPlayerWrapper
 
 using namespace android;
@@ -217,6 +266,20 @@ void android_media_set_video_texture_needs_update_cb(MediaPlayerWrapper *mp, on_
 
     Mutex::Autolock al(mp->mguard);
     mp->setVideoTextureNeedsUpdateCb(cb, context);
+}
+
+void android_media_set_error_cb(MediaPlayerWrapper *mp, on_msg_error cb, void *context)
+{
+    REPORT_FUNCTION()
+
+    if (mp == NULL)
+    {
+        LOGE("mp must not be NULL");
+        return;
+    }
+
+    Mutex::Autolock al(mp->mguard);
+    mp->setErrorCb(cb, context);
 }
 
 MediaPlayerWrapper *android_media_new_player()
@@ -331,15 +394,6 @@ int android_media_play(MediaPlayerWrapper *mp)
     const char *tmp = mp->isPlaying() ? "yes" : "no";
     printf("Is playing?: %s\n", tmp);
 
-#if 0
-    if (mp->isPlaying())
-    {
-        sleep(2);
-        // Seek to 120 seconds in (for ironman3 trailer)
-        mp->seekTo(120000);
-    }
-#endif
-
     return OK;
 }
 
@@ -407,7 +461,7 @@ int android_media_seek_to(MediaPlayerWrapper *mp, int msec)
 
 int android_media_get_current_position(MediaPlayerWrapper *mp, int *msec)
 {
-    REPORT_FUNCTION()
+    // REPORT_FUNCTION()
 
     if (mp == NULL)
     {
@@ -431,4 +485,43 @@ int android_media_get_duration(MediaPlayerWrapper *mp, int *msec)
 
     Mutex::Autolock al(mp->mguard);
     return mp->getDuration(msec);
+}
+
+int android_media_get_volume(MediaPlayerWrapper *mp, int *volume)
+{
+    REPORT_FUNCTION()
+
+    if (volume == NULL)
+    {
+        LOGE("volume must not be NULL");
+        return BAD_VALUE;
+    }
+
+    if (mp == NULL)
+    {
+        LOGE("mp must not be NULL");
+        return BAD_VALUE;
+    }
+
+    float leftVolume = 0, rightVolume = 0;
+    mp->getVolume(&leftVolume, &rightVolume);
+    *volume = leftVolume * 100;
+
+    return OK;
+}
+
+int android_media_set_volume(MediaPlayerWrapper *mp, int volume)
+{
+    REPORT_FUNCTION()
+
+    if (mp == NULL)
+    {
+        LOGE("mp must not be NULL");
+        return BAD_VALUE;
+    }
+
+    Mutex::Autolock al(mp->mguard);
+    float leftVolume = float(volume / 100);
+    float rightVolume = float(volume / 100);
+    return mp->setVolume(leftVolume, rightVolume);
 }
