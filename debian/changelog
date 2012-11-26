@@ -1,3 +1,9 @@
+libhybris (0.26) unstable; urgency=low
+
+  * Expose accelerometer over hybris to Ubuntu.
+
+ -- Michael Frey <michael.frey@canonical.com>  Fri, 23 Nov 2012 14:11:47 -0500
+
 libhybris (0.25) unstable; urgency=low
 
   [ Ricardo Salveti de Araujo ]

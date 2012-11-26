@@ -39,6 +39,8 @@ public:
 
     virtual FormFactorHintFlags form_factor_hint() = 0;
 
+    virtual const char* desktop_file_hint() = 0;
+
 protected:
     Setup() {}
     virtual ~Setup() {}

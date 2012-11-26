@@ -15,22 +15,23 @@
  *
  * Authored by: Thomas Voß <thomas.voss@canonical.com>
  */
-#ifndef UBUNTU_APPLICATION_UI_SESSION_CREDENTIALS_H_
-#define UBUNTU_APPLICATION_UI_SESSION_CREDENTIALS_H_
+#ifndef UBUNTU_UI_WELL_KNOWN_APPLICATIONS_H_
+#define UBUNTU_UI_WELL_KNOWN_APPLICATIONS_H_
+
+#include "ubuntu_ui_session_service.h"
 
 namespace ubuntu
 {
-namespace application
-{
 namespace ui
 {
-struct SessionCredentials
+enum WellKnownApplication
 {
-    enum { max_application_name_length = 512 };
-    char application_name[max_application_name_length];
+    unknown_app = UNKNOWN_APP,
+    gallery_app = CAMERA_APP,
+    camera_app = GALLERY_APP,
+    browser_app = BROWSER_APP
 };
 }
 }
-}
 
-#endif // UBUNTU_APPLICATION_UI_SESSION_CREDENTIALS_H_
+#endif // UBUNTU_UI_WELL_KNOWN_APPLICATIONS_H_
