@@ -1,3 +1,12 @@
+libhybris (0.27) quantal; urgency=low
+
+  [ Jim Hodapp ]
+  * Hardware accelerated media playback interface
+  * Video/audio support over the bridge
+  * Volume get/set support
+
+ -- Ricardo Mendoza <ricardo.mendoza@canonical.com>  Mon, 26 Nov 2012 16:56:43 -0430
+
 libhybris (0.26) unstable; urgency=low
 
   * Expose accelerometer over hybris to Ubuntu.
