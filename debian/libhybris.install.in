@@ -6,6 +6,8 @@ hybris/libhardware.so.1.0	#LIBDIR#
 hybris/libhardware.so.1		#LIBDIR#
 hybris/libcamera.so.1.0		#LIBDIR#
 hybris/libcamera.so.1		#LIBDIR#
+hybris/libmediaplayer.so.1.0	#LIBDIR#
+hybris/libmediaplayer.so.1		#LIBDIR#
 hybris/libubuntu_application_api.so.1.0	#LIBDIR#
 hybris/libubuntu_application_api.so.1	#LIBDIR#
 hybris/libhybris_ics.so		#LIBDIR#
