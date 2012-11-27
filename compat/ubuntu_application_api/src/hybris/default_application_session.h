@@ -20,6 +20,9 @@
 
 #include "application_manager.h"
 
+#include "ubuntu/application/ui/session_credentials.h"
+#include "ubuntu/application/ui/surface_role.h"
+
 #include <binder/IPCThreadState.h>
 #include <binder/IServiceManager.h>
 #include <binder/ProcessState.h>
@@ -33,9 +36,12 @@ struct ApplicationSession : public android::RefBase
     {
         Surface(ApplicationSession* parent,
                 const android::sp<android::InputChannel>& input_channel,
-                int32_t token) : parent(parent),
-            input_channel(input_channel),
-            token(token)
+                int32_t surface_role,
+                int32_t token) 
+                : parent(parent),
+                  input_channel(input_channel),
+                  role(static_cast<ubuntu::application::ui::SurfaceRole>(surface_role)),
+                  token(token)
         {
         }
 
@@ -54,16 +60,19 @@ struct ApplicationSession : public android::RefBase
 
         ApplicationSession* parent;
         android::sp<android::InputChannel> input_channel;
+        ubuntu::application::ui::SurfaceRole role;
         int32_t token;
     };
 
     ApplicationSession(
-        pid_t remote_pid,
+        pid_t remote_pid,        
         android::sp<android::IApplicationManagerSession> remote_session,
+        int32_t session_type,
         const android::String8& app_name,
         const android::String8& desktop_file)
         : remote_pid(remote_pid),
           remote_session(remote_session),
+          session_type(static_cast<ubuntu::application::ui::SessionType>(session_type)),
           app_name(app_name),
           desktop_file(desktop_file)
     {
@@ -170,6 +179,7 @@ struct ApplicationSession : public android::RefBase
     pid_t remote_pid;
 
     android::sp<android::IApplicationManagerSession> remote_session;
+    ubuntu::application::ui::SessionType session_type;
     android::String8 app_name;
     android::String8 desktop_file;
     android::KeyedVector<int32_t, android::sp<Surface>> registered_surfaces;
