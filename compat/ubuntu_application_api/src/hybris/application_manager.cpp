@@ -192,6 +192,7 @@ status_t BnApplicationManager::onTransact(uint32_t code,
     {
     case START_A_NEW_SESSION_COMMAND:
     {
+        int32_t session_type = data.readInt32();
         String8 app_name = data.readString8();
         String8 desktop_file = data.readString8();
         sp<IBinder> binder = data.readStrongBinder();
@@ -200,7 +201,7 @@ status_t BnApplicationManager::onTransact(uint32_t code,
         int out_fd = data.readFileDescriptor();
         int in_fd = data.readFileDescriptor();
 
-        start_a_new_session(app_name, desktop_file, session, ashmem_fd, out_fd, in_fd);
+        start_a_new_session(session_type, app_name, desktop_file, session, ashmem_fd, out_fd, in_fd);
     }
     break;
     case REGISTER_A_SURFACE_COMMAND:
@@ -208,12 +209,13 @@ status_t BnApplicationManager::onTransact(uint32_t code,
         String8 title = data.readString8();
         sp<IBinder> binder = data.readStrongBinder();
         sp<BpApplicationManagerSession> session(new BpApplicationManagerSession(binder));
+        int32_t surface_role = data.readInt32();
         int32_t surface_token = data.readInt32();
         int ashmem_fd = data.readFileDescriptor();
         int out_fd = data.readFileDescriptor();
         int in_fd = data.readFileDescriptor();
 
-        register_a_surface(title, session, surface_token, ashmem_fd, out_fd, in_fd);
+        register_a_surface(title, session, surface_role, surface_token, ashmem_fd, out_fd, in_fd);
     }
     break;
     case REGISTER_AN_OBSERVER_COMMAND:
@@ -229,6 +231,13 @@ status_t BnApplicationManager::onTransact(uint32_t code,
         focus_running_session_with_id(id);
         break;
     }
+    case QUERY_SNAPSHOT_LAYER_FOR_SESSION_WITH_ID_COMMAND:
+    {
+        int32_t id = data.readInt32();
+        int32_t layer = query_snapshot_layer_for_session_with_id(id);
+        reply->writeInt32(layer);
+        break;
+    }        
     case SWITCH_TO_WELL_KNOWN_APPLICATION_COMMAND:
     {
         int32_t app = data.readInt32();
@@ -248,16 +257,19 @@ BpApplicationManager::~BpApplicationManager()
 {
 }
 
-void BpApplicationManager::start_a_new_session(const String8& app_name,
-        const String8& desktop_file,
-        const sp<IApplicationManagerSession>& session,
-        int ashmem_fd,
-        int out_socket_fd,
-        int in_socket_fd)
+void BpApplicationManager::start_a_new_session(
+    int32_t session_type,
+    const String8& app_name,
+    const String8& desktop_file,
+    const sp<IApplicationManagerSession>& session,
+    int ashmem_fd,
+    int out_socket_fd,
+    int in_socket_fd)
 {
     //printf("%s \n", __PRETTY_FUNCTION__);
     Parcel in, out;
     in.pushAllowFds(true);
+    in.writeInt32(session_type);
     in.writeString8(app_name);
     in.writeString8(desktop_file);
     in.writeStrongBinder(session->asBinder());
@@ -270,18 +282,21 @@ void BpApplicationManager::start_a_new_session(const String8& app_name,
                        &out);
 }
 
-void BpApplicationManager::register_a_surface(const String8& title,
-        const sp<IApplicationManagerSession>& session,
-        int32_t token,
-        int ashmem_fd,
-        int out_socket_fd,
-        int in_socket_fd)
+void BpApplicationManager::register_a_surface(
+    const String8& title,
+    const sp<IApplicationManagerSession>& session,
+    int32_t surface_role,
+    int32_t token,
+    int ashmem_fd,
+    int out_socket_fd,
+    int in_socket_fd)
 {
     //printf("%s \n", __PRETTY_FUNCTION__);
     Parcel in, out;
     in.pushAllowFds(true);
     in.writeString8(title);
     in.writeStrongBinder(session->asBinder());
+    in.writeInt32(surface_role);
     in.writeInt32(token);
     in.writeFileDescriptor(ashmem_fd);
     in.writeFileDescriptor(out_socket_fd);
@@ -310,6 +325,18 @@ void BpApplicationManager::focus_running_session_with_id(int id)
     remote()->transact(FOCUS_RUNNING_SESSION_WITH_ID_COMMAND,
                        in,
                        &out);
+}
+
+int32_t BpApplicationManager::query_snapshot_layer_for_session_with_id(int id)
+{
+    Parcel in, out;
+    in.writeInt32(id);
+    remote()->transact(QUERY_SNAPSHOT_LAYER_FOR_SESSION_WITH_ID_COMMAND,
+                       in,
+                       &out);
+
+    int32_t layer = out.readInt32();
+    return layer;
 }
 
 void BpApplicationManager::switch_to_well_known_application(int32_t app)
