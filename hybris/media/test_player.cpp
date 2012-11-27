@@ -378,7 +378,7 @@ int main(int argc, char **argv)
 {
     if (argc < 2)
     {
-        printf("Usage: test_player <video_to_play>");
+        printf("Usage: test_player <video_to_play>\n");
         return EXIT_FAILURE;
     }
 
