@@ -152,6 +152,7 @@ static size_t my_strlen(const char *s)
 static int my_pthread_create(pthread_t *thread, const pthread_attr_t *__attr,
                              void *(*start_routine)(void*), void *arg)
 {
+    printf("Creating new custom thread!\n");
     pthread_attr_t *realattr = NULL;
 
     if (__attr != NULL)
@@ -851,3 +852,4 @@ void *get_hooked_symbol(char *sym)
 void android_linker_init()
 {
 }
+
