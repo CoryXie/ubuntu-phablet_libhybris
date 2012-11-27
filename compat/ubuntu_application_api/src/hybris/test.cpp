@@ -98,10 +98,11 @@ int main(int argc, char** argv)
     ubuntu::application::ui::init(argc, argv);
     ubuntu::application::ui::Setup::instance();
 
-    ubuntu::application::ui::SessionCredentials creds =
-    {
-        "HybrisUbuntuApplicationAPIIntegrationTest"
-    };
+    ::SessionCredentials sc;
+    memset(&sc, 0, sizeof(sc));
+    snprintf(sc.application_name, sizeof(sc.application_name), "TestTestTest");
+    
+    ubuntu::application::ui::SessionCredentials creds(&sc);
 
     ubuntu::application::ui::Session::Ptr session =
         ubuntu::ui::SessionService::instance()->start_a_new_session(creds);

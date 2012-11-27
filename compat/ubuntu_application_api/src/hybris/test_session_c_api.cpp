@@ -28,7 +28,7 @@ void on_snapshot_completed(const void* pixel_data, unsigned int width, unsigned 
            stride);
 
     char fn[256];
-    snprintf(fn, 256, "./snapshot_%d.pgm", counter); counter++;
+    snprintf(fn, 256, "./snapshot_%d.ppm", counter); counter++;
     FILE* f = fopen(fn, "w+");
 
     if (!f)
@@ -39,15 +39,17 @@ void on_snapshot_completed(const void* pixel_data, unsigned int width, unsigned 
         
     const unsigned int* p = static_cast<const unsigned int*>(pixel_data);
 
-    fprintf(f, "P2\n%d %d\n%d\n\n", width, height, 255);
+    fprintf(f, "P3\n%d %d\n%d\n\n", width, height, 255);
     for(unsigned int i = 0; i < height; i++)
     {
         for(unsigned int j = 0; j < width; j++)
         {
             Pixel pixel; pixel.value = *p; ++p;
             fprintf(
-                f, "%d ", 
-                (unsigned short) (0.21*pixel.components.r + 0.71*pixel.components.g + 0.07*pixel.components.b));
+                f, "%d %d %d\t", 
+                pixel.components.r,
+		pixel.components.g,
+		pixel.components.b);
         }
     }
 }

@@ -41,7 +41,8 @@ struct ApplicationManagerSession : public android::BnApplicationManagerSession
 
     SurfaceProperties query_surface_properties_for_token(int32_t token)
     {
-        SurfaceProperties props = { 0, 0, 960, 1280 };
+        static const int layer = 100;
+        SurfaceProperties props = { layer, 0, 0, 960, 1280 };
         return props;
     }
 };
@@ -84,15 +85,16 @@ int main(int argc, char** argv)
 
     app_manager.register_an_observer(observer);
 
+    static const int32_t session_type = 0;
+
     app_manager.start_a_new_session(
+        session_type,
         android::String8("default_application_manager_test"),
         android::String8("default_application_manager_test"),
         session,
         test_fd,
         test_fd,
         test_fd);
-
-
 
     for(;;) {}
 }
