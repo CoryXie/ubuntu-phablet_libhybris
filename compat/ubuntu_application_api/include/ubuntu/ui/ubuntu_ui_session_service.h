@@ -18,6 +18,8 @@ extern "C" {
     typedef const void* ubuntu_ui_session_properties;
     typedef const void* ubuntu_ui_session_preview_provider;
 
+    typedef void (*ubuntu_ui_session_service_snapshot_cb)(const void* pixels, unsigned int width, unsigned int height, unsigned int stride, void* context);
+
     typedef struct
     {
         typedef void (*session_born_cb)(ubuntu_ui_session_properties props, void* context);
@@ -45,6 +47,8 @@ extern "C" {
         unsigned int* height);
 
     void ubuntu_ui_session_focus_running_session_with_id(int id);
+
+    void ubuntu_ui_session_snapshot_running_session_with_id(int id, ubuntu_ui_session_service_snapshot_cb cb, void* context);
 
     void ubuntu_ui_session_trigger_switch_to_well_known_application(ubuntu_ui_well_known_application app);
 

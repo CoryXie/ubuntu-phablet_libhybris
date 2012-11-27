@@ -31,10 +31,10 @@
 #include <ubuntu/ui/session_service.h>
 #include <ubuntu/ui/well_known_applications.h>
 
+#include <binder/IMemory.h>
 #include <binder/IPCThreadState.h>
 #include <binder/IServiceManager.h>
 #include <binder/ProcessState.h>
-#include <surfaceflinger/SurfaceComposerClient.h>
 #include <surfaceflinger/SurfaceComposerClient.h>
 #include <ui/InputTransport.h>
 #include <ui/PixelFormat.h>
@@ -277,8 +277,7 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
     void set_layer(int layer)
     {
         client->openGlobalTransaction();
-        printf("%s: %d \n", __PRETTY_FUNCTION__, layer);
-        printf("\t Result: %d \n", surface_control->setLayer(layer));
+        surface_control->setLayer(layer);
         client->closeGlobalTransaction();
         properties.layer = layer;
     }
@@ -546,24 +545,48 @@ struct ApplicationManagerObserver : public android::BnApplicationManagerObserver
 };
 
 struct SessionService : public ubuntu::ui::SessionService
-{
-
-    struct SessionPreviewProvider : public ubuntu::ui::SessionPreviewProvider
+{    
+    struct SessionSnapshot : public ubuntu::ui::SessionSnapshot
     {
-        SessionPreviewProvider()
+        const void* snapshot_pixels;
+        unsigned int snapshot_width;
+        unsigned int snapshot_height;
+        unsigned int snapshot_stride;
+        
+        SessionSnapshot(
+            const void* pixels, 
+            unsigned int width, 
+            unsigned height, 
+            unsigned int stride) : snapshot_pixels(pixels),
+                                   snapshot_width(width),
+                                   snapshot_height(height),
+                                   snapshot_stride(stride)
         {
         }
 
-        bool get_or_update_session_preview(GLuint texture, unsigned int& w, unsigned int& h)
-        {
-            (void) texture;
-
-            w = 1024;
-            h = 768;
-
-            return true;
+        const void* pixel_data() {
+            return snapshot_pixels;
         }
+        
+        unsigned int width() { return snapshot_width; }
+        unsigned int height() { return snapshot_height; }
+        unsigned int stride() { return snapshot_stride; }       
     };
+
+    static sp<BpApplicationManager> access_application_manager()
+    {
+        static sp<BpApplicationManager> remote_instance;
+
+        if (remote_instance == NULL)
+        {
+            sp<IServiceManager> service_manager = defaultServiceManager();
+            sp<IBinder> service = service_manager->getService(
+                String16(IApplicationManager::exported_service_name()));
+            remote_instance = new BpApplicationManager(service);
+        }
+
+        return remote_instance;
+    }
 
     SessionService() : observer(new ApplicationManagerObserver())
     {
@@ -584,16 +607,35 @@ struct SessionService : public ubuntu::ui::SessionService
 
     void focus_running_session_with_id(int id)
     {
-        (void) id;
+        access_application_manager()->focus_running_session_with_id(id);
+    }
+
+    ubuntu::ui::SessionSnapshot::Ptr snapshot_running_session_with_id(int id)
+    {
+        static const unsigned int default_width = 720;
+        static const unsigned int default_height = 1280;
+        int32_t layer_min = id > 0 
+                ? access_application_manager()->query_snapshot_layer_for_session_with_id(id) 
+                : 0;
+        int32_t layer_max = id > 0 
+                ? access_application_manager()->query_snapshot_layer_for_session_with_id(id) 
+                : id;  
+        static android::ScreenshotClient screenshot_client;
+        screenshot_client.update(default_width, default_height, layer_min, layer_max);
+ 
+        SessionSnapshot::Ptr ss(
+            new SessionSnapshot(
+                screenshot_client.getPixels(),
+                screenshot_client.getWidth(),
+                screenshot_client.getHeight(),
+                screenshot_client.getStride()));
+       
+        return ss;
     }
 
     void trigger_switch_to_well_known_application(ubuntu::ui::WellKnownApplication app)
     {
-        sp<IServiceManager> service_manager = defaultServiceManager();
-        sp<IBinder> service = service_manager->getService(
-                                  String16(IApplicationManager::exported_service_name()));
-        BpApplicationManager app_manager(service);
-        app_manager.switch_to_well_known_application(app);
+        access_application_manager()->switch_to_well_known_application(app);
     }
 
     android::sp<ApplicationManagerObserver> observer;

@@ -21,6 +21,7 @@
 #include "ubuntu/application/ui/session.h"
 #include "ubuntu/platform/shared_ptr.h"
 #include "ubuntu/ui/session_enumerator.h"
+#include "ubuntu/ui/session_snapshot.h"
 #include "ubuntu/ui/well_known_applications.h"
 
 namespace ubuntu
@@ -51,6 +52,8 @@ public:
     virtual void install_session_lifecycle_observer(const SessionLifeCycleObserver::Ptr& observer) = 0;
 
     virtual void focus_running_session_with_id(int id) = 0;
+
+    virtual ubuntu::ui::SessionSnapshot::Ptr snapshot_running_session_with_id(int id) = 0;
 
 protected:
     SessionService() {}

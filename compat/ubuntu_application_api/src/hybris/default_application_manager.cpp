@@ -32,6 +32,9 @@
 
 #include <cstdio>
 
+#include <sys/types.h>
+#include <signal.h>
+
 namespace mir
 {
 
@@ -64,12 +67,19 @@ bool ApplicationManager::InputFilter::handle_key_event(const android::KeyEvent* 
 
     if (event->getAction() == AKEY_EVENT_ACTION_DOWN)
     {
-        if (event->getKeyCode() == AKEYCODE_VOLUME_UP)
+        switch (event->getKeyCode())
         {
-            manager->lock();
-            manager->switch_focus_to_next_application_locked();
-            manager->unlock();
-            result = false;
+            case AKEYCODE_VOLUME_UP:
+                manager->lock();
+                manager->switch_focus_to_next_application_locked();
+                manager->unlock();
+                result = false;
+                break;
+            case AKEYCODE_VOLUME_DOWN:
+                manager->lock();
+                manager->kill_focused_application_locked();
+                manager->unlock();
+                break;
         }
     }
 
@@ -306,6 +316,18 @@ void ApplicationManager::focus_running_session_with_id(int id)
     }
 }
 
+int32_t ApplicationManager::query_snapshot_layer_for_session_with_id(int id)
+{
+    size_t idx = session_id_to_index(id);
+
+    if (idx < apps_as_added.size())
+    {
+        return apps.valueFor(apps_as_added[idx])->layer();
+    }
+
+    return INT_MAX;
+}
+
 void ApplicationManager::switch_to_well_known_application(int32_t app)
 {
     android::Mutex::Autolock al(guard);
@@ -380,6 +402,17 @@ void ApplicationManager::switch_focus_to_next_application_locked()
     //printf("current: %d, next: %d \n", focused_application, new_idx);
 
     switch_focused_application_locked(new_idx);
+}
+
+void ApplicationManager::kill_focused_application_locked()
+{
+    if (focused_application < apps.size())
+    {
+        const android::sp<mir::ApplicationSession>& session =
+            apps.valueFor(apps_as_added[focused_application]);
+
+        kill(session->remote_pid, SIGKILL);
+    }
 }
 
 size_t ApplicationManager::session_id_to_index(int id)

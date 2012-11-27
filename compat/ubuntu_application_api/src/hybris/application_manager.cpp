@@ -231,6 +231,13 @@ status_t BnApplicationManager::onTransact(uint32_t code,
         focus_running_session_with_id(id);
         break;
     }
+    case QUERY_SNAPSHOT_LAYER_FOR_SESSION_WITH_ID_COMMAND:
+    {
+        int32_t id = data.readInt32();
+        int32_t layer = query_snapshot_layer_for_session_with_id(id);
+        reply->writeInt32(layer);
+        break;
+    }        
     case SWITCH_TO_WELL_KNOWN_APPLICATION_COMMAND:
     {
         int32_t app = data.readInt32();
@@ -318,6 +325,18 @@ void BpApplicationManager::focus_running_session_with_id(int id)
     remote()->transact(FOCUS_RUNNING_SESSION_WITH_ID_COMMAND,
                        in,
                        &out);
+}
+
+int32_t BpApplicationManager::query_snapshot_layer_for_session_with_id(int id)
+{
+    Parcel in, out;
+    in.writeInt32(id);
+    remote()->transact(QUERY_SNAPSHOT_LAYER_FOR_SESSION_WITH_ID_COMMAND,
+                       in,
+                       &out);
+
+    int32_t layer = out.readInt32();
+    return layer;
 }
 
 void BpApplicationManager::switch_to_well_known_application(int32_t app)

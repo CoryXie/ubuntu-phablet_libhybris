@@ -71,6 +71,7 @@ struct ApplicationSession : public android::RefBase
         const android::String8& app_name,
         const android::String8& desktop_file)
         : remote_pid(remote_pid),
+          app_layer(0),
           remote_session(remote_session),
           session_type(static_cast<ubuntu::application::ui::SessionType>(session_type)),
           app_name(app_name),
@@ -166,8 +167,14 @@ struct ApplicationSession : public android::RefBase
         return android::sp<android::InputApplicationHandle>(new InputApplicationHandle(this));
     }
 
+    int32_t layer() const
+    {
+        return app_layer;
+    }
+
     void raise_application_surfaces_to_layer(int layer)
     {
+        app_layer = layer;
         remote_session->raise_application_surfaces_to_layer(layer);
     }
 
@@ -177,6 +184,7 @@ struct ApplicationSession : public android::RefBase
     }
 
     pid_t remote_pid;
+    int32_t app_layer;
 
     android::sp<android::IApplicationManagerSession> remote_session;
     ubuntu::application::ui::SessionType session_type;

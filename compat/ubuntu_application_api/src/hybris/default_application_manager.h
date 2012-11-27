@@ -121,11 +121,15 @@ struct ApplicationManager :
 
     void focus_running_session_with_id(int id);
 
+    int32_t query_snapshot_layer_for_session_with_id(int id);
+
     void switch_to_well_known_application(int32_t app);
 
     void switch_focused_application_locked(size_t index_of_next_focused_app);
     void switch_focus_to_next_application_locked();
 
+    void kill_focused_application_locked();
+    
 private:
     size_t session_id_to_index(int id);
 

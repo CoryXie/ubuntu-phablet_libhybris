@@ -106,6 +106,16 @@ void ubuntu_ui_session_focus_running_session_with_id(int id)
     ubuntu::ui::SessionService::instance()->focus_running_session_with_id(id);
 }
 
+void ubuntu_ui_session_snapshot_running_session_with_id(int id, ubuntu_ui_session_service_snapshot_cb cb, void* context)
+{
+    ubuntu::ui::SessionSnapshot::Ptr ss = ubuntu::ui::SessionService::instance()->snapshot_running_session_with_id(id);
+
+    if (cb)
+    {
+        cb(ss->pixel_data(), ss->width(), ss->height(), ss->stride(), context);
+    }
+}
+
 void ubuntu_ui_session_trigger_switch_to_well_known_application(ubuntu_ui_well_known_application app)
 {
     ubuntu::ui::SessionService::instance()->trigger_switch_to_well_known_application(
