@@ -47,6 +47,14 @@ status_t BnApplicationManagerSession::onTransact(uint32_t code,
         raise_application_surfaces_to_layer(layer);
     }
     break;
+    case RAISE_SURFACE_TO_LAYER_COMMAND:
+    {
+        int32_t token, layer;
+        token = data.readInt32();
+        layer = data.readInt32();
+        
+        raise_surface_to_layer(token, layer);
+    }
     case QUERY_SURFACE_PROPERTIES_FOR_TOKEN_COMMAND:
     {
         int32_t token = data.readInt32();
@@ -69,6 +77,19 @@ BpApplicationManagerSession::BpApplicationManagerSession(const sp<IBinder>& impl
 
 BpApplicationManagerSession::~BpApplicationManagerSession()
 {
+}
+
+void BpApplicationManagerSession::raise_surface_to_layer(int32_t token, int layer)
+{
+    Parcel in, out;
+
+    in.writeInt32(token);
+    in.writeInt32(layer);
+    
+    remote()->transact(
+        RAISE_SURFACE_TO_LAYER_COMMAND,
+        in,
+        &out);
 }
 
 void BpApplicationManagerSession::raise_application_surfaces_to_layer(int layer)

@@ -340,14 +340,19 @@ struct Session : public ubuntu::application::ui::Session
         // From IApplicationManagerSession
         void raise_application_surfaces_to_layer(int layer)
         {
-            //printf("%s: %d \n", __PRETTY_FUNCTION__, layer);
-
+            LOGI("%s: %d \n", __PRETTY_FUNCTION__, layer);
             parent->raise_application_surfaces_to_layer(layer);
+        }
+
+        void raise_surface_to_layer(int32_t token, int layer)
+        {
+            LOGI("%s (%d): %d, %d", __PRETTY_FUNCTION__, getpid(), token, layer); 
+            parent->surfaces.valueFor(token)->set_layer(layer);
         }
 
         SurfaceProperties query_surface_properties_for_token(int32_t token)
         {
-            //printf("%s: %d \n", __PRETTY_FUNCTION__, token);
+            LOGI("%s: %d \n", __PRETTY_FUNCTION__, token);
             return parent->surfaces.valueFor(token)->properties;
         }
 

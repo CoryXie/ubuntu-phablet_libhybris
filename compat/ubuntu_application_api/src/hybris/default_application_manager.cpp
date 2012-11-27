@@ -218,6 +218,16 @@ void ApplicationManager::start_a_new_session(
         apps.add(session->asBinder(), app_session);
         apps_as_added.push_back(session->asBinder());
 
+        switch(session_type)
+        {
+            case ubuntu::application::ui::user_session_type:
+                LOGI("%s: Invoked for user_session_type \n", __PRETTY_FUNCTION__);
+                break;
+            case ubuntu::application::ui::system_session_type:
+                LOGI("%s: Invoked for system_session_type \n", __PRETTY_FUNCTION__);
+                break;
+        }
+
         ubuntu::ui::WellKnownApplication app_type = WellKnownApplicationRegistry::type_for_desktop_file(desktop_file);
 
         switch(app_type)
@@ -258,22 +268,47 @@ void ApplicationManager::register_a_surface(
             surface_role,
             token));
 
+    auto registered_session = apps.valueFor(session->asBinder());
+
     input_setup->input_manager->getDispatcher()->registerInputChannel(
         surface->input_channel,
         surface->make_input_window_handle(),
-        false);
+        registered_session->session_type == ubuntu::application::ui::system_session_type);
+    
+    registered_session->register_surface(surface);
 
-    apps.valueFor(session->asBinder())->register_surface(surface);
-
-    size_t i = 0;
-    for(i = 0; i < apps_as_added.size(); i++)
+    if (registered_session->session_type == ubuntu::application::ui::system_session_type)
     {
-        if (apps_as_added[i] == session->asBinder())
-            break;
+        LOGI("New surface for system session, adjusting layer now.");
+        switch(surface_role)
+        {
+            case ubuntu::application::ui::dash_actor_role:
+                registered_session->raise_surface_to_layer(token, default_dash_layer);
+                break;
+            case ubuntu::application::ui::launcher_actor_role:
+                registered_session->raise_surface_to_layer(token, default_launcher_layer);
+                break;
+            case ubuntu::application::ui::indicator_actor_role:
+                registered_session->raise_surface_to_layer(token, default_top_bar_layer);
+                break;
+            case ubuntu::application::ui::menubar_actor_role:
+                registered_session->raise_surface_to_layer(token, default_top_bar_layer);   
+                break;
+            case ubuntu::application::ui::on_screen_keyboard_actor_role:
+                registered_session->raise_surface_to_layer(token, default_osk_layer);
+                break;
+        }
+    } else
+    {
+        size_t i = 0;
+        for(i = 0; i < apps_as_added.size(); i++)
+        {
+            if (apps_as_added[i] == session->asBinder())
+                break;
+        }    
+        
+        switch_focused_application_locked(i);
     }
-
-    switch_focused_application_locked(i);
-
 }
 
 void ApplicationManager::register_an_observer(
@@ -355,11 +390,6 @@ void ApplicationManager::switch_to_well_known_application(int32_t app)
 
 void ApplicationManager::switch_focused_application_locked(size_t index_of_next_focused_app)
 {
-    //printf("%s: %d vs. current: %d \n",
-    //       __PRETTY_FUNCTION__,
-    //       index_of_next_focused_app,
-    //       focused_application);
-
     static int focused_layer = 0;
     static const int focused_layer_increment = 10;
 
@@ -377,7 +407,7 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
     {
         focused_layer += focused_layer_increment;
         
-        //printf("\tRaising application now for idx: %d \n", focused_application);
+        LOGI("Raising application now for idx: %d \n", focused_application);
         const android::sp<mir::ApplicationSession>& session =
             apps.valueFor(apps_as_added[focused_application]);
 
@@ -395,11 +425,9 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
 
 void ApplicationManager::switch_focus_to_next_application_locked()
 {
-    size_t new_idx = focused_application + 1;
-    if (new_idx >= apps.size())
-        new_idx = 0;
+    size_t new_idx = (focused_application + 1) % apps.size();
 
-    //printf("current: %d, next: %d \n", focused_application, new_idx);
+    LOGI("current: %d, next: %d \n", focused_application, new_idx);
 
     switch_focused_application_locked(new_idx);
 }
