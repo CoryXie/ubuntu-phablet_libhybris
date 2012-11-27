@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <time.h>
 
 typedef union
 {
@@ -18,6 +19,17 @@ typedef union
     uint32_t value;
 } Pixel;
 
+struct Config
+{
+    Config() : take_screencast_flag(0),
+               take_screenshot_flag(0)
+    {
+    }
+    
+    int take_screencast_flag;
+    int take_screenshot_flag;
+};
+
 void on_snapshot_completed(const void* pixel_data, unsigned int width, unsigned int height, unsigned int stride, void* context)
 {
     static unsigned int counter = 0;
@@ -29,30 +41,73 @@ void on_snapshot_completed(const void* pixel_data, unsigned int width, unsigned 
            height,
            stride);
 
+    static const char snapshot_pattern[] = "./snapshot_%I_%M_%S.ppm";
+    static const char frame_pattern[] = "./frame_%I_%M_%S.raw";
+  
     char fn[256];
-    snprintf(fn, 256, "./snapshot_%d.ppm", counter); counter++;
-    FILE* f = fopen(fn, "w+");
+
+    int take_screenshot = 1;
+    int take_screencast = 0;
+
+    if (context != NULL)
+    {
+        Config* config = (Config*) context;
+
+        take_screenshot = config->take_screenshot_flag;
+        take_screencast = config->take_screencast_flag;
+    }
+    
+    time_t curtime;
+    struct tm *loctime;
+    
+    curtime = time (NULL);        
+    loctime = localtime (&curtime);    
+    
+    static const char screenshot_file_mode[] = "w+";
+    static const char screencast_file_mode[] = "wb+";
+    
+    FILE* f = NULL;
+    if (take_screenshot)
+    {
+        strftime(fn, 256, snapshot_pattern, loctime);
+        f = fopen(fn, screenshot_file_mode);
+    } else if (take_screencast)
+    {
+        strftime(fn, 256, frame_pattern, loctime);
+        f = fopen(fn, screencast_file_mode);
+    }
 
     if (!f)
     {
         printf("Problem opening file: %s \n", fn);
         return;
     }
-        
-    const unsigned int* p = static_cast<const unsigned int*>(pixel_data);
-
-    fprintf(f, "P3\n%d %d\n%d\n\n", width, height, 255);
-    for(unsigned int i = 0; i < height; i++)
+     
+    if (take_screenshot)
     {
-        for(unsigned int j = 0; j < width; j++)
+        const unsigned int* p = static_cast<const unsigned int*>(pixel_data);
+        
+        fprintf(f, "P3\n%d %d\n%d\n\n", width, height, 255);
+        for(unsigned int i = 0; i < height; i++)
         {
-            Pixel pixel; pixel.value = *p; ++p;
-            fprintf(
-                f, "%d %d %d\t", 
-                pixel.components.r,
-		pixel.components.g,
-		pixel.components.b);
+            for(unsigned int j = 0; j < width; j++)
+            {
+                Pixel pixel; pixel.value = *p; ++p;
+                fprintf(
+                    f, "%d %d %d\t", 
+                    pixel.components.r,
+                    pixel.components.g,
+                    pixel.components.b);
+            }
         }
+    }
+    else if (take_screencast)
+    {
+        fwrite(pixel_data, sizeof(unsigned int), width*height, f);
+        ubuntu_ui_session_snapshot_running_session_with_id(
+            -1,
+            on_snapshot_completed,
+            context);
     }
 }
 
@@ -85,19 +140,13 @@ void on_session_died(ubuntu_ui_session_properties props, void*)
            ubuntu_ui_session_properties_get_desktop_file_hint(props));
 }
 
-struct Config
-{
-    Config() : take_screenshot_flag(0)
-    {
-    }
-    
-    int take_screenshot_flag;
-};
+
 
 Config parse_cmd_line(int argc, char** argv)
 {
     Config config;
     static struct option long_options[] = {
+        {"take-screencast", no_argument, &config.take_screencast_flag, 1},
         {"take-screenshot", no_argument, &config.take_screenshot_flag, 1}
     };
 
@@ -134,12 +183,12 @@ int main(int argc, char** argv)
 
     Config config = parse_cmd_line(argc, argv);
 
-    if (config.take_screenshot_flag)
+    if (config.take_screenshot_flag || config.take_screencast_flag)
     {
         ubuntu_ui_session_snapshot_running_session_with_id(
             complete_session_id,
             on_snapshot_completed,
-            NULL);
+            &config);
 
         return 0;
     }
