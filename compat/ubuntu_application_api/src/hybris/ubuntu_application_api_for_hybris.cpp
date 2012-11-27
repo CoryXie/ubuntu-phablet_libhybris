@@ -277,8 +277,7 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
     void set_layer(int layer)
     {
         client->openGlobalTransaction();
-        printf("%s: %d \n", __PRETTY_FUNCTION__, layer);
-        printf("\t Result: %d \n", surface_control->setLayer(layer));
+        surface_control->setLayer(layer);
         client->closeGlobalTransaction();
         properties.layer = layer;
     }
@@ -615,12 +614,14 @@ struct SessionService : public ubuntu::ui::SessionService
     {
         static const unsigned int default_width = 720;
         static const unsigned int default_height = 1280;
-        int32_t layer = access_application_manager()->query_snapshot_layer_for_session_with_id(id);
-
-	printf("Snapshotting for layer: %d \n", layer);
-
+        int32_t layer_min = id > 0 
+                ? access_application_manager()->query_snapshot_layer_for_session_with_id(id) 
+                : 0;
+        int32_t layer_max = id > 0 
+                ? access_application_manager()->query_snapshot_layer_for_session_with_id(id) 
+                : id;  
         static android::ScreenshotClient screenshot_client;
-        screenshot_client.update(default_width, default_height, layer, layer);
+        screenshot_client.update(default_width, default_height, layer_min, layer_max);
  
         SessionSnapshot::Ptr ss(
             new SessionSnapshot(

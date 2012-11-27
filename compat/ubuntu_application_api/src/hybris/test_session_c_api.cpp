@@ -1,5 +1,7 @@
 #include <ubuntu/ui/ubuntu_ui_session_service.h>
 
+#include <getopt.h>
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -83,8 +85,65 @@ void on_session_died(ubuntu_ui_session_properties props, void*)
            ubuntu_ui_session_properties_get_desktop_file_hint(props));
 }
 
+struct Config
+{
+    Config() : take_screenshot_flag(0)
+    {
+    }
+    
+    int take_screenshot_flag;
+};
+
+Config parse_cmd_line(int argc, char** argv)
+{
+    Config config;
+    static struct option long_options[] = {
+        {"take-screenshot", no_argument, &config.take_screenshot_flag, 1}
+    };
+
+    while (true)
+    {
+        int option_index = 0;
+        
+        int c = getopt_long(
+            argc, 
+            argv, 
+            "",
+            long_options, 
+            &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c)
+        {
+            case 0:
+                // No need to do anything here: Flag is set automatically.
+                break;
+            default:
+                break;
+        }
+    }
+
+    return config;
+}
+
 int main(int argc, char** argv)
 {
+    static const int complete_session_id = -1;
+
+    Config config = parse_cmd_line(argc, argv);
+
+    if (config.take_screenshot_flag)
+    {
+        ubuntu_ui_session_snapshot_running_session_with_id(
+            complete_session_id,
+            on_snapshot_completed,
+            NULL);
+
+        return 0;
+    }
+
     ubuntu_ui_session_lifecycle_observer observer;
 
     memset(&observer, 0, sizeof(observer));
