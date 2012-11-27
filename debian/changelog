@@ -1,11 +1,23 @@
-libhybris (0.27) quantal; urgency=low
+libhybris (0.28) quantal; urgency=low
 
   [ Jim Hodapp ]
   * Hardware accelerated media playback interface
   * Video/audio support over the bridge
   * Volume get/set support
 
- -- Ricardo Mendoza <ricardo.mendoza@canonical.com>  Mon, 26 Nov 2012 16:56:43 -0430
+ -- Ricardo Mendoza <ricardo.mendoza@canonical.com>  Tue, 27 Nov 2012 15:38:15 -0430
+
+libhybris (0.27) unstable; urgency=low
+
+  [ Thomas Voß ]
+  * Add infrastructure for menubar-states in api
+    & means for client to register for lifecycle-events.
+  * Add implementation for acquiring snapshots of running applications.
+
+  [ Ricardo Salveti ]
+  * Fix android logging to now use /dev/alog.
+
+ -- Michael Frey <michael.frey@canonical.com>  Tue, 27 Nov 2012 10:18:05 -0500
 
 libhybris (0.26) unstable; urgency=low
 
