@@ -7,6 +7,7 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 
 struct View
 {
@@ -69,7 +70,11 @@ int main(int argc, char** argv)
 {
     ubuntu_application_ui_init(argc, argv);
 
-    ubuntu_application_ui_start_a_new_session("UbuntuApplicationCAPITest");
+    SessionCredentials sc;
+    memset(&sc, 0, sizeof(sc));
+    sc.session_type = USER_SESSION_TYPE;
+    snprintf(sc.application_name, sizeof(sc.application_name), "UbuntuApplicationCAPITest");
+    ubuntu_application_ui_start_a_new_session(&sc);
 
     ubuntu_application_ui_physical_display_info info;
     ubuntu_application_ui_create_display_info(&info, 0);

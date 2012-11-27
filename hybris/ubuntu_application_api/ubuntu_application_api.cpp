@@ -130,7 +130,7 @@ extern "C" {
     IMPLEMENT_VOID_FUNCTION2(ubuntu_application_ui_init, int, char**);
     IMPLEMENT_FUNCTION0(StageHint, ubuntu_application_ui_setup_get_stage_hint);
     IMPLEMENT_FUNCTION0(FormFactorHint, ubuntu_application_ui_setup_get_form_factor_hint);
-    IMPLEMENT_VOID_FUNCTION1(ubuntu_application_ui_start_a_new_session, const char*);
+    IMPLEMENT_VOID_FUNCTION1(ubuntu_application_ui_start_a_new_session, SessionCredentials*);
     IMPLEMENT_VOID_FUNCTION2(ubuntu_application_ui_create_display_info, ubuntu_application_ui_physical_display_info*, size_t);
     IMPLEMENT_VOID_FUNCTION1(ubuntu_application_ui_destroy_display_info, ubuntu_application_ui_physical_display_info);
     IMPLEMENT_FUNCTION1(int32_t, ubuntu_application_ui_query_horizontal_resolution, ubuntu_application_ui_physical_display_info);
@@ -146,6 +146,7 @@ IMPLEMENT_FUNCTION1(int, ubuntu_ui_session_properties_get_application_instance_i
 IMPLEMENT_FUNCTION1(const char*, ubuntu_ui_session_properties_get_desktop_file_hint, ubuntu_ui_session_properties);
 IMPLEMENT_VOID_FUNCTION1(ubuntu_ui_session_install_session_lifecycle_observer, ubuntu_ui_session_lifecycle_observer*);
 IMPLEMENT_VOID_FUNCTION1(ubuntu_ui_session_focus_running_session_with_id, int);
+IMPLEMENT_VOID_FUNCTION3(ubuntu_ui_session_snapshot_running_session_with_id, int, ubuntu_ui_session_service_snapshot_cb, void*); 
 IMPLEMENT_VOID_FUNCTION1(ubuntu_ui_session_trigger_switch_to_well_known_application, ubuntu_ui_well_known_application);
 // Accelerometer service
 IMPLEMENT_VOID_FUNCTION1(ubuntu_sensor_install_accelerometer_observer, ubuntu_accelerometer_observer*);

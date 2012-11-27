@@ -32,6 +32,9 @@
 
 #include <cstdio>
 
+#include <sys/types.h>
+#include <signal.h>
+
 namespace mir
 {
 
@@ -64,12 +67,19 @@ bool ApplicationManager::InputFilter::handle_key_event(const android::KeyEvent* 
 
     if (event->getAction() == AKEY_EVENT_ACTION_DOWN)
     {
-        if (event->getKeyCode() == AKEYCODE_VOLUME_UP)
+        switch (event->getKeyCode())
         {
-            manager->lock();
-            manager->switch_focus_to_next_application_locked();
-            manager->unlock();
-            result = false;
+            case AKEYCODE_VOLUME_UP:
+                manager->lock();
+                manager->switch_focus_to_next_application_locked();
+                manager->unlock();
+                result = false;
+                break;
+            case AKEYCODE_VOLUME_DOWN:
+                manager->lock();
+                manager->kill_focused_application_locked();
+                manager->unlock();
+                break;
         }
     }
 
@@ -185,6 +195,7 @@ android::sp<ApplicationManager::LockingIterator> ApplicationManager::iterator()
 }
 
 void ApplicationManager::start_a_new_session(
+    int32_t session_type,
     const android::String8& app_name,
     const android::String8& desktop_file,
     const android::sp<android::IApplicationManagerSession>& session,
@@ -192,11 +203,14 @@ void ApplicationManager::start_a_new_session(
     int out_socket_fd,
     int in_socket_fd)
 {
-    android::sp<mir::ApplicationSession> app_session(new mir::ApplicationSession(
-                android::IPCThreadState::self()->getCallingPid(),
-                session,
-                app_name,
-                desktop_file));
+    (void) session_type;
+    android::sp<mir::ApplicationSession> app_session(
+        new mir::ApplicationSession(
+            android::IPCThreadState::self()->getCallingPid(),
+            session,
+            session_type,
+            app_name,
+            desktop_file));
     {
         android::Mutex::Autolock al(guard);
         session->asBinder()->linkToDeath(
@@ -220,12 +234,14 @@ void ApplicationManager::start_a_new_session(
     notify_observers_about_session_born(app_session->remote_pid, app_session->desktop_file);
 }
 
-void ApplicationManager::register_a_surface(const android::String8& title,
-        const android::sp<android::IApplicationManagerSession>& session,
-        int32_t token,
-        int ashmem_fd,
-        int out_socket_fd,
-        int in_socket_fd)
+void ApplicationManager::register_a_surface(
+    const android::String8& title,
+    const android::sp<android::IApplicationManagerSession>& session,
+    int32_t surface_role,
+    int32_t token,
+    int ashmem_fd,
+    int out_socket_fd,
+    int in_socket_fd)
 {
     android::Mutex::Autolock al(guard);
     android::sp<android::InputChannel> input_channel(
@@ -236,9 +252,10 @@ void ApplicationManager::register_a_surface(const android::String8& title,
             dup(out_socket_fd)));
 
     android::sp<mir::ApplicationSession::Surface> surface(
-        new mir:: ApplicationSession::Surface(
+        new mir::ApplicationSession::Surface(
             apps.valueFor(session->asBinder()).get(),
             input_channel,
+            surface_role,
             token));
 
     input_setup->input_manager->getDispatcher()->registerInputChannel(
@@ -299,6 +316,18 @@ void ApplicationManager::focus_running_session_with_id(int id)
     }
 }
 
+int32_t ApplicationManager::query_snapshot_layer_for_session_with_id(int id)
+{
+    size_t idx = session_id_to_index(id);
+
+    if (idx < apps_as_added.size())
+    {
+        return apps.valueFor(apps_as_added[idx])->layer();
+    }
+
+    return INT_MAX;
+}
+
 void ApplicationManager::switch_to_well_known_application(int32_t app)
 {
     android::Mutex::Autolock al(guard);
@@ -331,23 +360,28 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
     //       index_of_next_focused_app,
     //       focused_application);
 
+    static int focused_layer = 0;
+    static const int focused_layer_increment = 10;
+
     if (apps.size() > 1 &&
             focused_application < apps.size() &&
             focused_application != index_of_next_focused_app)
     {
         //printf("\tLowering current application now for idx: %d \n", focused_application);
-        apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(non_focused_application_layer);
+        //apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(non_focused_application_layer);
     }
 
     focused_application = index_of_next_focused_app;
 
     if (focused_application < apps.size())
     {
+        focused_layer += focused_layer_increment;
+        
         //printf("\tRaising application now for idx: %d \n", focused_application);
         const android::sp<mir::ApplicationSession>& session =
             apps.valueFor(apps_as_added[focused_application]);
 
-        session->raise_application_surfaces_to_layer(focused_application_base_layer);
+        session->raise_application_surfaces_to_layer(focused_layer);
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
             session->input_application_handle());
         input_setup->input_manager->getDispatcher()->setInputWindows(
@@ -368,6 +402,17 @@ void ApplicationManager::switch_focus_to_next_application_locked()
     //printf("current: %d, next: %d \n", focused_application, new_idx);
 
     switch_focused_application_locked(new_idx);
+}
+
+void ApplicationManager::kill_focused_application_locked()
+{
+    if (focused_application < apps.size())
+    {
+        const android::sp<mir::ApplicationSession>& session =
+            apps.valueFor(apps_as_added[focused_application]);
+
+        kill(session->remote_pid, SIGKILL);
+    }
 }
 
 size_t ApplicationManager::session_id_to_index(int id)

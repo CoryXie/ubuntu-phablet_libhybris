@@ -28,33 +28,72 @@ extern "C" {
 
     typedef enum
     {
-        MAIN_STAGE_HINT,
-        INTEGRATION_STAGE_HINT,
-        SHARE_STAGE_HINT,
-        CONTENT_PICKING_STAGE_HINT,
-        SIDE_STAGE_HINT,
-        CONFIGURATION_STAGE_HINT
+        USER_SESSION_TYPE = 0,
+        SYSTEM_SESSION_TYPE = 1
+    } SessionType;
+
+    typedef enum
+    {
+        APPLICATION_SUPPORTS_OVERLAYED_MENUBAR = 0,
+        APPLICATION_DOES_NOT_SUPPORT_OVERLAYED_MENUBAR = 1
+    } MenuBarSupport;
+
+    typedef enum
+    {
+        MAIN_STAGE_HINT = 0,
+        INTEGRATION_STAGE_HINT = 1,
+        SHARE_STAGE_HINT = 2,
+        CONTENT_PICKING_STAGE_HINT = 3,
+        SIDE_STAGE_HINT = 4,
+        CONFIGURATION_STAGE_HINT = 5
     }
     StageHint;
 
     typedef enum
     {
-        DESKTOP_FORM_FACTOR_HINT,
-        PHONE_FORM_FACTOR_HINT,
-        TABLET_FORM_FACTOR_HINT
+        DESKTOP_FORM_FACTOR_HINT = 0,
+        PHONE_FORM_FACTOR_HINT = 1,
+        TABLET_FORM_FACTOR_HINT = 2
     } FormFactorHint;
 
     typedef enum
     {
-        MAIN_ACTOR_ROLE,
-        TOOL_SUPPORT_ACTOR_ROLE,
-        DIALOG_SUPPORT_ACTOR_ROLE,
-        DASH_ACTOR_ROLE,
-        LAUNCHER_ACTOR_ROLE,
-        INDICATOR_ACTOR_ROLE,
-        MENUBAR_ACTOR_ROLE,
-        ON_SCREEN_KEYBOARD_ACTOR_ROLE
+        MAIN_ACTOR_ROLE = 0,
+        TOOL_SUPPORT_ACTOR_ROLE = 1,
+        DIALOG_SUPPORT_ACTOR_ROLE = 2,
+        DASH_ACTOR_ROLE = 3,
+        LAUNCHER_ACTOR_ROLE = 4,
+        INDICATOR_ACTOR_ROLE = 5,
+        MENUBAR_ACTOR_ROLE = 6,
+        ON_SCREEN_KEYBOARD_ACTOR_ROLE = 7
     } SurfaceRole;
+
+    enum
+    {
+        MAX_APPLICATION_NAME_LENGTH = 512
+    };
+
+    typedef struct
+    {
+        typedef void (*on_application_resumed)(void* ctx);
+        typedef void (*on_application_suspended)(void* ctx);
+        
+        typedef void (*on_application_focused)(void* ctx);
+        typedef void (*on_application_unfocused)(void* ctx);
+
+        // Application-specific settings
+        SessionType session_type;
+        MenuBarSupport menu_bar_support;
+        char application_name[MAX_APPLICATION_NAME_LENGTH];
+
+        // Lifecycle callbacks
+        on_application_resumed on_application_resumed_cb;
+        on_application_suspended on_application_suspended_cb;
+        on_application_focused on_application_focused_cb;
+        on_application_unfocused on_application_unfocused_cb;
+        
+        void* context;
+    } SessionCredentials;
 
     typedef void (*input_event_cb)(void* ctx, const Event* ev);
 
@@ -74,7 +113,7 @@ extern "C" {
     ubuntu_application_ui_setup_get_form_factor_hint();
 
     void
-    ubuntu_application_ui_start_a_new_session(const char* app_name);
+    ubuntu_application_ui_start_a_new_session(SessionCredentials* creds);
 
     void
     ubuntu_application_ui_create_display_info(

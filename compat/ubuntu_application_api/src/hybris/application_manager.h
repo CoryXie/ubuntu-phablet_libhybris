@@ -130,7 +130,8 @@ public:
         return "UbuntuApplicationManager";
     }
 
-    virtual void start_a_new_session(const String8& app_name,
+    virtual void start_a_new_session(int32_t session_type,
+                                     const String8& app_name,
                                      const String8& desktop_file,
                                      const sp<IApplicationManagerSession>& session,
                                      int ashmem_fd,
@@ -139,6 +140,7 @@ public:
 
     virtual void register_a_surface(const String8& title,
                                     const sp<IApplicationManagerSession>& session,
+                                    int32_t surface_role,
                                     int32_t token,
                                     int ashmem_fd,
                                     int out_socket_fd,
@@ -148,8 +150,9 @@ public:
 
     virtual void focus_running_session_with_id(int id) = 0;
 
-    virtual void switch_to_well_known_application(int32_t app) = 0;
-
+    virtual int32_t query_snapshot_layer_for_session_with_id(int id) = 0;
+    
+    virtual void switch_to_well_known_application(int32_t app) = 0;    
 protected:
     enum
     {
@@ -157,6 +160,7 @@ protected:
         REGISTER_A_SURFACE_COMMAND,
         REGISTER_AN_OBSERVER_COMMAND,
         FOCUS_RUNNING_SESSION_WITH_ID_COMMAND,
+        QUERY_SNAPSHOT_LAYER_FOR_SESSION_WITH_ID_COMMAND,
         SWITCH_TO_WELL_KNOWN_APPLICATION_COMMAND
     };
 };
@@ -179,7 +183,8 @@ public:
     BpApplicationManager(const sp<IBinder>& impl);
     ~BpApplicationManager();
 
-    void start_a_new_session(const String8& app_name,
+    void start_a_new_session(int32_t session_type,
+                             const String8& app_name,
                              const String8& desktop_file,
                              const sp<IApplicationManagerSession>& session,
                              int ashmem_fd,
@@ -188,6 +193,7 @@ public:
 
     void register_a_surface(const String8& title,
                             const android::sp<android::IApplicationManagerSession>& session,
+                            int32_t surface_role,
                             int32_t token,
                             int ashmem_fd,
                             int out_socket_fd,
@@ -196,6 +202,8 @@ public:
     void register_an_observer(const sp<IApplicationManagerObserver>& observer);
 
     void focus_running_session_with_id(int id);
+    
+    int32_t query_snapshot_layer_for_session_with_id(int id);
 
     void switch_to_well_known_application(int32_t app);
 };

@@ -89,17 +89,13 @@ ubuntu_application_ui_setup_get_form_factor_hint()
 }
 
 void
-ubuntu_application_ui_start_a_new_session(const char* name)
+ubuntu_application_ui_start_a_new_session(SessionCredentials* creds)
 {
     if (session != NULL)
         return;
 
-    ubuntu::application::ui::SessionCredentials creds =
-    {
-        "TestSession" // TODO { name }
-    };
-
-    session = ubuntu::ui::SessionService::instance()->start_a_new_session(creds);
+    ubuntu::application::ui::SessionCredentials sc(creds);
+    session = ubuntu::ui::SessionService::instance()->start_a_new_session(sc);
 }
 
 void
