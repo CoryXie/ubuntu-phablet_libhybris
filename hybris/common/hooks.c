@@ -851,4 +851,3 @@ void *get_hooked_symbol(char *sym)
 void android_linker_init()
 {
 }
-

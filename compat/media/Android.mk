@@ -11,7 +11,6 @@ LOCAL_C_INCLUDES := \
 	canonical/hybris/compat/surface_flinger \
 	canonical/hybris/compat/input \
 	frameworks/base/media/libstagefright/include \
-	frameworks/base/include/media/stagefright/openmax \
 	frameworks/base/include/media/stagefright \
 	frameworks/base/include/media
 
@@ -24,8 +23,6 @@ LOCAL_SHARED_LIBRARIES := \
 	libgui \
 	libstagefright \
 	libmedia
-
-#LOCAL_STATIC_LIBRARIES := libstagefright_aacdec_omx
 
 include $(BUILD_SHARED_LIBRARY)
 

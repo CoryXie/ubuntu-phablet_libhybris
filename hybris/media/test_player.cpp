@@ -172,7 +172,6 @@ struct RenderData
     static const char *vertex_shader()
     {
         return
-            "#extension GL_OES_EGL_image_external : require              \n"
             "attribute vec4 a_position;                                  \n"
             "attribute vec2 a_texCoord;                                  \n"
             "uniform mat4 m_texMatrix;                                   \n"
@@ -181,9 +180,7 @@ struct RenderData
             "void main()                                                 \n"
             "{                                                           \n"
             "   gl_Position = a_position;                                \n"
-            //"   v_texCoord = a_texCoord;                                 \n"
             "   v_texCoord = (m_texMatrix * vec4(a_texCoord, 0.0, 1.0)).xy;\n"
-            //"   topDown = v_texCoord.y;                                  \n"
             "}                                                           \n";
     }
 

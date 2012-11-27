@@ -16,6 +16,12 @@
  * Authored by: Jim Hodapp <jim.hodapp@canonical.com>
  */
 
+// Uncomment to enable verbose debug output
+// #define LOG_NDEBUG 0
+
+#undef LOG_TAG
+#define LOG_TAG "MediaCompatibilityLayer"
+
 #include "media_compatibility_layer.h"
 
 #include <fcntl.h>
@@ -28,87 +34,86 @@
 
 #include <utils/Log.h>
 
-#undef LOG_TAG
-#define LOG_TAG "MediaCompatibilityLayer"
-
-#define ALOGV(...) fprintf(stderr, __VA_ARGS__)
-#define REPORT_FUNCTION() ALOGV("%s \n", __PRETTY_FUNCTION__);
+#define REPORT_FUNCTION() LOGV("%s \n", __PRETTY_FUNCTION__);
 
 struct FrameAvailableListener : public android::SurfaceTexture::FrameAvailableListener
 {
 public:
+    FrameAvailableListener()
+        : set_video_texture_needs_update_cb(NULL),
+          video_texture_needs_update_context(NULL)
+    {
+    }
+
     // From android::SurfaceTexture::FrameAvailableListener
     void onFrameAvailable()
     {
-        // REPORT_FUNCTION();
-        if (mSetVideoTextureNeedsUpdateCb != NULL)
-            mSetVideoTextureNeedsUpdateCb(mVideoTextureNeedsUpdateContext);
+        if (set_video_texture_needs_update_cb != NULL)
+            set_video_texture_needs_update_cb(video_texture_needs_update_context);
     }
 
     void setVideoTextureNeedsUpdateCb(on_video_texture_needs_update cb, void *context)
     {
-        REPORT_FUNCTION();
-
-        mSetVideoTextureNeedsUpdateCb = cb;
-        mVideoTextureNeedsUpdateContext = context;
+        set_video_texture_needs_update_cb = cb;
+        video_texture_needs_update_context = context;
     }
 
 private:
-    on_video_texture_needs_update mSetVideoTextureNeedsUpdateCb;
-    void *mVideoTextureNeedsUpdateContext;
+    on_video_texture_needs_update set_video_texture_needs_update_cb;
+    void *video_texture_needs_update_context;
 };
 
 class MediaPlayerListenerWrapper : public android::MediaPlayerListener
 {
 public:
     MediaPlayerListenerWrapper()
-        : mSetVideoSizeCb(NULL),
-          mVideoSizeContext(NULL),
-          mErrorCb(NULL),
-          mErrorContext(NULL)
+        : set_video_size_cb(NULL),
+          video_size_context(NULL),
+          error_cb(NULL),
+          error_context(NULL)
     {
     }
 
     void notify(int msg, int ext1, int ext2, const android::Parcel *obj)
     {
-        printf("\tmsg: %d, ext1: %d, ext2: %d \n", msg, ext1, ext2);
+        LOGV("\tmsg: %d, ext1: %d, ext2: %d \n", msg, ext1, ext2);
 
         switch(msg)
         {
             case android::MEDIA_PREPARED:
-                ALOGV("\tMEDIA_PREPARED msg\n");
+                LOGV("\tMEDIA_PREPARED msg\n");
                 break;
             case android::MEDIA_PLAYBACK_COMPLETE:
-                ALOGV("\tMEDIA_PLAYBACK_COMPLETE msg\n");
+                LOGV("\tMEDIA_PLAYBACK_COMPLETE msg\n");
                 break;
             case android::MEDIA_BUFFERING_UPDATE:
-                ALOGV("\tMEDIA_BUFFERING_UPDATE msg\n");
+                LOGV("\tMEDIA_BUFFERING_UPDATE msg\n");
                 break;
             case android::MEDIA_SEEK_COMPLETE:
-                ALOGV("\tMEDIA_SEEK_COMPLETE msg\n");
+                LOGV("\tMEDIA_SEEK_COMPLETE msg\n");
                 break;
             case android::MEDIA_SET_VIDEO_SIZE:
-                ALOGV("\tMEDIA_SET_VIDEO_SIZE msg\n");
-                if (mSetVideoSizeCb != NULL)
-                    mSetVideoSizeCb(ext1, ext2, mVideoSizeContext);
+                LOGV("\tMEDIA_SET_VIDEO_SIZE msg\n");
+                if (set_video_size_cb != NULL)
+                    set_video_size_cb(ext1, ext2, video_size_context);
                 else
-                    LOGE("Failed to set video size. mSetVideoSizeCb is NULL.");
+                    LOGE("Failed to set video size. set_video_size_cb is NULL.");
 
                 break;
             case android::MEDIA_TIMED_TEXT:
-                ALOGV("\tMEDIA_TIMED_TEXT msg\n");
+                LOGV("\tMEDIA_TIMED_TEXT msg\n");
                 break;
             case android::MEDIA_ERROR:
-                ALOGV("\tMEDIA_ERROR msg\n");
+                LOGV("\tMEDIA_ERROR msg\n");
                 // TODO: Extend this cb to include the error message
-                if (mErrorCb != NULL)
-                    mErrorCb(mErrorContext);
+                if (error_cb != NULL)
+                    error_cb(error_context);
                 break;
             case android::MEDIA_INFO:
-                ALOGV("\tMEDIA_INFO msg\n");
+                LOGV("\tMEDIA_INFO msg\n");
                 break;
             default:
-                ALOGV("\tUnknown media msg\n");
+                LOGV("\tUnknown media msg\n");
         }
     }
 
@@ -116,23 +121,23 @@ public:
     {
         REPORT_FUNCTION();
 
-        mSetVideoSizeCb = cb;
-        mVideoSizeContext = context;
+        set_video_size_cb = cb;
+        video_size_context = context;
     }
 
     void setErrorCb(on_msg_error cb, void *context)
     {
         REPORT_FUNCTION();
 
-        mErrorCb = cb;
-        mErrorContext = context;
+        error_cb = cb;
+        error_context = context;
     }
 
 private:
-    on_msg_set_video_size mSetVideoSizeCb;
-    void *mVideoSizeContext;
-    on_msg_error mErrorCb;
-    void *mErrorContext;
+    on_msg_set_video_size set_video_size_cb;
+    void *video_size_context;
+    on_msg_error error_cb;
+    void *error_context;
 };
 
 // ----- MediaPlayer Wrapper ----- //
@@ -142,20 +147,22 @@ struct MediaPlayerWrapper : public android::MediaPlayer
 public:
     MediaPlayerWrapper()
         : MediaPlayer(),
-          mTexture(NULL),
-          mMPListener(new MediaPlayerListenerWrapper()),
-          mFrameListener(new FrameAvailableListener),
-          mLeftVolume(0.2), // Set vol to a default sane value
-          mRightVolume(0.2)
+          texture(NULL),
+          media_player_listener(new MediaPlayerListenerWrapper()),
+          frame_listener(new FrameAvailableListener),
+          left_volume(0.2), // Set vol to a default sane value
+          right_volume(0.2),
+          source_fd(-1)
     {
-        setListener(mMPListener);
+        setListener(media_player_listener);
         // Update the live volume with the cached values
-        MediaPlayer::setVolume(mLeftVolume, mRightVolume);
+        MediaPlayer::setVolume(left_volume, right_volume);
     }
 
     ~MediaPlayerWrapper()
     {
         reset();
+        source_fd = -1;
     }
 
     android::status_t setVideoSurfaceTexture(const android::sp<android::SurfaceTexture> &surfaceTexture)
@@ -163,82 +170,78 @@ public:
         REPORT_FUNCTION();
 
         surfaceTexture->setBufferCount(5);
-        mTexture = surfaceTexture;
-        mTexture->setFrameAvailableListener(mFrameListener);
+        texture = surfaceTexture;
+        texture->setFrameAvailableListener(frame_listener);
 
         return MediaPlayer::setVideoSurfaceTexture(surfaceTexture);
     }
 
     void updateSurfaceTexture()
     {
-        assert(mTexture != NULL);
-        mTexture->updateTexImage();
+        assert(texture != NULL);
+        texture->updateTexImage();
     }
 
     void get_transformation_matrix_for_surface_texture(GLfloat* matrix)
     {
-        assert(mTexture != NULL);
-        mTexture->getTransformMatrix(matrix);
+        assert(texture != NULL);
+        texture->getTransformMatrix(matrix);
     }
 
     void setVideoSizeCb(on_msg_set_video_size cb, void *context)
     {
         REPORT_FUNCTION();
 
-        assert(mMPListener != NULL);
-        mMPListener->setVideoSizeCb(cb, context);
+        assert(media_player_listener != NULL);
+        media_player_listener->setVideoSizeCb(cb, context);
     }
 
     void setVideoTextureNeedsUpdateCb(on_video_texture_needs_update cb, void *context)
     {
         REPORT_FUNCTION();
 
-        assert(mFrameListener != NULL);
-        mFrameListener->setVideoTextureNeedsUpdateCb(cb, context);
+        assert(frame_listener != NULL);
+        frame_listener->setVideoTextureNeedsUpdateCb(cb, context);
     }
 
     void setErrorCb(on_msg_error cb, void *context)
     {
         REPORT_FUNCTION();
 
-        assert(mMPListener != NULL);
-        mMPListener->setErrorCb(cb, context);
+        assert(media_player_listener != NULL);
+        media_player_listener->setErrorCb(cb, context);
     }
 
     void getVolume(float *leftVolume, float *rightVolume)
     {
-        *leftVolume = mLeftVolume;
-        *rightVolume = mRightVolume;
+        *leftVolume = left_volume;
+        *rightVolume = right_volume;
     }
 
     android::status_t setVolume(float leftVolume, float rightVolume)
     {
         REPORT_FUNCTION();
 
-        mLeftVolume = leftVolume;
-        mRightVolume = rightVolume;
+        left_volume = leftVolume;
+        right_volume = rightVolume;
         return MediaPlayer::setVolume(leftVolume, rightVolume);
     }
 
-public:
-    android::Mutex mguard;
+    int getSourceFd() const { return source_fd; }
+    void setSourceFd(int fd) { source_fd = fd; }
 
 private:
-    android::sp<android::SurfaceTexture> mTexture;
-    android::sp<MediaPlayerListenerWrapper> mMPListener;
-    android::sp<FrameAvailableListener> mFrameListener;
-    float mLeftVolume;
-    float mRightVolume;
+    android::sp<android::SurfaceTexture> texture;
+    android::sp<MediaPlayerListenerWrapper> media_player_listener;
+    android::sp<FrameAvailableListener> frame_listener;
+    float left_volume;
+    float right_volume;
+    int source_fd;
 }; // MediaPlayerWrapper
 
 using namespace android;
 
 // ----- Media Player C API Implementation ----- //
-
-namespace
-{
-    static int fd = -1;
-} // namespace
 
 void android_media_set_video_size_cb(MediaPlayerWrapper *mp, on_msg_set_video_size cb, void *context)
 {
@@ -250,7 +253,6 @@ void android_media_set_video_size_cb(MediaPlayerWrapper *mp, on_msg_set_video_si
         return;
     }
 
-    Mutex::Autolock al(mp->mguard);
     mp->setVideoSizeCb(cb, context);
 }
 
@@ -264,7 +266,6 @@ void android_media_set_video_texture_needs_update_cb(MediaPlayerWrapper *mp, on_
         return;
     }
 
-    Mutex::Autolock al(mp->mguard);
     mp->setVideoTextureNeedsUpdateCb(cb, context);
 }
 
@@ -278,7 +279,6 @@ void android_media_set_error_cb(MediaPlayerWrapper *mp, on_msg_error cb, void *c
         return;
     }
 
-    Mutex::Autolock al(mp->mguard);
     mp->setErrorCb(cb, context);
 }
 
@@ -315,13 +315,14 @@ int android_media_set_data_source(MediaPlayerWrapper *mp, const char* url)
         return BAD_VALUE;
     }
 
-    Mutex::Autolock al(mp->mguard);
-    fd = open(url, O_RDONLY);
+    int fd = open(url, O_RDONLY);
     if (fd < 0)
     {
         LOGE("Failed to open source data at: %s\n", url);
         return BAD_VALUE;
     }
+
+    mp->setSourceFd(fd);
 
     struct stat st;
     stat(url, &st);
@@ -343,7 +344,6 @@ int android_media_set_preview_texture(MediaPlayerWrapper *mp, int texture_id)
         return BAD_VALUE;
     }
 
-    Mutex::Autolock al(mp->mguard);
     static const bool allow_synchronous_mode = true;
     // Create a new SurfaceTexture from the texture_id in synchronous mode (don't wait on all data in the buffer)
     mp->setVideoSurfaceTexture(android::sp<android::SurfaceTexture>(
@@ -362,7 +362,6 @@ void android_media_update_surface_texture(MediaPlayerWrapper *mp)
         return;
     }
 
-    Mutex::Autolock al(mp->mguard);
     mp->updateSurfaceTexture();
 }
 
@@ -374,7 +373,6 @@ void android_media_surface_texture_get_transformation_matrix(MediaPlayerWrapper 
         return;
     }
 
-    Mutex::Autolock al(mp->mguard);
     mp->get_transformation_matrix_for_surface_texture(matrix);
 }
 
@@ -388,11 +386,10 @@ int android_media_play(MediaPlayerWrapper *mp)
         return BAD_VALUE;
     }
 
-    Mutex::Autolock al(mp->mguard);
     mp->prepare();
     mp->start();
     const char *tmp = mp->isPlaying() ? "yes" : "no";
-    printf("Is playing?: %s\n", tmp);
+    LOGV("Is playing?: %s\n", tmp);
 
     return OK;
 }
@@ -407,7 +404,6 @@ int android_media_pause(MediaPlayerWrapper *mp)
         return BAD_VALUE;
     }
 
-    Mutex::Autolock al(mp->mguard);
     mp->pause();
 
     return OK;
@@ -423,12 +419,11 @@ int android_media_stop(MediaPlayerWrapper *mp)
         return BAD_VALUE;
     }
 
-    Mutex::Autolock al(mp->mguard);
     mp->stop();
 
+    int fd = mp->getSourceFd();
     if (fd > -1)
         close(fd);
-    fd = -1;
 
     return OK;
 }
@@ -437,7 +432,6 @@ bool android_media_is_playing(MediaPlayerWrapper *mp)
 {
     if (mp != NULL)
     {
-        Mutex::Autolock al(mp->mguard);
         if (mp->isPlaying())
             return true;
     }
@@ -455,21 +449,17 @@ int android_media_seek_to(MediaPlayerWrapper *mp, int msec)
         return BAD_VALUE;
     }
 
-    Mutex::Autolock al(mp->mguard);
     return mp->seekTo(msec);
 }
 
 int android_media_get_current_position(MediaPlayerWrapper *mp, int *msec)
 {
-    // REPORT_FUNCTION()
-
     if (mp == NULL)
     {
         LOGE("mp must not be NULL");
         return BAD_VALUE;
     }
 
-    Mutex::Autolock al(mp->mguard);
     return mp->getCurrentPosition(msec);
 }
 
@@ -483,7 +473,6 @@ int android_media_get_duration(MediaPlayerWrapper *mp, int *msec)
         return BAD_VALUE;
     }
 
-    Mutex::Autolock al(mp->mguard);
     return mp->getDuration(msec);
 }
 
@@ -503,9 +492,9 @@ int android_media_get_volume(MediaPlayerWrapper *mp, int *volume)
         return BAD_VALUE;
     }
 
-    float leftVolume = 0, rightVolume = 0;
-    mp->getVolume(&leftVolume, &rightVolume);
-    *volume = leftVolume * 100;
+    float left_volume = 0, right_volume = 0;
+    mp->getVolume(&left_volume, &right_volume);
+    *volume = left_volume * 100;
 
     return OK;
 }
@@ -520,8 +509,7 @@ int android_media_set_volume(MediaPlayerWrapper *mp, int volume)
         return BAD_VALUE;
     }
 
-    Mutex::Autolock al(mp->mguard);
-    float leftVolume = float(volume / 100);
-    float rightVolume = float(volume / 100);
-    return mp->setVolume(leftVolume, rightVolume);
+    float left_volume = float(volume / 100);
+    float right_volume = float(volume / 100);
+    return mp->setVolume(left_volume, right_volume);
 }
