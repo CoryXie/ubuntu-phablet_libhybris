@@ -128,6 +128,8 @@ struct ApplicationManager :
     void switch_focused_application_locked(size_t index_of_next_focused_app);
     void switch_focus_to_next_application_locked();
 
+    void kill_focused_application_locked();
+    
 private:
     size_t session_id_to_index(int id);
 
