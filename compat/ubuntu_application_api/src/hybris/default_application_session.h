@@ -137,7 +137,7 @@ struct ApplicationSession : public android::RefBase
                 mInfo->hasFocus = true;
                 mInfo->hasWallpaper = false;
                 mInfo->paused = false;
-                mInfo->layer = 100;
+                mInfo->layer = props.layer;
                 mInfo->dispatchingTimeout = INT_MAX;
                 mInfo->ownerPid = 0;
                 mInfo->ownerUid = 0;

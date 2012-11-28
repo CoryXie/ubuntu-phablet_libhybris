@@ -55,6 +55,7 @@ status_t BnApplicationManagerSession::onTransact(uint32_t code,
         
         raise_surface_to_layer(token, layer);
     }
+    break;
     case QUERY_SURFACE_PROPERTIES_FOR_TOKEN_COMMAND:
     {
         int32_t token = data.readInt32();

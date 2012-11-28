@@ -128,7 +128,7 @@ ApplicationManager::ApplicationManager() : input_filter(new InputFilter(this)),
 // From DeathRecipient
 void ApplicationManager::binderDied(const android::wp<android::IBinder>& who)
 {
-    //printf("%s \n", __PRETTY_FUNCTION__);
+    LOGI("%s \n", __PRETTY_FUNCTION__);
     android::Mutex::Autolock al(guard);
     android::sp<android::IBinder> sp = who.promote();
 

@@ -346,8 +346,19 @@ struct Session : public ubuntu::application::ui::Session
 
         void raise_surface_to_layer(int32_t token, int layer)
         {
-            LOGI("%s (%d): %d, %d", __PRETTY_FUNCTION__, getpid(), token, layer); 
-            parent->surfaces.valueFor(token)->set_layer(layer);
+            LOGI("Enter %s (%d): %d, %d", __PRETTY_FUNCTION__, getpid(), token, layer);
+
+            auto surface = parent->surfaces.valueFor(token);
+            if (surface != NULL)
+            {
+                LOGI("\tFound surface for token: %d", token);
+                surface->set_layer(layer);
+            } else
+            {
+                LOGI("\tFound NO surface for token: %d", token);
+            }
+            
+            LOGI("Leave %s (%d): %d, %d", __PRETTY_FUNCTION__, getpid(), token, layer);
         }
 
         SurfaceProperties query_surface_properties_for_token(int32_t token)
