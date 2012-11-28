@@ -137,7 +137,7 @@ struct ApplicationSession : public android::RefBase
                 mInfo->hasFocus = true;
                 mInfo->hasWallpaper = false;
                 mInfo->paused = false;
-                mInfo->layer = 100;
+                mInfo->layer = props.layer;
                 mInfo->dispatchingTimeout = INT_MAX;
                 mInfo->ownerPid = 0;
                 mInfo->ownerUid = 0;
@@ -176,6 +176,11 @@ struct ApplicationSession : public android::RefBase
     {
         app_layer = layer;
         remote_session->raise_application_surfaces_to_layer(layer);
+    }
+
+    void raise_surface_to_layer(int32_t token, int layer)
+    {        
+        remote_session->raise_surface_to_layer(token, layer);
     }
 
     void register_surface(const android::sp<Surface>& surface)

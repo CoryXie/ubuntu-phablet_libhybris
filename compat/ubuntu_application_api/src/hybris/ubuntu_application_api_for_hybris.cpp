@@ -284,16 +284,17 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
 
     void set_visible(bool visible)
     {
+        LOGI("%s: %s", __PRETTY_FUNCTION__, visible ? "true" : "false");
         if (visible)
         {
             client->openGlobalTransaction();
-            surface_control->show();
+            LOGI("surface_control->show(INT_MAX): %d", surface_control->show());
             client->closeGlobalTransaction();
         }
         else
         {
             client->openGlobalTransaction();
-            surface_control->hide();
+            LOGI("surface_control->hide(): %d", surface_control->hide());
             client->closeGlobalTransaction();
         }
     }
@@ -340,14 +341,30 @@ struct Session : public ubuntu::application::ui::Session
         // From IApplicationManagerSession
         void raise_application_surfaces_to_layer(int layer)
         {
-            //printf("%s: %d \n", __PRETTY_FUNCTION__, layer);
-
+            LOGI("%s: %d \n", __PRETTY_FUNCTION__, layer);
             parent->raise_application_surfaces_to_layer(layer);
+        }
+
+        void raise_surface_to_layer(int32_t token, int layer)
+        {
+            LOGI("Enter %s (%d): %d, %d", __PRETTY_FUNCTION__, getpid(), token, layer);
+
+            auto surface = parent->surfaces.valueFor(token);
+            if (surface != NULL)
+            {
+                LOGI("\tFound surface for token: %d", token);
+                surface->set_layer(layer);
+            } else
+            {
+                LOGI("\tFound NO surface for token: %d", token);
+            }
+            
+            LOGI("Leave %s (%d): %d, %d", __PRETTY_FUNCTION__, getpid(), token, layer);
         }
 
         SurfaceProperties query_surface_properties_for_token(int32_t token)
         {
-            //printf("%s: %d \n", __PRETTY_FUNCTION__, token);
+            LOGI("%s: %d \n", __PRETTY_FUNCTION__, token);
             return parent->surfaces.valueFor(token)->properties;
         }
 

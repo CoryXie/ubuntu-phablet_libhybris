@@ -39,6 +39,11 @@ struct ApplicationManagerSession : public android::BnApplicationManagerSession
         printf("%d \n", layer);
     }
 
+    void raise_surface_to_layer(int32_t token, int layer)
+    {
+        printf("%s: %d, %d \n", __PRETTY_FUNCTION__, token, layer);
+    }
+
     SurfaceProperties query_surface_properties_for_token(int32_t token)
     {
         static const int layer = 100;
