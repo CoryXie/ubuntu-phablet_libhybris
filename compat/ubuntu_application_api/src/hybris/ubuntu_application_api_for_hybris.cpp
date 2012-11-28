@@ -284,16 +284,17 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
 
     void set_visible(bool visible)
     {
+        LOGI("%s: %s", __PRETTY_FUNCTION__, visible ? "true" : "false");
         if (visible)
         {
             client->openGlobalTransaction();
-            surface_control->show();
+            LOGI("surface_control->show(INT_MAX): %d", surface_control->show());
             client->closeGlobalTransaction();
         }
         else
         {
             client->openGlobalTransaction();
-            surface_control->hide();
+            LOGI("surface_control->hide(): %d", surface_control->hide());
             client->closeGlobalTransaction();
         }
     }
