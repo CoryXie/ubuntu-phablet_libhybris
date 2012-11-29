@@ -119,13 +119,20 @@ struct ApplicationSession : public android::RefBase
             {
                 android::IApplicationManagerSession::SurfaceProperties props = surface->query_properties();
 
+                LOGI("%s: touchable_region = (%d, %d, %d, %d)", 
+                     __PRETTY_FUNCTION__,
+                     props.left, 
+                     props.top, 
+                     props.right, 
+                     props.bottom);
+                
                 SkRegion touchable_region;
                 touchable_region.setRect(props.left, props.top, props.right, props.bottom);
 
                 mInfo = new android::InputWindowInfo();
                 mInfo->name = parent->app_name;
-                mInfo->layoutParamsFlags = android::InputWindowInfo::FLAG_SPLIT_TOUCH | android::InputWindowInfo::FLAG_HARDWARE_ACCELERATED;
-                mInfo->layoutParamsType = android::InputWindowInfo::TYPE_BASE_APPLICATION;
+                mInfo->layoutParamsFlags = android::InputWindowInfo::FLAG_NOT_TOUCH_MODAL | android::InputWindowInfo::FLAG_SPLIT_TOUCH;
+                mInfo->layoutParamsType = android::InputWindowInfo::TYPE_APPLICATION;
                 mInfo->touchableRegion = touchable_region;
                 mInfo->frameLeft = props.left;
                 mInfo->frameTop = props.top;
@@ -134,7 +141,7 @@ struct ApplicationSession : public android::RefBase
                 mInfo->scaleFactor = 1.f;
                 mInfo->visible = true;
                 mInfo->canReceiveKeys = true;
-                mInfo->hasFocus = true;
+                mInfo->hasFocus = false; //true;
                 mInfo->hasWallpaper = false;
                 mInfo->paused = false;
                 mInfo->layer = props.layer;

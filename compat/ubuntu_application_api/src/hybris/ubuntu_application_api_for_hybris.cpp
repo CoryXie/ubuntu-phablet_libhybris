@@ -313,6 +313,8 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
         client->closeGlobalTransaction();
         properties.left = x;
         properties.top = y;
+        properties.right += x;
+        properties.bottom += y;
     }
 
     void resize(int w, int h)
@@ -477,9 +479,12 @@ struct Session : public ubuntu::application::ui::Session
     void raise_application_surfaces_to_layer(int layer)
     {
         Mutex::Autolock al(surfaces_guard);
-        //printf("%s: %d\n", __PRETTY_FUNCTION__, layer);
+        LOGI("%s: %d\n", __PRETTY_FUNCTION__, layer);
         for(size_t i = 0; i < surfaces.size(); i++)
+        {
             surfaces.valueAt(i)->set_layer(layer+i);
+            LOGI("\tLayer: %d\n", layer+i);
+        }
     }
 
     int32_t next_surface_token()
