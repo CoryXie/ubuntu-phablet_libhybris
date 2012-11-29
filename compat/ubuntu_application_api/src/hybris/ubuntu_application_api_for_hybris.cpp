@@ -479,7 +479,7 @@ struct Session : public ubuntu::application::ui::Session
         Mutex::Autolock al(surfaces_guard);
         //printf("%s: %d\n", __PRETTY_FUNCTION__, layer);
         for(size_t i = 0; i < surfaces.size(); i++)
-            surfaces.valueAt(i)->set_layer(layer);
+            surfaces.valueAt(i)->set_layer(layer+i);
     }
 
     int32_t next_surface_token()
