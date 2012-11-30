@@ -161,7 +161,8 @@ struct ApplicationSession : public android::RefBase
     android::Vector< android::sp<android::InputWindowHandle> > input_window_handles()
     {
         android::Vector< android::sp<android::InputWindowHandle> > v;
-        for(size_t i = 0; i < registered_surfaces.size(); i++)
+        //for(size_t i = 0; i < registered_surfaces.size(); i++)
+        for(int i = registered_surfaces.size()-1; i >= 0; i--)
         {
             v.push_back(registered_surfaces.valueAt(i)->make_input_window_handle());
         }
