@@ -126,8 +126,7 @@ ubuntu_application_ui_query_horizontal_resolution(
 
 int32_t
 ubuntu_application_ui_query_vertical_resolution(
-    ubuntu_application_ui_physical_display_info info,
-    size_t index)
+    ubuntu_application_ui_physical_display_info info)
 {
     auto s = static_cast<Holder<ubuntu::application::ui::PhysicalDisplayInfo::Ptr>*>(info);
     return s->value->vertical_resolution();

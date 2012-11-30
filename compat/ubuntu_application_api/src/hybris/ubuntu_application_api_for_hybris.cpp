@@ -676,19 +676,32 @@ namespace application
 {
 namespace ui
 {
+
+void print_help_and_exit()
+{
+    printf("Usage: executable "
+           "[--form_factor_hint={desktop, phone, tablet}] "
+           "[--stage_hint={main_stage, side_stage, share_stage}] "
+           "[--desktop_file_hint=absolute_path_to_desktop_file]\n");
+    exit(EXIT_SUCCESS);
+}
+
 void init(int argc, char** argv)
 {
+    static const int uninteresting_flag_value = 0;
     static struct option long_options[] =
-    {
-        {"form_factor_hint", required_argument, 0, 'f'},
-        {"stage_hint", required_argument, 0, 's'},
-        {"desktop_file_hint", required_argument, 0, 'd'},
+    {        
+        {"form_factor_hint", required_argument, NULL, uninteresting_flag_value},
+        {"stage_hint", required_argument, NULL, uninteresting_flag_value},
+        {"desktop_file_hint", required_argument, NULL, uninteresting_flag_value},
+        {"help", no_argument, NULL, uninteresting_flag_value},
         {0, 0, 0, 0}
     };
 
     static const int form_factor_hint_index = 0;
     static const int stage_hint_index = 1;
     static const int desktop_file_hint_index = 2;
+    static const int help_index = 3;
 
     android::Setup* setup = new android::Setup();
 
@@ -698,7 +711,7 @@ void init(int argc, char** argv)
 
         int c = getopt_long(argc,
                             argv,
-                            "s:d:f:",
+                            "",
                             long_options,
                             &option_index);
 
@@ -711,6 +724,8 @@ void init(int argc, char** argv)
             // If this option set a flag, do nothing else now.
             if (long_options[option_index].flag != 0)
                 break;
+            if (option_index == help_index)
+                print_help_and_exit();
             if (optarg)
             {
                 switch(option_index)
@@ -723,22 +738,10 @@ void init(int argc, char** argv)
                     break;
                 case desktop_file_hint_index:
                     setup->desktop_file = android::String8(optarg);
-                    break;
+                    break;                
                 }
-                printf (" with arg %s", optarg);
             }
-            printf ("\n");
             break;
-        case 's':
-            printf ("option -s with value `%s'\n", optarg);
-            break;
-        case 'd':
-            printf ("option -d with value `%s'\n", optarg);
-            break;
-        case 'f':
-            printf ("option -f with value `%s'\n", optarg);
-            break;
-
         case '?':
             break;
         }
