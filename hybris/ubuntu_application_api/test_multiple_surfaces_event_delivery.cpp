@@ -71,8 +71,7 @@ void on_new_event(void* ctx, const Event* ev)
 
 int main(int argc, char** argv)
 {
-    printf("%s \n", __PRETTY_FUNCTION__);
-    //ubuntu_application_ui_init(argc, argv);
+    ubuntu_application_ui_init(argc, argv);
 
     SessionCredentials sc;
     memset(&sc, 0, sizeof(sc));
@@ -83,16 +82,16 @@ int main(int argc, char** argv)
     ubuntu_application_ui_physical_display_info info;
     ubuntu_application_ui_create_display_info(&info, 0);
     
-    /*printf("Display resolution: (%d,%d)\n",
+    printf("Display resolution: (%d,%d)\n",
            ubuntu_application_ui_query_horizontal_resolution(info),
-           ubuntu_application_ui_query_vertical_resolution(info));*/
+           ubuntu_application_ui_query_vertical_resolution(info));
     
     int i = 1, j = 2;
     ubuntu_application_ui_surface surface1, surface2;
     ubuntu_application_ui_create_surface(
         &surface1,
         "TestSurface1",
-        250, 
+        600, 
         500,
         MAIN_ACTOR_ROLE,
         on_new_event,
@@ -107,11 +106,6 @@ int main(int argc, char** argv)
         on_new_event,
         &j);
     
-    ubuntu_application_ui_move_surface_to(
-        surface2,
-        400,
-        400);
-
     View view1(surface1);
     View view2(surface2);
     while(true)
