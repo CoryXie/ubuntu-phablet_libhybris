@@ -149,6 +149,8 @@ public:
                                     int out_socket_fd,
                                     int in_socket_fd) = 0;
 
+    virtual void request_update_for_session(const sp<IApplicationManagerSession>& session) = 0;
+
     virtual void register_an_observer(const sp<IApplicationManagerObserver>& observer) = 0;
 
     virtual void focus_running_session_with_id(int id) = 0;
@@ -162,6 +164,7 @@ protected:
         START_A_NEW_SESSION_COMMAND = IBinder::FIRST_CALL_TRANSACTION,
         REGISTER_A_SURFACE_COMMAND,
         REGISTER_AN_OBSERVER_COMMAND,
+        REQUEST_UPDATE_FOR_SESSION_COMMAND,
         FOCUS_RUNNING_SESSION_WITH_ID_COMMAND,
         QUERY_SNAPSHOT_LAYER_FOR_SESSION_WITH_ID_COMMAND,
         SWITCH_TO_WELL_KNOWN_APPLICATION_COMMAND
@@ -201,6 +204,8 @@ public:
                             int ashmem_fd,
                             int out_socket_fd,
                             int in_socket_fd);
+
+    void request_update_for_session(const sp<IApplicationManagerSession>& session);
 
     void register_an_observer(const sp<IApplicationManagerObserver>& observer);
 
