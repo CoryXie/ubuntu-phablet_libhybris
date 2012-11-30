@@ -1,8 +1,8 @@
 libhybris (0.31) quantal; urgency=low
 
-  * Call a callback when the end of media is reached.
+  * Add support for rotation vector and linear acceleration sensors.
 
- -- Jim Hodapp <jhodapp@trinity>  Fri, 30 Nov 2012 14:15:05 -0500
+ -- Thomas Voß <thomas.voss@canonical.com>  Fri, 30 Nov 2012 11:50:40 +0100
 
 libhybris (0.30) quantal; urgency=low
 
