@@ -233,6 +233,17 @@ struct SensorService : public ubuntu::application::sensors::SensorService
             reading->vector.v[1] = event.vector.pitch;
             reading->vector.v[2] = event.vector.roll;
             break;
+        case SENSOR_TYPE_LINEAR_ACCELERATION:
+            memcpy(
+                reading->acceleration.v,
+                event.acceleration.v,
+                sizeof(reading->acceleration.v));
+            break;
+        case SENSOR_TYPE_ROTATION_VECTOR:
+            reading->vector.v[0] = event.data[0];
+            reading->vector.v[1] = event.data[1];
+            reading->vector.v[2] = event.data[2];
+            break;
         }
 
         if (sensor->registered_listener() != NULL)

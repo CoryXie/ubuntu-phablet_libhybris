@@ -1,3 +1,9 @@
+libhybris (0.31) quantal; urgency=low
+
+  * Add support for rotation vector and linear acceleration sensors.
+
+ -- Thomas Voß <thomas.voss@canonical.com>  Fri, 30 Nov 2012 11:50:40 +0100
+
 libhybris (0.30) quantal; urgency=low
 
   * Fix event delivery in case of multiple surfaces.
