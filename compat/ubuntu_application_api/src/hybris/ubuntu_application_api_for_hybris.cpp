@@ -284,16 +284,17 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
 
     void set_visible(bool visible)
     {
+        LOGI("%s: %s", __PRETTY_FUNCTION__, visible ? "true" : "false");
         if (visible)
         {
             client->openGlobalTransaction();
-            surface_control->show();
+            LOGI("surface_control->show(INT_MAX): %d", surface_control->show());
             client->closeGlobalTransaction();
         }
         else
         {
             client->openGlobalTransaction();
-            surface_control->hide();
+            LOGI("surface_control->hide(): %d", surface_control->hide());
             client->closeGlobalTransaction();
         }
     }
@@ -312,6 +313,8 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
         client->closeGlobalTransaction();
         properties.left = x;
         properties.top = y;
+        properties.right += x;
+        properties.bottom += y;
     }
 
     void resize(int w, int h)
@@ -340,14 +343,30 @@ struct Session : public ubuntu::application::ui::Session
         // From IApplicationManagerSession
         void raise_application_surfaces_to_layer(int layer)
         {
-            //printf("%s: %d \n", __PRETTY_FUNCTION__, layer);
-
+            LOGI("%s: %d \n", __PRETTY_FUNCTION__, layer);
             parent->raise_application_surfaces_to_layer(layer);
+        }
+
+        void raise_surface_to_layer(int32_t token, int layer)
+        {
+            LOGI("Enter %s (%d): %d, %d", __PRETTY_FUNCTION__, getpid(), token, layer);
+
+            auto surface = parent->surfaces.valueFor(token);
+            if (surface != NULL)
+            {
+                LOGI("\tFound surface for token: %d", token);
+                surface->set_layer(layer);
+            } else
+            {
+                LOGI("\tFound NO surface for token: %d", token);
+            }
+            
+            LOGI("Leave %s (%d): %d, %d", __PRETTY_FUNCTION__, getpid(), token, layer);
         }
 
         SurfaceProperties query_surface_properties_for_token(int32_t token)
         {
-            //printf("%s: %d \n", __PRETTY_FUNCTION__, token);
+            LOGI("%s: %d \n", __PRETTY_FUNCTION__, token);
             return parent->surfaces.valueFor(token)->properties;
         }
 
@@ -460,9 +479,12 @@ struct Session : public ubuntu::application::ui::Session
     void raise_application_surfaces_to_layer(int layer)
     {
         Mutex::Autolock al(surfaces_guard);
-        //printf("%s: %d\n", __PRETTY_FUNCTION__, layer);
+        LOGI("%s: %d\n", __PRETTY_FUNCTION__, layer);
         for(size_t i = 0; i < surfaces.size(); i++)
-            surfaces.valueAt(i)->set_layer(layer);
+        {
+            surfaces.valueAt(i)->set_layer(layer+i);
+            LOGI("\tLayer: %d\n", layer+i);
+        }
     }
 
     int32_t next_surface_token()
@@ -654,19 +676,32 @@ namespace application
 {
 namespace ui
 {
+
+void print_help_and_exit()
+{
+    printf("Usage: executable "
+           "[--form_factor_hint={desktop, phone, tablet}] "
+           "[--stage_hint={main_stage, side_stage, share_stage}] "
+           "[--desktop_file_hint=absolute_path_to_desktop_file]\n");
+    exit(EXIT_SUCCESS);
+}
+
 void init(int argc, char** argv)
 {
+    static const int uninteresting_flag_value = 0;
     static struct option long_options[] =
-    {
-        {"form_factor_hint", required_argument, 0, 'f'},
-        {"stage_hint", required_argument, 0, 's'},
-        {"desktop_file_hint", required_argument, 0, 'd'},
+    {        
+        {"form_factor_hint", required_argument, NULL, uninteresting_flag_value},
+        {"stage_hint", required_argument, NULL, uninteresting_flag_value},
+        {"desktop_file_hint", required_argument, NULL, uninteresting_flag_value},
+        {"help", no_argument, NULL, uninteresting_flag_value},
         {0, 0, 0, 0}
     };
 
     static const int form_factor_hint_index = 0;
     static const int stage_hint_index = 1;
     static const int desktop_file_hint_index = 2;
+    static const int help_index = 3;
 
     android::Setup* setup = new android::Setup();
 
@@ -676,7 +711,7 @@ void init(int argc, char** argv)
 
         int c = getopt_long(argc,
                             argv,
-                            "s:d:f:",
+                            "",
                             long_options,
                             &option_index);
 
@@ -689,6 +724,8 @@ void init(int argc, char** argv)
             // If this option set a flag, do nothing else now.
             if (long_options[option_index].flag != 0)
                 break;
+            if (option_index == help_index)
+                print_help_and_exit();
             if (optarg)
             {
                 switch(option_index)
@@ -701,22 +738,10 @@ void init(int argc, char** argv)
                     break;
                 case desktop_file_hint_index:
                     setup->desktop_file = android::String8(optarg);
-                    break;
+                    break;                
                 }
-                printf (" with arg %s", optarg);
             }
-            printf ("\n");
             break;
-        case 's':
-            printf ("option -s with value `%s'\n", optarg);
-            break;
-        case 'd':
-            printf ("option -d with value `%s'\n", optarg);
-            break;
-        case 'f':
-            printf ("option -f with value `%s'\n", optarg);
-            break;
-
         case '?':
             break;
         }

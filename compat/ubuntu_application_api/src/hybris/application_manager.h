@@ -38,12 +38,14 @@ public:
     };
 
     virtual void raise_application_surfaces_to_layer(int layer) = 0;
+    virtual void raise_surface_to_layer(int32_t token, int layer) = 0;
     virtual SurfaceProperties query_surface_properties_for_token(int32_t token) = 0;
 
 protected:
     enum
     {
         RAISE_APPLICATION_SURFACES_TO_LAYER_COMMAND = IBinder::FIRST_CALL_TRANSACTION,
+        RAISE_SURFACE_TO_LAYER_COMMAND,
         QUERY_SURFACE_PROPERTIES_FOR_TOKEN_COMMAND
     };
 };
@@ -67,6 +69,7 @@ public:
     ~BpApplicationManagerSession();
 
     void raise_application_surfaces_to_layer(int layer);
+    void raise_surface_to_layer(int32_t token, int layer);
     IApplicationManagerSession::SurfaceProperties query_surface_properties_for_token(int32_t token);
 };
 

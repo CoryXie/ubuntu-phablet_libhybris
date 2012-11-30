@@ -7,4 +7,5 @@ hybris/test_camera	#BINDIR#
 hybris/test_media_player	#BINDIR#
 hybris/test_ubuntu_app_api	#BINDIR#
 hybris/test_ubuntu_session_api	#BINDIR#
+hybris/test_ubuntu_app_api_multiple_surfaces	#BINDIR#
 hybris/test_sensors_api	#BINDIR#

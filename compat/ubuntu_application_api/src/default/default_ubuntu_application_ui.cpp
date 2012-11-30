@@ -126,8 +126,7 @@ ubuntu_application_ui_query_horizontal_resolution(
 
 int32_t
 ubuntu_application_ui_query_vertical_resolution(
-    ubuntu_application_ui_physical_display_info info,
-    size_t index)
+    ubuntu_application_ui_physical_display_info info)
 {
     auto s = static_cast<Holder<ubuntu::application::ui::PhysicalDisplayInfo::Ptr>*>(info);
     return s->value->vertical_resolution();
@@ -183,7 +182,24 @@ ubuntu_application_ui_surface_to_native_window_type(
     return s->value->to_native_window_type();
 }
 
-void ubuntu_application_ui_move_surface_to(
+void 
+ubuntu_application_ui_show_surface(
+    ubuntu_application_ui_surface surface)
+{
+    auto s = static_cast<Holder<ubuntu::application::ui::Surface::Ptr>*>(surface);
+    s->value->set_visible(true);
+}
+
+void 
+ubuntu_application_ui_hide_surface(
+    ubuntu_application_ui_surface surface)
+{
+    auto s = static_cast<Holder<ubuntu::application::ui::Surface::Ptr>*>(surface);
+    s->value->set_visible(false);
+}
+
+void 
+ubuntu_application_ui_move_surface_to(
     ubuntu_application_ui_surface surface,
     int x,
     int y)
@@ -192,7 +208,8 @@ void ubuntu_application_ui_move_surface_to(
     s->value->move_to(x, y);
 }
 
-void ubuntu_application_ui_resize_surface_to(
+void 
+ubuntu_application_ui_resize_surface_to(
     ubuntu_application_ui_surface surface,
     int w,
     int h)
