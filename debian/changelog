@@ -4,7 +4,7 @@ libhybris (0.30) quantal; urgency=low
   * Add a test application that captures the issue.
   * Fix query of vertical screen resolution.
 
- -- Thomas Voß <tvoss@thomas.voss@canonical.com>  Thu, 29 Nov 2012 15:47:53 +0100
+ -- Thomas Voß <thomas.voss@canonical.com>  Thu, 29 Nov 2012 15:47:53 +0100
 
 libhybris (0.29) quantal; urgency=low
 
