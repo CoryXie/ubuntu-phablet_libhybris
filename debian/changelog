@@ -1,3 +1,9 @@
+libhybris (0.31) quantal; urgency=low
+
+  * Call a callback when the end of media is reached.
+
+ -- Jim Hodapp <jhodapp@trinity>  Fri, 30 Nov 2012 14:15:05 -0500
+
 libhybris (0.30) quantal; urgency=low
 
   * Fix event delivery in case of multiple surfaces.
