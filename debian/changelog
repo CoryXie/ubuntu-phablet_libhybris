@@ -1,3 +1,11 @@
+libhybris (0.33) quantal; urgency=low
+
+  [ Thomas Voß ]
+  * Add a generic way for application sessions signalling
+    an update to the appmanager.
+
+ -- Michael Frey <michael.frey@canonical.com>  Fri, 30 Nov 2012 16:19:29 -0500
+
 libhybris (0.32) quantal; urgency=low
 
   * Call a callback when the end of media is reached.

@@ -311,6 +311,18 @@ void ApplicationManager::register_a_surface(
     }
 }
 
+void ApplicationManager::request_update_for_session(const android::sp<android::IApplicationManagerSession>& session)
+{
+    LOGI("%s", __PRETTY_FUNCTION__);
+
+    android::Mutex::Autolock al(guard);
+
+    if (apps_as_added[focused_application] != session->asBinder())
+        return;
+
+    switch_focused_application_locked(focused_application);
+}
+
 void ApplicationManager::register_an_observer(
     const android::sp<android::IApplicationManagerObserver>& observer)
 {
