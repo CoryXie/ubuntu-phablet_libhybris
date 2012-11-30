@@ -1,4 +1,4 @@
-libhybris (0.30) UNRELEASED; urgency=low
+libhybris (0.30) quantal; urgency=low
 
   * Fix event delivery in case of multiple surfaces.
   * Add a test application that captures the issue.
