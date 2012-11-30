@@ -1,3 +1,9 @@
+libhybris (0.31) UNRELEASED; urgency=low
+
+  * Add a generic way for application sessions signalling an update to the appmanager.
+
+ -- Thomas Voß <thomas.voss@canonical.com>  Fri, 30 Nov 2012 18:34:22 +0100
+
 libhybris (0.30) quantal; urgency=low
 
   * Fix event delivery in case of multiple surfaces.
