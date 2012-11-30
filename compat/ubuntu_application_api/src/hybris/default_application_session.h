@@ -117,40 +117,41 @@ struct ApplicationSession : public android::RefBase
         {
             if (mInfo == NULL)
             {
-                android::IApplicationManagerSession::SurfaceProperties props = surface->query_properties();
-
-                LOGI("%s: touchable_region = (%d, %d, %d, %d)", 
-                     __PRETTY_FUNCTION__,
-                     props.left, 
-                     props.top, 
-                     props.right, 
-                     props.bottom);
-                
-                SkRegion touchable_region;
-                touchable_region.setRect(props.left, props.top, props.right, props.bottom);
-
                 mInfo = new android::InputWindowInfo();
-                mInfo->name = parent->app_name;
-                mInfo->layoutParamsFlags = android::InputWindowInfo::FLAG_NOT_TOUCH_MODAL | android::InputWindowInfo::FLAG_SPLIT_TOUCH;
-                mInfo->layoutParamsType = android::InputWindowInfo::TYPE_APPLICATION;
-                mInfo->touchableRegion = touchable_region;
-                mInfo->frameLeft = props.left;
-                mInfo->frameTop = props.top;
-                mInfo->frameRight = props.right;
-                mInfo->frameBottom = props.bottom;
-                mInfo->scaleFactor = 1.f;
-                mInfo->visible = true;
-                mInfo->canReceiveKeys = true;
-                mInfo->hasFocus = false; //true;
-                mInfo->hasWallpaper = false;
-                mInfo->paused = false;
-                mInfo->layer = props.layer;
-                mInfo->dispatchingTimeout = INT_MAX;
-                mInfo->ownerPid = 0;
-                mInfo->ownerUid = 0;
-                mInfo->inputFeatures = 0;
-                mInfo->inputChannel = surface->input_channel;
             }
+            
+            android::IApplicationManagerSession::SurfaceProperties props = surface->query_properties();
+            LOGI("%s: touchable_region = (%d, %d, %d, %d)", 
+                 __PRETTY_FUNCTION__,
+                 props.left, 
+                 props.top, 
+                 props.right, 
+                 props.bottom);
+            
+            SkRegion touchable_region;
+            touchable_region.setRect(props.left, props.top, props.right, props.bottom);
+            
+            mInfo->name = parent->app_name;
+            mInfo->layoutParamsFlags = android::InputWindowInfo::FLAG_NOT_TOUCH_MODAL | android::InputWindowInfo::FLAG_SPLIT_TOUCH;
+            mInfo->layoutParamsType = android::InputWindowInfo::TYPE_APPLICATION;
+            mInfo->touchableRegion = touchable_region;
+            mInfo->frameLeft = props.left;
+            mInfo->frameTop = props.top;
+            mInfo->frameRight = props.right;
+            mInfo->frameBottom = props.bottom;
+            mInfo->scaleFactor = 1.f;
+            mInfo->visible = true;
+            mInfo->canReceiveKeys = true;
+            mInfo->hasFocus = false; //true;
+            mInfo->hasWallpaper = false;
+            mInfo->paused = false;
+            mInfo->layer = props.layer;
+            mInfo->dispatchingTimeout = INT_MAX;
+            mInfo->ownerPid = 0;
+            mInfo->ownerUid = 0;
+            mInfo->inputFeatures = 0;
+            mInfo->inputChannel = surface->input_channel;
+            
             return true;
         }
 

@@ -119,6 +119,8 @@ struct ApplicationManager :
 
     void register_an_observer(const android::sp<android::IApplicationManagerObserver>& observer);
 
+    void request_update_for_session(const android::sp<android::IApplicationManagerSession>& session);
+
     void focus_running_session_with_id(int id);
 
     int32_t query_snapshot_layer_for_session_with_id(int id);
