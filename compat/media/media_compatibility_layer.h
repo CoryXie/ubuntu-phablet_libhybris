@@ -28,18 +28,23 @@
 extern "C" {
 #endif
 
+    // Callback types
     typedef void (*on_msg_set_video_size)(int height, int width, void *context);
     typedef void (*on_video_texture_needs_update)(void *context);
     typedef void (*on_msg_error)(void *context);
+    typedef void (*on_playback_complete)(void *context);
 
     struct MediaPlayerWrapper;
 
     // ----- Start of C API ----- //
 
+    // Callback setters
     void android_media_set_video_size_cb(MediaPlayerWrapper *mp, on_msg_set_video_size cb, void *context);
     void android_media_set_video_texture_needs_update_cb(MediaPlayerWrapper *mp, on_video_texture_needs_update cb, void *context);
     void android_media_set_error_cb(MediaPlayerWrapper *mp, on_msg_error cb, void *context);
+    void android_media_set_playback_complete_cb(MediaPlayerWrapper *mp, on_playback_complete cb, void *context);
 
+    // Main player control API
     MediaPlayerWrapper *android_media_new_player();
     int android_media_set_data_source(MediaPlayerWrapper *mp, const char* url);
     int android_media_set_preview_texture(MediaPlayerWrapper *mp, int texture_id);

@@ -17,7 +17,7 @@
  */
 
 // Uncomment to enable verbose debug output
-// #define LOG_NDEBUG 0
+#define LOG_NDEBUG 0
 
 #undef LOG_TAG
 #define LOG_TAG "MediaCompatibilityLayer"
@@ -70,7 +70,9 @@ public:
         : set_video_size_cb(NULL),
           video_size_context(NULL),
           error_cb(NULL),
-          error_context(NULL)
+          error_context(NULL),
+          playback_complete_cb(NULL),
+          playback_complete_context(NULL)
     {
     }
 
@@ -85,6 +87,11 @@ public:
                 break;
             case android::MEDIA_PLAYBACK_COMPLETE:
                 LOGV("\tMEDIA_PLAYBACK_COMPLETE msg\n");
+                if (playback_complete_cb != NULL)
+                    playback_complete_cb(playback_complete_context);
+                else
+                    LOGW("Failed to signal end of playback, callback not set.");
+
                 break;
             case android::MEDIA_BUFFERING_UPDATE:
                 LOGV("\tMEDIA_BUFFERING_UPDATE msg\n");
@@ -95,7 +102,7 @@ public:
             case android::MEDIA_SET_VIDEO_SIZE:
                 LOGV("\tMEDIA_SET_VIDEO_SIZE msg\n");
                 if (set_video_size_cb != NULL)
-                    set_video_size_cb(ext1, ext2, video_size_context);
+                    set_video_size_cb(ext2, ext1, video_size_context);
                 else
                     LOGE("Failed to set video size. set_video_size_cb is NULL.");
 
@@ -108,6 +115,9 @@ public:
                 // TODO: Extend this cb to include the error message
                 if (error_cb != NULL)
                     error_cb(error_context);
+                else
+                    LOGE("Failed to signal error to app layer, callback not set.");
+
                 break;
             case android::MEDIA_INFO:
                 LOGV("\tMEDIA_INFO msg\n");
@@ -133,11 +143,21 @@ public:
         error_context = context;
     }
 
+    void setPlaybackCompleteCb(on_playback_complete cb, void *context)
+    {
+        REPORT_FUNCTION();
+
+        playback_complete_cb = cb;
+        playback_complete_context = context;
+    }
+
 private:
     on_msg_set_video_size set_video_size_cb;
     void *video_size_context;
     on_msg_error error_cb;
     void *error_context;
+    on_playback_complete playback_complete_cb;
+    void *playback_complete_context;
 };
 
 // ----- MediaPlayer Wrapper ----- //
@@ -212,6 +232,14 @@ public:
         media_player_listener->setErrorCb(cb, context);
     }
 
+    void setPlaybackCompleteCb(on_msg_error cb, void *context)
+    {
+        REPORT_FUNCTION();
+
+        assert(media_player_listener != NULL);
+        media_player_listener->setPlaybackCompleteCb(cb, context);
+    }
+
     void getVolume(float *leftVolume, float *rightVolume)
     {
         *leftVolume = left_volume;
@@ -280,6 +308,19 @@ void android_media_set_error_cb(MediaPlayerWrapper *mp, on_msg_error cb, void *c
     }
 
     mp->setErrorCb(cb, context);
+}
+
+void android_media_set_playback_complete_cb(MediaPlayerWrapper *mp, on_playback_complete cb, void *context)
+{
+    REPORT_FUNCTION()
+
+    if (mp == NULL)
+    {
+        LOGE("mp must not be NULL");
+        return;
+    }
+
+    mp->setPlaybackCompleteCb(cb, context);
 }
 
 MediaPlayerWrapper *android_media_new_player()
