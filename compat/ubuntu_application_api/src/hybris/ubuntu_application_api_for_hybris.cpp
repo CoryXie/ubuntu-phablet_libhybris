@@ -36,6 +36,7 @@
 #include <binder/IServiceManager.h>
 #include <binder/ProcessState.h>
 #include <surfaceflinger/SurfaceComposerClient.h>
+#include <ui/DisplayInfo.h>
 #include <ui/InputTransport.h>
 #include <ui/PixelFormat.h>
 #include <ui/Region.h>
@@ -115,9 +116,20 @@ struct PhysicalDisplayInfo : public ubuntu::application::ui::PhysicalDisplayInfo
     {
     }
 
-    int dpi()
+    float horizontal_dpi()
     {
-        return 96;
+        DisplayInfo info;
+        SurfaceComposerClient::getDisplayInfo(display_id, &info);
+        
+        return info.xdpi;
+    }
+
+    float vertical_dpi()
+    {
+        DisplayInfo info;
+        SurfaceComposerClient::getDisplayInfo(display_id, &info);
+        
+        return info.ydpi;
     }
 
     int horizontal_resolution()
@@ -448,15 +460,6 @@ struct Session : public ubuntu::application::ui::Session, public UbuntuSurface::
         app_manager.request_update_for_session(app_manager_session);
     }
 
-    ubuntu::application::ui::PhysicalDisplayInfo::Ptr physical_display_info(
-        ubuntu::application::ui::PhysicalDisplayIdentifier id)
-    {
-        ubuntu::application::ui::PhysicalDisplayInfo::Ptr display(
-            new PhysicalDisplayInfo(static_cast<size_t>(id)));
-
-        return display;
-    }
-
     ubuntu::application::ui::Surface::Ptr create_surface(
         const ubuntu::application::ui::SurfaceProperties& props,
         const ubuntu::application::ui::input::Listener::Ptr& listener)
@@ -784,6 +787,15 @@ void init(int argc, char** argv)
 const ubuntu::application::ui::Setup::Ptr& ubuntu::application::ui::Setup::instance()
 {
     return android::global_setup;
+}
+
+ubuntu::application::ui::PhysicalDisplayInfo::Ptr ubuntu::application::ui::Session::physical_display_info(
+        ubuntu::application::ui::PhysicalDisplayIdentifier id)
+{
+    ubuntu::application::ui::PhysicalDisplayInfo::Ptr display(
+        new android::PhysicalDisplayInfo(static_cast<size_t>(id)));
+    
+    return display;
 }
 
 }
