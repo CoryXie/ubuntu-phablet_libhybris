@@ -1,8 +1,9 @@
 libhybris (0.34) quantal; urgency=low
 
+  * Do not restack surfaces on request update
   * Add query of screen dpi.
 
- -- Thomas Voß <thomas.voss@canonical.com>  Tue, 04 Dec 2012 19:25:15 +0100
+ -- Thomas Voß <thomas.voss@canonical.com>  Tue, 04 Dec 2012 20:53:26 +0100
 
 libhybris (0.33) quantal; urgency=low
 
