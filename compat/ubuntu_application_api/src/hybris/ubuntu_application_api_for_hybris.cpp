@@ -460,15 +460,6 @@ struct Session : public ubuntu::application::ui::Session, public UbuntuSurface::
         app_manager.request_update_for_session(app_manager_session);
     }
 
-    ubuntu::application::ui::PhysicalDisplayInfo::Ptr physical_display_info(
-        ubuntu::application::ui::PhysicalDisplayIdentifier id)
-    {
-        ubuntu::application::ui::PhysicalDisplayInfo::Ptr display(
-            new PhysicalDisplayInfo(static_cast<size_t>(id)));
-
-        return display;
-    }
-
     ubuntu::application::ui::Surface::Ptr create_surface(
         const ubuntu::application::ui::SurfaceProperties& props,
         const ubuntu::application::ui::input::Listener::Ptr& listener)
@@ -796,6 +787,15 @@ void init(int argc, char** argv)
 const ubuntu::application::ui::Setup::Ptr& ubuntu::application::ui::Setup::instance()
 {
     return android::global_setup;
+}
+
+ubuntu::application::ui::PhysicalDisplayInfo::Ptr ubuntu::application::ui::Session::physical_display_info(
+        ubuntu::application::ui::PhysicalDisplayIdentifier id)
+{
+    ubuntu::application::ui::PhysicalDisplayInfo::Ptr display(
+        new android::PhysicalDisplayInfo(static_cast<size_t>(id)));
+    
+    return display;
 }
 
 }

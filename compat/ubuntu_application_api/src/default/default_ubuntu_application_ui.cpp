@@ -104,8 +104,8 @@ ubuntu_application_ui_create_display_info(
     size_t index)
 {
     *info = make_holder(
-                session->physical_display_info(
-                    static_cast<ubuntu::application::ui::PhysicalDisplayIdentifier>(index)));
+        ubuntu::application::ui::Session::physical_display_info(
+            static_cast<ubuntu::application::ui::PhysicalDisplayIdentifier>(index)));
 }
 
 void
