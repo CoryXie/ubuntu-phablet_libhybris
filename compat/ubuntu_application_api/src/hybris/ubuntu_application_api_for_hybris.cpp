@@ -36,6 +36,7 @@
 #include <binder/IServiceManager.h>
 #include <binder/ProcessState.h>
 #include <surfaceflinger/SurfaceComposerClient.h>
+#include <ui/DisplayInfo.h>
 #include <ui/InputTransport.h>
 #include <ui/PixelFormat.h>
 #include <ui/Region.h>
