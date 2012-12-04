@@ -48,7 +48,8 @@ class PhysicalDisplayInfo : public ubuntu::platform::ReferenceCountedBase
 public:
     typedef ubuntu::platform::shared_ptr<PhysicalDisplayInfo> Ptr;
 
-    virtual int dpi() = 0;
+    virtual float horizontal_dpi() = 0;
+    virtual float vertical_dpi() = 0;
     virtual int horizontal_resolution() = 0;
     virtual int vertical_resolution() = 0;
 

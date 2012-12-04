@@ -38,7 +38,7 @@ class Session : public ubuntu::application::Session
 public:
     typedef ubuntu::platform::shared_ptr<Session> Ptr;
 
-    virtual PhysicalDisplayInfo::Ptr physical_display_info(PhysicalDisplayIdentifier id) = 0;
+    static PhysicalDisplayInfo::Ptr physical_display_info(PhysicalDisplayIdentifier id);
 
     virtual Surface::Ptr create_surface(
         const SurfaceProperties& props,

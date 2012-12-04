@@ -79,9 +79,11 @@ int main(int argc, char** argv)
     ubuntu_application_ui_physical_display_info info;
     ubuntu_application_ui_create_display_info(&info, 0);
     
-    printf("Display resolution: (%d,%d)\n",
+    printf("Display resolution: (x,y) = (%d,%d), (xdpi, ydpi) = (%f,%f)\n",
            ubuntu_application_ui_query_horizontal_resolution(info),
-           ubuntu_application_ui_query_vertical_resolution(info));
+           ubuntu_application_ui_query_vertical_resolution(info),
+           ubuntu_application_ui_query_horizontal_dpi(info),
+           ubuntu_application_ui_query_vertical_dpi(info));
     
     ubuntu_application_ui_surface surface;
     ubuntu_application_ui_create_surface(
