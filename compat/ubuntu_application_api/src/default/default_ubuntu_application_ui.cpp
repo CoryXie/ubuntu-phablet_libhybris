@@ -132,6 +132,21 @@ ubuntu_application_ui_query_vertical_resolution(
     return s->value->vertical_resolution();
 }
 
+float
+ubuntu_application_ui_query_horizontal_dpi(
+    ubuntu_application_ui_physical_display_info info)
+{
+    auto s = static_cast<Holder<ubuntu::application::ui::PhysicalDisplayInfo::Ptr>*>(info);
+    return s->value->horizontal_dpi();
+}
+
+float
+ubuntu_application_ui_query_vertical_dpi(
+    ubuntu_application_ui_physical_display_info info)
+{
+    auto s = static_cast<Holder<ubuntu::application::ui::PhysicalDisplayInfo::Ptr>*>(info);
+    return s->value->vertical_dpi();
+}
 
 void
 ubuntu_application_ui_create_surface(

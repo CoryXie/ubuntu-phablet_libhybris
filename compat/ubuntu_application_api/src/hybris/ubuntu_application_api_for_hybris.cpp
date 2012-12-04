@@ -115,9 +115,20 @@ struct PhysicalDisplayInfo : public ubuntu::application::ui::PhysicalDisplayInfo
     {
     }
 
-    int dpi()
+    float horizontal_dpi()
     {
-        return 96;
+        DisplayInfo info;
+        SurfaceComposerClient::getDisplayInfo(display_id, &info);
+        
+        return info.xdpi;
+    }
+
+    float vertical_dpi()
+    {
+        DisplayInfo info;
+        SurfaceComposerClient::getDisplayInfo(display_id, &info);
+        
+        return info.ydpi;
     }
 
     int horizontal_resolution()
