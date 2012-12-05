@@ -36,6 +36,7 @@
 #include <binder/IServiceManager.h>
 #include <binder/ProcessState.h>
 #include <surfaceflinger/SurfaceComposerClient.h>
+#include <ui/DisplayInfo.h>
 #include <ui/InputTransport.h>
 #include <ui/PixelFormat.h>
 #include <ui/Region.h>
@@ -115,9 +116,20 @@ struct PhysicalDisplayInfo : public ubuntu::application::ui::PhysicalDisplayInfo
     {
     }
 
-    int dpi()
+    float horizontal_dpi()
     {
-        return 96;
+        DisplayInfo info;
+        SurfaceComposerClient::getDisplayInfo(display_id, &info);
+        
+        return info.xdpi;
+    }
+
+    float vertical_dpi()
+    {
+        DisplayInfo info;
+        SurfaceComposerClient::getDisplayInfo(display_id, &info);
+        
+        return info.ydpi;
     }
 
     int horizontal_resolution()
@@ -135,6 +147,13 @@ struct PhysicalDisplayInfo : public ubuntu::application::ui::PhysicalDisplayInfo
 
 struct UbuntuSurface : public ubuntu::application::ui::Surface
 {
+    struct Observer
+    {
+        virtual ~Observer() {}
+
+        virtual void update() = 0;
+    };
+
     sp<SurfaceComposerClient> client;
     sp<SurfaceControl> surface_control;
     sp<android::Surface> surface;
@@ -145,6 +164,7 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
     IApplicationManagerSession::SurfaceProperties properties;
 
     bool is_visible_flag;
+    Observer* observer;
 
     static int looper_callback(int receiveFd, int events, void* ctxt)
     {
@@ -177,14 +197,16 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
                   const sp<InputChannel>& input_channel,
                   const sp<Looper>& looper,
                   const ubuntu::application::ui::SurfaceProperties& props,
-                  const ubuntu::application::ui::input::Listener::Ptr& listener)
-        : ubuntu::application::ui::Surface(listener),
-          client(client),
-          input_channel(input_channel),
-          input_consumer(input_channel),
-          looper(looper),
+                  const ubuntu::application::ui::input::Listener::Ptr& listener,
+                  Observer* observer = NULL)
+            : ubuntu::application::ui::Surface(listener),
+              client(client),
+              input_channel(input_channel),
+              input_consumer(input_channel),
+        looper(looper),
         properties( {0, 0, 0, props.width-1, props.height-1}),
-    is_visible_flag(false)
+        is_visible_flag(false),
+        observer(observer)
     {
         assert(client != NULL);
 
@@ -297,6 +319,7 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
             LOGI("surface_control->hide(): %d", surface_control->hide());
             client->closeGlobalTransaction();
         }
+
     }
 
     void set_alpha(float alpha)
@@ -304,6 +327,9 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
         client->openGlobalTransaction();
         surface_control->setAlpha(alpha);
         client->closeGlobalTransaction();
+
+        if (observer)
+            observer->update();
     }
 
     void move_to(int x, int y)
@@ -315,6 +341,9 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
         properties.top = y;
         properties.right += x;
         properties.bottom += y;
+
+        if (observer)
+            observer->update();
     }
 
     void resize(int w, int h)
@@ -324,6 +353,9 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
         client->closeGlobalTransaction();
         properties.right = properties.left + w;
         properties.bottom = properties.top + h;
+
+        if (observer)
+            observer->update();
     }
 
     EGLNativeWindowType to_native_window_type()
@@ -332,7 +364,7 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
     }
 };
 
-struct Session : public ubuntu::application::ui::Session
+struct Session : public ubuntu::application::ui::Session, public UbuntuSurface::Observer
 {
     struct ApplicationManagerSession : public BnApplicationManagerSession
     {
@@ -418,13 +450,14 @@ struct Session : public ubuntu::application::ui::Session
         event_loop->run();
     }
 
-    ubuntu::application::ui::PhysicalDisplayInfo::Ptr physical_display_info(
-        ubuntu::application::ui::PhysicalDisplayIdentifier id)
+    void update()
     {
-        ubuntu::application::ui::PhysicalDisplayInfo::Ptr display(
-            new PhysicalDisplayInfo(static_cast<size_t>(id)));
+        sp<IServiceManager> service_manager = defaultServiceManager();
+        sp<IBinder> service = service_manager->getService(
+                                  String16(IApplicationManager::exported_service_name()));
+        BpApplicationManager app_manager(service);
 
-        return display;
+        app_manager.request_update_for_session(app_manager_session);
     }
 
     ubuntu::application::ui::Surface::Ptr create_surface(
@@ -448,7 +481,8 @@ struct Session : public ubuntu::application::ui::Session
             client_channel,
             looper,
             props,
-            listener);
+            listener,
+            this);
 
         int32_t token;
 
@@ -753,6 +787,15 @@ void init(int argc, char** argv)
 const ubuntu::application::ui::Setup::Ptr& ubuntu::application::ui::Setup::instance()
 {
     return android::global_setup;
+}
+
+ubuntu::application::ui::PhysicalDisplayInfo::Ptr ubuntu::application::ui::Session::physical_display_info(
+        ubuntu::application::ui::PhysicalDisplayIdentifier id)
+{
+    ubuntu::application::ui::PhysicalDisplayInfo::Ptr display(
+        new android::PhysicalDisplayInfo(static_cast<size_t>(id)));
+    
+    return display;
 }
 
 }

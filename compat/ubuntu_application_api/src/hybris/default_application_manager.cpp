@@ -311,6 +311,24 @@ void ApplicationManager::register_a_surface(
     }
 }
 
+void ApplicationManager::request_update_for_session(const android::sp<android::IApplicationManagerSession>& session)
+{
+    LOGI("%s", __PRETTY_FUNCTION__);
+
+    android::Mutex::Autolock al(guard);
+
+    if (apps_as_added[focused_application] != session->asBinder())
+        return;
+
+    const android::sp<mir::ApplicationSession>& as =
+            apps.valueFor(apps_as_added[focused_application]);
+    
+    input_setup->input_manager->getDispatcher()->setFocusedApplication(
+        as->input_application_handle());
+    input_setup->input_manager->getDispatcher()->setInputWindows(
+        as->input_window_handles());    
+}
+
 void ApplicationManager::register_an_observer(
     const android::sp<android::IApplicationManagerObserver>& observer)
 {

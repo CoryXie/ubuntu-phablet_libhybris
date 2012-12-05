@@ -247,6 +247,13 @@ status_t BnApplicationManager::onTransact(uint32_t code,
         register_an_observer(observer);
         break;
     }
+    case REQUEST_UPDATE_FOR_SESSION_COMMAND:
+    {
+        sp<IBinder> binder = data.readStrongBinder();
+        sp<BpApplicationManagerSession> session(new BpApplicationManagerSession(binder));
+        request_update_for_session(session);
+        break;
+    }
     case FOCUS_RUNNING_SESSION_WITH_ID_COMMAND:
     {
         int32_t id = data.readInt32();
@@ -335,6 +342,15 @@ void BpApplicationManager::register_an_observer(const sp<IApplicationManagerObse
     in.writeStrongBinder(observer->asBinder());
 
     remote()->transact(REGISTER_AN_OBSERVER_COMMAND,
+                       in,
+                       &out);
+}
+
+void BpApplicationManager::request_update_for_session(const sp<IApplicationManagerSession>& session)
+{
+    Parcel in, out;
+    in.writeStrongBinder(session->asBinder());
+    remote()->transact(REQUEST_UPDATE_FOR_SESSION_COMMAND,
                        in,
                        &out);
 }

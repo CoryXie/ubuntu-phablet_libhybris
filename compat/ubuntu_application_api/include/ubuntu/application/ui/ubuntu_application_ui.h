@@ -132,6 +132,14 @@ extern "C" {
     ubuntu_application_ui_query_vertical_resolution(
         ubuntu_application_ui_physical_display_info info);
 
+    float
+    ubuntu_application_ui_query_horizontal_dpi(
+        ubuntu_application_ui_physical_display_info info);
+
+    float
+    ubuntu_application_ui_query_vertical_dpi(
+        ubuntu_application_ui_physical_display_info info);
+
     void
     ubuntu_application_ui_create_surface(
         ubuntu_application_ui_surface* out_surface,
