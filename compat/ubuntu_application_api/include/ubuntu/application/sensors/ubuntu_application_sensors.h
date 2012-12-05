@@ -35,14 +35,32 @@ extern "C" {
 
     typedef struct
     {
+        int64_t timestamp;
+
+        float distance;
+    } ubuntu_sensor_proximity_reading;
+
+    typedef struct
+    {
+        int64_t timestamp;
+        
+        float light;
+    } ubuntu_sensor_ambient_light_reading;
+
+    typedef struct
+    {
         typedef void (*on_new_accelerometer_reading)(ubuntu_sensor_accelerometer_reading* reading, void* context);
+        typedef void (*on_new_proximity_reading)(ubuntu_sensor_proximity_reading* reading, void* context);
+        typedef void (*on_new_ambient_light_reading)(ubuntu_sensor_ambient_light_reading* reading, void* context);
 
         on_new_accelerometer_reading on_new_accelerometer_reading_cb;
-
+        on_new_proximity_reading on_new_proximity_reading_cb;
+        on_new_ambient_light_reading on_new_ambient_light_reading_cb;
+        
         void* context;
-    } ubuntu_accelerometer_observer;
+    } ubuntu_sensor_observer;
 
-    void ubuntu_sensor_install_accelerometer_observer(ubuntu_accelerometer_observer* observer);
+    void ubuntu_sensor_install_observer(ubuntu_sensor_observer* observer);
 
 #ifdef __cplusplus
 }
