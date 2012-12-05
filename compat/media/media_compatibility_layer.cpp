@@ -170,8 +170,8 @@ public:
           texture(NULL),
           media_player_listener(new MediaPlayerListenerWrapper()),
           frame_listener(new FrameAvailableListener),
-          left_volume(0.2), // Set vol to a default sane value
-          right_volume(0.2),
+          left_volume(1), // Set vol to 100% for this track by default
+          right_volume(1),
           source_fd(-1)
     {
         setListener(media_player_listener);
