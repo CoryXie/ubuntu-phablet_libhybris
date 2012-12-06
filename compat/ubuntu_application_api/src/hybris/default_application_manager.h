@@ -41,10 +41,12 @@ struct ApplicationManager :
     static const int default_shell_component_layer = 1000000;
     
     static const int default_dash_layer = default_shell_component_layer + 1;
-    static const int default_launcher_layer = default_shell_component_layer + 2;
-    static const int default_top_bar_layer = default_shell_component_layer + 3;
-    static const int default_switcher_layer = default_shell_component_layer + 4;
-    static const int default_osk_layer = default_shell_component_layer + 5;
+    static const int default_indicator_layer = default_shell_component_layer + 2;
+    static const int default_notifications_layer = default_shell_component_layer + 3;
+    static const int default_greeter_layer = default_shell_component_layer + 4;
+    static const int default_launcher_layer = default_shell_component_layer + 5;
+    static const int default_osk_layer = default_shell_component_layer + 6;
+    static const int default_shutdown_dialog_layer = default_shell_component_layer + 7;
     
     static const int focused_application_base_layer = 100;
     static const int wallpaper_layer = 0;
