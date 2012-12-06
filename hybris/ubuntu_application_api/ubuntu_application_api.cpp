@@ -152,8 +152,8 @@ IMPLEMENT_VOID_FUNCTION1(ubuntu_ui_session_install_session_lifecycle_observer, u
 IMPLEMENT_VOID_FUNCTION1(ubuntu_ui_session_focus_running_session_with_id, int);
 IMPLEMENT_VOID_FUNCTION3(ubuntu_ui_session_snapshot_running_session_with_id, int, ubuntu_ui_session_service_snapshot_cb, void*); 
 IMPLEMENT_VOID_FUNCTION1(ubuntu_ui_session_trigger_switch_to_well_known_application, ubuntu_ui_well_known_application);
-// Accelerometer service
-IMPLEMENT_VOID_FUNCTION1(ubuntu_sensor_install_accelerometer_observer, ubuntu_accelerometer_observer*);
+// Sensor service
+IMPLEMENT_VOID_FUNCTION1(ubuntu_sensor_install_observer, ubuntu_sensor_observer*);
 
 
 
