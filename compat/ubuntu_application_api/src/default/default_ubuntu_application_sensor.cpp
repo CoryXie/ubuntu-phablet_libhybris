@@ -23,10 +23,12 @@
 #include <ubuntu/application/sensors/sensor_service.h>
 #include <ubuntu/application/sensors/sensor_type.h>
 
+#include <cassert>
 #include <cstdio>
 
 namespace
 {
+template<ubuntu::application::sensors::SensorType sensor_type>
 struct SensorListener : public ubuntu::application::sensors::SensorListener
 {
     SensorListener() : observer(NULL)
@@ -38,40 +40,106 @@ struct SensorListener : public ubuntu::application::sensors::SensorListener
         if(!observer)
             return;
 
-        if (!observer->on_new_accelerometer_reading_cb)
-            return;
+        switch(sensor_type)
+        {
+            case ubuntu::application::sensors::sensor_type_accelerometer:
+                {
+                    if (!observer->on_new_accelerometer_reading_cb)
+                        return;
 
-        static ubuntu_sensor_accelerometer_reading r;
-        r.timestamp = reading->timestamp;
-        r.acceleration_x = reading->acceleration[0];
-        r.acceleration_y = reading->acceleration[1];
-        r.acceleration_z = reading->acceleration[2];
+                    static ubuntu_sensor_accelerometer_reading r;
+                    r.timestamp = reading->timestamp;
+                    r.acceleration_x = reading->acceleration[0];
+                    r.acceleration_y = reading->acceleration[1];
+                    r.acceleration_z = reading->acceleration[2];
 
-        observer->on_new_accelerometer_reading_cb(&r, observer->context);
+                    observer->on_new_accelerometer_reading_cb(&r, observer->context);
+                    break;
+                }
+            case ubuntu::application::sensors::sensor_type_proximity:
+                {
+                    if (!observer->on_new_proximity_reading_cb)
+                        return;
+
+                    static ubuntu_sensor_proximity_reading r;
+                    r.timestamp = reading->timestamp;
+                    r.distance = reading->distance;
+
+                    observer->on_new_proximity_reading_cb(&r, observer->context);
+                    break;
+                }
+            case ubuntu::application::sensors::sensor_type_light:
+                {
+                    if (!observer->on_new_ambient_light_reading_cb)
+                        return;
+
+                    static ubuntu_sensor_ambient_light_reading r;
+                    r.timestamp = reading->timestamp;
+                    r.light = reading->light;
+
+                    observer->on_new_ambient_light_reading_cb(&r, observer->context);
+                    break;
+                }
+        }
     }
 
-    ubuntu_accelerometer_observer* observer;
+    ubuntu_sensor_observer* observer;
 };
 
 ubuntu::application::sensors::Sensor::Ptr accelerometer;
+ubuntu::application::sensors::Sensor::Ptr proximity;
+ubuntu::application::sensors::Sensor::Ptr light;
 ubuntu::application::sensors::SensorListener::Ptr accelerometer_listener;
+ubuntu::application::sensors::SensorListener::Ptr proximity_listener;
+ubuntu::application::sensors::SensorListener::Ptr light_listener;
 }
 
 
-void ubuntu_sensor_install_accelerometer_observer(ubuntu_accelerometer_observer* observer)
+void ubuntu_sensor_install_observer(ubuntu_sensor_observer* observer)
 {
-    if (accelerometer == NULL)
+    assert(observer);
+    if (observer->on_new_accelerometer_reading_cb && accelerometer == NULL)
     {
-
         accelerometer =
             ubuntu::application::sensors::SensorService::sensor_for_type(
                 ubuntu::application::sensors::sensor_type_accelerometer);
 
-        SensorListener* sl = new SensorListener();
+        SensorListener<ubuntu::application::sensors::sensor_type_accelerometer>* sl 
+                       = new SensorListener<ubuntu::application::sensors::sensor_type_accelerometer>();
         sl->observer = observer;
 
         accelerometer_listener = sl;
         accelerometer->register_listener(accelerometer_listener);
         accelerometer->enable();
+    }
+    
+    if (observer->on_new_proximity_reading_cb && proximity == NULL)
+    {
+        proximity =
+            ubuntu::application::sensors::SensorService::sensor_for_type(
+                ubuntu::application::sensors::sensor_type_proximity);
+
+        SensorListener<ubuntu::application::sensors::sensor_type_proximity>* sl 
+                = new SensorListener<ubuntu::application::sensors::sensor_type_proximity>();
+        sl->observer = observer;
+
+        proximity_listener = sl;
+        proximity->register_listener(proximity_listener);
+        proximity->enable();
+    }
+
+    if (observer->on_new_ambient_light_reading_cb && light == NULL)
+    {
+        light =
+            ubuntu::application::sensors::SensorService::sensor_for_type(
+                ubuntu::application::sensors::sensor_type_light);
+
+        SensorListener<ubuntu::application::sensors::sensor_type_light>* sl 
+                = new SensorListener<ubuntu::application::sensors::sensor_type_light>();
+        sl->observer = observer;
+
+        light_listener = sl;
+        light->register_listener(light_listener);
+        light->enable();
     }
 }

@@ -1,8 +1,14 @@
-libhybris (0.36) quantal; urgency=low
+libhybris (0.37) quantal; urgency=low
 
   * Iterate surface roles and adjust stacking.
 
  -- Thomas Voß <thomas.voss@canonical.com>  Thu, 06 Dec 2012 21:00:04 +0100
+
+libhybris (0.36) quantal; urgency=low
+
+  * Refactor sensors API to include proximity and ambient light readings.
+
+ -- Thomas Voß <thomas.voss@canonical.com>  Wed, 05 Dec 2012 18:36:36 +0100
 
 libhybris (0.35) quantal; urgency=low
 
