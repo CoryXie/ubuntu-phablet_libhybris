@@ -58,14 +58,14 @@ extern "C" {
 
     typedef enum
     {
-        MAIN_ACTOR_ROLE = 0,
-        TOOL_SUPPORT_ACTOR_ROLE = 1,
-        DIALOG_SUPPORT_ACTOR_ROLE = 2,
-        DASH_ACTOR_ROLE = 3,
-        LAUNCHER_ACTOR_ROLE = 4,
-        INDICATOR_ACTOR_ROLE = 5,
-        MENUBAR_ACTOR_ROLE = 6,
-        ON_SCREEN_KEYBOARD_ACTOR_ROLE = 7
+        DASH_ACTOR_ROLE = 0,
+        MAIN_ACTOR_ROLE = 1,
+        INDICATOR_ACTOR_ROLE = 2,
+        NOTIFICATIONS_ACTOR_ROLE = 3,
+        GREETER_ACTOR_ROLE = 4,
+        LAUNCHER_ACTOR_ROLE = 5,
+        ON_SCREEN_KEYBOARD_ACTOR_ROLE = 6,
+        SHUTDOWN_DIALOG_ACTOR_ROLE = 7
     } SurfaceRole;
 
     enum
@@ -77,7 +77,7 @@ extern "C" {
     {
         typedef void (*on_application_resumed)(void* ctx);
         typedef void (*on_application_suspended)(void* ctx);
-        
+
         typedef void (*on_application_focused)(void* ctx);
         typedef void (*on_application_unfocused)(void* ctx);
 
@@ -91,7 +91,7 @@ extern "C" {
         on_application_suspended on_application_suspended_cb;
         on_application_focused on_application_focused_cb;
         on_application_unfocused on_application_unfocused_cb;
-        
+
         void* context;
     } SessionCredentials;
 
@@ -165,14 +165,14 @@ extern "C" {
     void
     ubuntu_application_ui_hide_surface(
         ubuntu_application_ui_surface surface);
-    
-    void 
+
+    void
     ubuntu_application_ui_move_surface_to(
         ubuntu_application_ui_surface surface,
         int x,
         int y);
 
-    void 
+    void
     ubuntu_application_ui_resize_surface_to(
         ubuntu_application_ui_surface surface,
         int w,

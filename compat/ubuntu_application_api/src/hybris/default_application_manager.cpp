@@ -285,17 +285,23 @@ void ApplicationManager::register_a_surface(
             case ubuntu::application::ui::dash_actor_role:
                 registered_session->raise_surface_to_layer(token, default_dash_layer);
                 break;
+            case ubuntu::application::ui::indicator_actor_role:
+                registered_session->raise_surface_to_layer(token, default_indicator_layer);
+                break;
+            case ubuntu::application::ui::notifications_actor_role:
+                registered_session->raise_surface_to_layer(token, default_notifications_layer);
+                break;
+            case ubuntu::application::ui::greeter_actor_role:
+                registered_session->raise_surface_to_layer(token, default_greeter_layer);
+                break;
             case ubuntu::application::ui::launcher_actor_role:
                 registered_session->raise_surface_to_layer(token, default_launcher_layer);
                 break;
-            case ubuntu::application::ui::indicator_actor_role:
-                registered_session->raise_surface_to_layer(token, default_top_bar_layer);
-                break;
-            case ubuntu::application::ui::menubar_actor_role:
-                registered_session->raise_surface_to_layer(token, default_top_bar_layer);   
-                break;
             case ubuntu::application::ui::on_screen_keyboard_actor_role:
                 registered_session->raise_surface_to_layer(token, default_osk_layer);
+                break;
+            case ubuntu::application::ui::shutdown_dialog_actor_role:
+                registered_session->raise_surface_to_layer(token, default_shutdown_dialog_layer);
                 break;
         }
     } else
