@@ -21,6 +21,7 @@
 #include "application_manager.h"
 #include "default_application_manager_input_setup.h"
 #include "default_application_session.h"
+#include "event_loop.h"
 #include "well_known_application_registry.h"
 
 #include <binder/IPCThreadState.h>
@@ -35,8 +36,8 @@
 namespace mir
 {
 struct ApplicationManager : 
-        public android::BnApplicationManager,
-        public android::IBinder::DeathRecipient
+            public android::BnApplicationManager,
+            public android::IBinder::DeathRecipient
 {
     static const int default_shell_component_layer = 1000000;
     
@@ -52,14 +53,30 @@ struct ApplicationManager :
     static const int wallpaper_layer = 0;
     static const int non_focused_application_layer = -1;
 
+    struct ShellInputSetup : public android::RefBase
+    {
+        static int looper_callback(int receiveFd, int events, void* ctxt);
+    
+        ShellInputSetup(const android::sp<android::InputManager>& input_manager);
+    
+        android::sp<android::InputChannel> server_channel;
+        android::sp<android::InputChannel> client_channel;
+        android::sp<android::InputApplicationHandle> shell_application;
+        android::Vector< android::sp<android::InputWindowHandle> > shell_windows;
+        android::sp<android::Looper> looper;
+        ubuntu::application::EventLoop event_loop;
+        android::PreallocatedInputEventFactory event_factory;
+        android::InputConsumer input_consumer;
+    };
+
     class InputFilter : public android::InputFilter
     {
-    public:
+      public:
         InputFilter(ApplicationManager* manager);
 
         bool filter_event(const android::InputEvent* event);
 
-    private:
+      private:
         ApplicationManager* manager;
 
         bool handle_key_event(const android::KeyEvent* event);
@@ -67,7 +84,7 @@ struct ApplicationManager :
 
     class LockingIterator : public android::RefBase
     {
-    public:
+      public:
         void advance() ;
 
         bool is_valid() const;
@@ -76,7 +93,7 @@ struct ApplicationManager :
 
         const android::sp<mir::ApplicationSession>& operator*();
 
-    protected:
+      protected:
         friend class ApplicationManager;
 
         LockingIterator(
@@ -85,7 +102,7 @@ struct ApplicationManager :
 
         virtual ~LockingIterator();
 
-    private:
+      private:
         ApplicationManager* manager;
         size_t it;
     };
@@ -134,9 +151,9 @@ struct ApplicationManager :
 
     void kill_focused_application_locked();
     
-private:
+  private:
     size_t session_id_to_index(int id);
-
+    void notify_observers_about_session_requested(const android::String8& desktop_file);
     void notify_observers_about_session_born(int id, const android::String8& desktop_file);
     void notify_observers_about_session_focused(int id, const android::String8& desktop_file);
     void notify_observers_about_session_died(int id, const android::String8& desktop_file);
@@ -145,12 +162,13 @@ private:
     android::sp<android::InputListenerInterface> input_listener;
     android::sp<InputFilter> input_filter;
     android::sp<android::InputSetup> input_setup;
+    android::sp<ShellInputSetup> shell_input_setup;
     android::Mutex guard;
     android::KeyedVector< android::sp<android::IBinder>, android::sp<mir::ApplicationSession> > apps;
     android::Vector< android::sp<android::IBinder> > apps_as_added;
     android::Mutex observer_guard;
     android::Vector< android::sp<android::IApplicationManagerObserver> > app_manager_observers;
-    size_t focused_application;
+    size_t focused_application;    
 };
 
 }

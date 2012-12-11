@@ -200,7 +200,7 @@ public:
     {
         REPORT_FUNCTION_CALL();
         static InputDispatcherConfiguration config;
-        config.maxEventsPerSecond = 100;
+        config.maxEventsPerSecond = INT_MAX;
         *outConfig = config;
     }
 
@@ -316,6 +316,67 @@ private:
 
 struct InputSetup : public android::RefBase
 {
+    struct DummyApplication : public android::InputApplicationHandle
+    {
+        bool updateInfo()
+        {
+            LOGI("%s", __PRETTY_FUNCTION__);
+            if (mInfo == NULL)
+            {
+                mInfo = new android::InputApplicationInfo();
+                mInfo->name = "Shell";
+                mInfo->dispatchingTimeout = INT_MAX;
+            }
+
+            return true;
+        }
+    };
+
+    struct DummyApplicationWindow : public android::InputWindowHandle
+    {
+        DummyApplicationWindow(
+            const android::sp<android::InputApplicationHandle>& app_handle) 
+                : android::InputWindowHandle(app_handle)
+        {
+        }
+        
+        bool updateInfo()
+        {
+            LOGI("%s", __PRETTY_FUNCTION__);
+            if (mInfo == NULL)
+            {
+                mInfo = new android::InputWindowInfo();
+                SkRegion touchable_region;
+                touchable_region.setRect(0, 0, 720, 1080);
+                
+                mInfo->name = "ShellInputWindow";
+                mInfo->layoutParamsFlags = android::InputWindowInfo::FLAG_SPLIT_TOUCH;
+                mInfo->layoutParamsType = android::InputWindowInfo::TYPE_APPLICATION;
+                mInfo->touchableRegion = touchable_region;
+                mInfo->frameLeft = 0;
+                mInfo->frameTop = 0;
+                mInfo->frameRight = 720;
+                mInfo->frameBottom = 1080;
+                mInfo->scaleFactor = 1.f;
+                mInfo->visible = true;
+                mInfo->canReceiveKeys = true;
+                mInfo->hasFocus = true;
+                mInfo->hasWallpaper = false;
+                mInfo->paused = false;
+                mInfo->layer = 0;
+                mInfo->dispatchingTimeout = INT_MAX;
+                mInfo->ownerPid = 0;
+                mInfo->ownerUid = 0;
+                mInfo->inputFeatures = 0;
+                mInfo->inputChannel = input_channel;            
+            }
+
+            return true;
+        }
+
+        android::sp<android::InputChannel> input_channel;
+    };
+
     InputSetup(const android::sp<InputFilter>& input_filter)
         : looper(new android::Looper(false)),
           looper_thread(new LooperThread(looper)),
@@ -330,7 +391,8 @@ struct InputSetup : public android::RefBase
     void start()
     {
         input_manager->start();
-        looper_thread->run();
+        looper_thread->run(__PRETTY_FUNCTION__,
+                           android::PRIORITY_URGENT_DISPLAY);
     }
 
     void stop()

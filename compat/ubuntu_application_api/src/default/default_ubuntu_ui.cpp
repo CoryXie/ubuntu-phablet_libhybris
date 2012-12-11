@@ -13,6 +13,17 @@ struct SessionLifeCycleObserver : public ubuntu::ui::SessionLifeCycleObserver
     {
     }
 
+    void on_session_requested(const ubuntu::ui::SessionProperties::Ptr& props)
+    {
+        if (!observer)
+            return;
+
+        if (!observer->on_session_requested)
+            return;
+
+        observer->on_session_requested(&props, observer->context);
+    }
+
     void on_session_born(const ubuntu::ui::SessionProperties::Ptr& props)
     {
         if (!observer)

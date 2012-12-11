@@ -15,6 +15,8 @@
  *
  * Authored by: Thomas Voß <thomas.voss@canonical.com>
  */
+#define LOG_TAG "mir::ApplicationManager"
+
 #include "default_application_manager.h"
 
 #include "default_application_manager_input_setup.h"
@@ -38,6 +40,69 @@
 namespace mir
 {
 
+int ApplicationManager::ShellInputSetup::looper_callback(int receiveFd, int events, void* ctxt)
+{
+    LOGI("%s: %d", __PRETTY_FUNCTION__, receiveFd);
+    bool result = true;
+    ShellInputSetup* s = static_cast<ShellInputSetup*>(ctxt);
+    android::InputEvent* ev;
+
+    s->input_consumer.receiveDispatchSignal();
+
+    switch(s->input_consumer.consume(&s->event_factory, &ev))
+    {
+        case android::OK:
+            result = true;
+            //printf("We have a client side event for process %d. \n", getpid());
+            s->input_consumer.sendFinishedSignal(result);
+            break;
+        case android::INVALID_OPERATION:
+            result = true;
+            break;
+        case android::NO_MEMORY:
+            result = true;
+            break;
+    }
+
+    return result ? 1 : 0;
+}
+
+ApplicationManager::ShellInputSetup::ShellInputSetup(const android::sp<android::InputManager>& input_manager)
+        : shell_application(new android::InputSetup::DummyApplication()),
+          shell_windows(),
+          looper(new android::Looper(true)),
+          event_loop(looper),
+          input_consumer(client_channel)
+{
+    auto app_window = new android::InputSetup::DummyApplicationWindow(shell_application);
+    shell_windows.push();
+    shell_windows.editItemAt(0) = app_window;
+
+    android::InputChannel::openInputChannelPair(
+        android::String8("DummyShellInputChannel"),
+        server_channel,
+        client_channel);
+
+    app_window->input_channel = server_channel;
+
+    input_manager->getDispatcher()->registerInputChannel(
+        app_window->input_channel,
+        shell_windows[0],
+        false);
+
+    input_consumer = android::InputConsumer(client_channel);
+    input_consumer.initialize();
+    looper->addFd(client_channel->getReceivePipeFd(),
+                  0,
+                  ALOOPER_EVENT_INPUT,
+                  looper_callback,
+                  this);
+
+    event_loop.run();
+}
+
+
+
 ApplicationManager::InputFilter::InputFilter(ApplicationManager* manager) : manager(manager)
 {
 }
@@ -48,9 +113,9 @@ bool ApplicationManager::InputFilter::filter_event(const android::InputEvent* ev
 
     switch (event->getType())
     {
-    case AINPUT_EVENT_TYPE_KEY:
-        result = handle_key_event(static_cast<const android::KeyEvent*>(event));
-        break;
+        case AINPUT_EVENT_TYPE_KEY:
+            result = handle_key_event(static_cast<const android::KeyEvent*>(event));
+            break;
     }
 
     return result;
@@ -89,7 +154,7 @@ bool ApplicationManager::InputFilter::handle_key_event(const android::KeyEvent* 
 ApplicationManager::LockingIterator::LockingIterator(
     ApplicationManager* manager,
     size_t index) : manager(manager),
-    it(index)
+                    it(index)
 {
 }
 
@@ -119,9 +184,16 @@ ApplicationManager::LockingIterator::~LockingIterator()
 }
 
 ApplicationManager::ApplicationManager() : input_filter(new InputFilter(this)),
-    input_setup(new android::InputSetup(input_filter)),
-    focused_application(0)
+                                           input_setup(new android::InputSetup(input_filter)),
+                                           focused_application(0)
 {
+    shell_input_setup = new ShellInputSetup(input_setup->input_manager);
+
+    input_setup->input_manager->getDispatcher()->setFocusedApplication(
+        shell_input_setup->shell_application);
+    input_setup->input_manager->getDispatcher()->setInputWindows(
+        shell_input_setup->shell_windows);
+
     input_setup->start();
 }
 
@@ -232,12 +304,12 @@ void ApplicationManager::start_a_new_session(
 
         switch(app_type)
         {
-        case ubuntu::ui::unknown_app:
-            break;
-        default:
-            well_known_application_registry.register_application_instance_for_type(
-                app_type, session->asBinder());
-            break;
+            case ubuntu::ui::unknown_app:
+                break;
+            default:
+                well_known_application_registry.register_application_instance_for_type(
+                    app_type, session->asBinder());
+                break;
         }
     }
 
@@ -270,11 +342,14 @@ void ApplicationManager::register_a_surface(
 
     auto registered_session = apps.valueFor(session->asBinder());
 
+    LOGI("Registering input channel as observer: %s",
+         registered_session->session_type == ubuntu::application::ui::system_session_type ? "true" : "false");
+
     input_setup->input_manager->getDispatcher()->registerInputChannel(
         surface->input_channel,
         surface->make_input_window_handle(),
         registered_session->session_type == ubuntu::application::ui::system_session_type);
-    
+
     registered_session->register_surface(surface);
 
     if (registered_session->session_type == ubuntu::application::ui::system_session_type)
@@ -311,8 +386,8 @@ void ApplicationManager::register_a_surface(
         {
             if (apps_as_added[i] == session->asBinder())
                 break;
-        }    
-        
+        }
+
         switch_focused_application_locked(i);
     }
 }
@@ -320,7 +395,6 @@ void ApplicationManager::register_a_surface(
 void ApplicationManager::request_update_for_session(const android::sp<android::IApplicationManagerSession>& session)
 {
     LOGI("%s", __PRETTY_FUNCTION__);
-
     android::Mutex::Autolock al(guard);
 
     if (apps_as_added[focused_application] != session->asBinder())
@@ -328,11 +402,20 @@ void ApplicationManager::request_update_for_session(const android::sp<android::I
 
     const android::sp<mir::ApplicationSession>& as =
             apps.valueFor(apps_as_added[focused_application]);
-    
-    input_setup->input_manager->getDispatcher()->setFocusedApplication(
-        as->input_application_handle());
-    input_setup->input_manager->getDispatcher()->setInputWindows(
-        as->input_window_handles());    
+
+    if (as->session_type == ubuntu::application::ui::system_session_type)
+    {
+        input_setup->input_manager->getDispatcher()->setFocusedApplication(
+            shell_input_setup->shell_application);
+        input_setup->input_manager->getDispatcher()->setInputWindows(
+            shell_input_setup->shell_windows);
+    } else
+    {
+        input_setup->input_manager->getDispatcher()->setFocusedApplication(
+            as->input_application_handle());
+        input_setup->input_manager->getDispatcher()->setInputWindows(
+            as->input_window_handles());
+    }
 }
 
 void ApplicationManager::register_an_observer(
@@ -346,7 +429,7 @@ void ApplicationManager::register_an_observer(
         for(unsigned int i = 0; i < apps_as_added.size(); i++)
         {
             const android::sp<mir::ApplicationSession>& session =
-                apps.valueFor(apps_as_added[i]);
+                    apps.valueFor(apps_as_added[i]);
 
             observer->on_session_born(session->remote_pid,
                                       session->desktop_file);
@@ -355,7 +438,7 @@ void ApplicationManager::register_an_observer(
         if (focused_application < apps_as_added.size())
         {
             const android::sp<mir::ApplicationSession>& session =
-                apps.valueFor(apps_as_added[focused_application]);
+                    apps.valueFor(apps_as_added[focused_application]);
 
             observer->on_session_focused(session->remote_pid,
                                          session->desktop_file);
@@ -392,12 +475,16 @@ void ApplicationManager::switch_to_well_known_application(int32_t app)
     android::Mutex::Autolock al(guard);
 
     if (!well_known_application_registry.has_instance_for_type(
-                static_cast<ubuntu::ui::WellKnownApplication>(app)))
+            static_cast<ubuntu::ui::WellKnownApplication>(app)))
+    {
+        notify_observers_about_session_requested(mir::WellKnownApplicationRegistry::desktop_file_for_type(static_cast<ubuntu::ui::WellKnownApplication>(app)));
+
         return;
+    }
 
     android::sp<android::IBinder> session =
-        well_known_application_registry.instance_for_type(
-            static_cast<ubuntu::ui::WellKnownApplication>(app));
+            well_known_application_registry.instance_for_type(
+                static_cast<ubuntu::ui::WellKnownApplication>(app));
 
     size_t idx = 0;
     for(idx = 0; idx < apps_as_added.size(); idx++)
@@ -418,8 +505,8 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
     static const int focused_layer_increment = 10;
 
     if (apps.size() > 1 &&
-            focused_application < apps.size() &&
-            focused_application != index_of_next_focused_app)
+        focused_application < apps.size() &&
+        focused_application != index_of_next_focused_app)
     {
         //printf("\tLowering current application now for idx: %d \n", focused_application);
         //apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(non_focused_application_layer);
@@ -430,10 +517,10 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
     if (focused_application < apps.size())
     {
         focused_layer += focused_layer_increment;
-        
+
         LOGI("Raising application now for idx: %d \n", focused_application);
         const android::sp<mir::ApplicationSession>& session =
-            apps.valueFor(apps_as_added[focused_application]);
+                apps.valueFor(apps_as_added[focused_application]);
 
         session->raise_application_surfaces_to_layer(focused_layer);
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
@@ -461,7 +548,7 @@ void ApplicationManager::kill_focused_application_locked()
     if (focused_application < apps.size())
     {
         const android::sp<mir::ApplicationSession>& session =
-            apps.valueFor(apps_as_added[focused_application]);
+                apps.valueFor(apps_as_added[focused_application]);
 
         kill(session->remote_pid, SIGKILL);
     }
@@ -474,13 +561,22 @@ size_t ApplicationManager::session_id_to_index(int id)
     for(idx = 0; idx < apps_as_added.size(); idx++)
     {
         const android::sp<mir::ApplicationSession>& session =
-            apps.valueFor(apps_as_added[idx]);
+                apps.valueFor(apps_as_added[idx]);
 
         if (session->remote_pid == id)
             break;
     }
 
     return idx;
+}
+
+void ApplicationManager::notify_observers_about_session_requested(const android::String8& desktop_file)
+{
+    android::Mutex::Autolock al(observer_guard);
+    for(unsigned int i = 0; i < app_manager_observers.size(); i++)
+    {
+        app_manager_observers[i]->on_session_requested(desktop_file);
+    }
 }
 
 void ApplicationManager::notify_observers_about_session_born(int id, const android::String8& desktop_file)
@@ -519,8 +615,8 @@ int main(int argc, char** argv)
     // Register service
     android::sp<android::IServiceManager> service_manager = android::defaultServiceManager();
     if (android::NO_ERROR != service_manager->addService(
-                android::String16(android::IApplicationManager::exported_service_name()),
-                app_manager))
+            android::String16(android::IApplicationManager::exported_service_name()),
+            app_manager))
     {
         //printf("Error registering service with the system ... exiting now.");
         return EXIT_FAILURE;

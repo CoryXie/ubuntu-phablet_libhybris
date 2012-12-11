@@ -13,13 +13,20 @@ class WellKnownApplicationRegistry
   public:
     static ubuntu::ui::WellKnownApplication type_for_desktop_file(const android::String8& file)
     {
-        static android::KeyedVector<android::String8, ubuntu::ui::WellKnownApplication> lut = init_lut();
+        static android::KeyedVector<android::String8, ubuntu::ui::WellKnownApplication> lut = init_forward_lut();
 
         ssize_t idx = lut.indexOfKey(file);
         if (idx >= 0 && idx < lut.size())
             return lut.valueAt(idx);
 
         return ubuntu::ui::unknown_app;
+    }
+
+    static android::String8 desktop_file_for_type(ubuntu::ui::WellKnownApplication app)
+    {
+        static android::KeyedVector<ubuntu::ui::WellKnownApplication, android::String8> lut = init_backward_lut();
+
+        return lut.valueFor(app);
     }
 
     void register_application_instance_for_type(ubuntu::ui::WellKnownApplication app,
@@ -57,7 +64,7 @@ class WellKnownApplicationRegistry
     }
 
   private:
-    static android::KeyedVector<android::String8, ubuntu::ui::WellKnownApplication> init_lut()
+    static android::KeyedVector<android::String8, ubuntu::ui::WellKnownApplication> init_forward_lut()
     {
         android::KeyedVector<android::String8, ubuntu::ui::WellKnownApplication> result;
         result.add(android::String8("/usr/share/applications/gallery.desktop"), ubuntu::ui::gallery_app);
@@ -65,6 +72,16 @@ class WellKnownApplicationRegistry
         result.add(android::String8("/usr/share/applications/snowshoe.desktop"), ubuntu::ui::browser_app);
         return result;
     }
+
+    static android::KeyedVector<ubuntu::ui::WellKnownApplication, android::String8> init_backward_lut()
+    {
+        android::KeyedVector<ubuntu::ui::WellKnownApplication, android::String8> result;
+        result.add(ubuntu::ui::gallery_app, android::String8("/usr/share/applications/gallery.desktop"));
+        result.add(ubuntu::ui::camera_app, android::String8("/usr/share/applications/camera.desktop"));
+        result.add(ubuntu::ui::browser_app, android::String8("/usr/share/applications/snowshoe.desktop"));
+        return result;
+    }
+
     android::KeyedVector< ubuntu::ui::WellKnownApplication, android::sp<android::IBinder> > registry;
 };
 }
