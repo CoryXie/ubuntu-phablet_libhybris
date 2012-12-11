@@ -1,3 +1,10 @@
+libhybris (0.38) quantal; urgency=low
+
+  * Fix event delivery for system-session only scenarios.
+  * Add a new callback "on_session_requested" for signalling to observers: Please start a session with the following properties.
+
+ -- Thomas Voß <thomas.voss@canonical.com>  Tue, 11 Dec 2012 19:31:51 +0100
+
 libhybris (0.37) quantal; urgency=low
 
   * Iterate surface roles and adjust stacking.
