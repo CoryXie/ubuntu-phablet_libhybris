@@ -33,10 +33,12 @@ struct EventLoop : public android::Thread
 
     bool threadLoop()
     {
+        static const int five_seconds_in_milliseconds = 5*1000;
+
         bool result = true;
         while(true)
         {
-            switch(looper->pollOnce(5*1000))
+            switch(looper->pollOnce(five_seconds_in_milliseconds))
             {
             case ALOOPER_POLL_CALLBACK:
             case ALOOPER_POLL_TIMEOUT:

@@ -129,22 +129,37 @@ status_t BnApplicationManagerObserver::onTransact(uint32_t code,
         Parcel* reply,
         uint32_t flags)
 {
-    int id = data.readInt32();
-    String8 desktop_file = data.readString8();
+    
 
     switch(code)
     {
+    case ON_SESSION_REQUESTED_NOTIFICATION:
+        {
+            String8 desktop_file = data.readString8();
+            on_session_requested(desktop_file);
+            break;
+        }
     case ON_SESSION_BORN_NOTIFICATION:
-        on_session_born(id, desktop_file);
-        break;
-
+        {
+            int id = data.readInt32();
+            String8 desktop_file = data.readString8();
+            on_session_born(id, desktop_file);
+            break;
+        }
     case ON_SESSION_FOCUSED_NOTIFICATION:
-        on_session_focused(id, desktop_file);
-        break;
-
+        {
+            int id = data.readInt32();
+            String8 desktop_file = data.readString8();
+            on_session_focused(id, desktop_file);
+            break;
+        }
     case ON_SESSION_DIED_NOTIFICATION:
-        on_session_died(id, desktop_file);
-        break;
+        {
+            int id = data.readInt32();
+            String8 desktop_file = data.readString8();
+            on_session_died(id, desktop_file);
+            break;
+        }
     }
 
     return NO_ERROR;
@@ -153,6 +168,19 @@ status_t BnApplicationManagerObserver::onTransact(uint32_t code,
 BpApplicationManagerObserver::BpApplicationManagerObserver(const sp<IBinder>& impl)
     : BpInterface<IApplicationManagerObserver>(impl)
 {
+}
+
+void BpApplicationManagerObserver::on_session_requested(
+    const String8& desktop_file_hint)
+{
+    Parcel in, out;
+    in.writeString8(desktop_file_hint);
+
+    remote()->transact(
+        ON_SESSION_REQUESTED_NOTIFICATION,
+        in,
+        &out,
+        android::IBinder::FLAG_ONEWAY);
 }
 
 void BpApplicationManagerObserver::on_session_born(int id,

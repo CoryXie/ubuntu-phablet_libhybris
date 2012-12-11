@@ -447,7 +447,7 @@ struct Session : public ubuntu::application::ui::Session, public UbuntuSurface::
             server_channel->getReceivePipeFd());
 
         android::ProcessState::self()->startThreadPool();
-        event_loop->run();
+        event_loop->run(__PRETTY_FUNCTION__, android::PRIORITY_URGENT_DISPLAY);
     }
 
     void update()
@@ -558,6 +558,16 @@ struct SessionProperties : public ubuntu::ui::SessionProperties
 
 struct ApplicationManagerObserver : public android::BnApplicationManagerObserver
 {
+    void on_session_requested(const String8& desktop_file)
+    {
+        if (observer == NULL)
+            return;
+
+        static int invalid_session_id = -1;
+
+        observer->on_session_requested(ubuntu::ui::SessionProperties::Ptr(new SessionProperties(invalid_session_id, desktop_file)));
+    }
+
     void on_session_born(int id,
                          const String8& desktop_file)
     {

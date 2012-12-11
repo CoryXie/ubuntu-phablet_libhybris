@@ -22,10 +22,12 @@ extern "C" {
 
     typedef struct
     {
+        typedef void (*session_requested_cb)(ubuntu_ui_session_properties props, void* context);
         typedef void (*session_born_cb)(ubuntu_ui_session_properties props, void* context);
         typedef void (*session_focused_cb)(ubuntu_ui_session_properties props, void* context);
         typedef void (*session_died_cb)(ubuntu_ui_session_properties props, void * context);
 
+        session_requested_cb on_session_requested;
         session_born_cb on_session_born;
         session_focused_cb on_session_focused;
         session_died_cb on_session_died;
