@@ -1,3 +1,9 @@
+libhybris (0.39) quantal; urgency=low
+
+  * Add a way to unfocus all running applications.
+
+ -- Thomas Voß <thomas.voss@canonical.com>  Wed, 12 Dec 2012 14:49:36 +0100
+
 libhybris (0.38) quantal; urgency=low
 
   * Fix event delivery for system-session only scenarios.
