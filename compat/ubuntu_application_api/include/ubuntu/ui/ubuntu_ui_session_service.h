@@ -48,8 +48,6 @@ extern "C" {
         unsigned int* width,
         unsigned int* height);
 
-    void ubuntu_ui_session_prepare_focus_transition();
-
     void ubuntu_ui_session_unfocus_running_sessions();
 
     void ubuntu_ui_session_focus_running_session_with_id(int id);
