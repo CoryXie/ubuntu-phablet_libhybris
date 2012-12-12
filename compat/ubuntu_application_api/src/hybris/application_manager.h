@@ -158,6 +158,8 @@ public:
 
     virtual void register_an_observer(const sp<IApplicationManagerObserver>& observer) = 0;
 
+    virtual void unfocus_running_sessions() = 0;
+
     virtual void focus_running_session_with_id(int id) = 0;
 
     virtual int32_t query_snapshot_layer_for_session_with_id(int id) = 0;
@@ -170,6 +172,7 @@ protected:
         REGISTER_A_SURFACE_COMMAND,
         REGISTER_AN_OBSERVER_COMMAND,
         REQUEST_UPDATE_FOR_SESSION_COMMAND,
+        UNFOCUS_RUNNING_SESSIONS_COMMAND,
         FOCUS_RUNNING_SESSION_WITH_ID_COMMAND,
         QUERY_SNAPSHOT_LAYER_FOR_SESSION_WITH_ID_COMMAND,
         SWITCH_TO_WELL_KNOWN_APPLICATION_COMMAND
@@ -213,6 +216,8 @@ public:
     void request_update_for_session(const sp<IApplicationManagerSession>& session);
 
     void register_an_observer(const sp<IApplicationManagerObserver>& observer);
+
+    void unfocus_running_sessions();
 
     void focus_running_session_with_id(int id);
     

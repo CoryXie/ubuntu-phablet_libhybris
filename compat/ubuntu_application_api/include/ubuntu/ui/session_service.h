@@ -51,6 +51,8 @@ public:
 
     virtual void install_session_lifecycle_observer(const SessionLifeCycleObserver::Ptr& observer) = 0;
 
+    virtual void unfocus_running_sessions() = 0;
+
     virtual void focus_running_session_with_id(int id) = 0;
 
     virtual ubuntu::ui::SessionSnapshot::Ptr snapshot_running_session_with_id(int id) = 0;

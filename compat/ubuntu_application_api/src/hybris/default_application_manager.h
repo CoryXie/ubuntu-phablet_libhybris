@@ -142,6 +142,8 @@ struct ApplicationManager :
 
     void focus_running_session_with_id(int id);
 
+    void unfocus_running_sessions();
+
     int32_t query_snapshot_layer_for_session_with_id(int id);
 
     void switch_to_well_known_application(int32_t app);

@@ -112,6 +112,11 @@ void ubuntu_ui_session_install_session_lifecycle_observer(ubuntu_ui_session_life
     ubuntu::ui::SessionService::instance()->install_session_lifecycle_observer(p);
 }
 
+void ubuntu_ui_session_unfocus_running_sessions()
+{
+    ubuntu::ui::SessionService::instance()->unfocus_running_sessions();
+}
+
 void ubuntu_ui_session_focus_running_session_with_id(int id)
 {
     ubuntu::ui::SessionService::instance()->focus_running_session_with_id(id);
