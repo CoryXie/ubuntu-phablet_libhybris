@@ -1,3 +1,10 @@
+libhybris (0.40) quantal; urgency=low
+
+  [ Thomas Voß ]
+  * Do not focus system sessions.
+
+ -- Michael Frey <michael.frey@canonical.com>  Thu, 13 Dec 2012 17:05:42 -0500
+
 libhybris (0.39) quantal; urgency=low
 
   * Add a way to unfocus all running applications.
