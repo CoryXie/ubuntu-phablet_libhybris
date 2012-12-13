@@ -81,8 +81,15 @@ extern "C" {
     return_type symbol()                          \
     {                                             \
         static return_type (*f)() = NULL;         \
-        DLSYM(&f, #symbol);                \
+        DLSYM(&f, #symbol);                       \
         return f();}
+
+#define IMPLEMENT_VOID_FUNCTION0(symbol)          \
+    void symbol()                                 \
+    {                                             \
+        static void (*f)() = NULL;                \
+        DLSYM(&f, #symbol);                       \
+        f();}
     
 #define IMPLEMENT_FUNCTION1(return_type, symbol, arg1) \
     return_type symbol(arg1 _1)                        \
@@ -149,6 +156,7 @@ extern "C" {
 IMPLEMENT_FUNCTION1(int, ubuntu_ui_session_properties_get_application_instance_id, ubuntu_ui_session_properties);
 IMPLEMENT_FUNCTION1(const char*, ubuntu_ui_session_properties_get_desktop_file_hint, ubuntu_ui_session_properties);
 IMPLEMENT_VOID_FUNCTION1(ubuntu_ui_session_install_session_lifecycle_observer, ubuntu_ui_session_lifecycle_observer*);
+IMPLEMENT_VOID_FUNCTION0(ubuntu_ui_session_unfocus_running_sessions);
 IMPLEMENT_VOID_FUNCTION1(ubuntu_ui_session_focus_running_session_with_id, int);
 IMPLEMENT_VOID_FUNCTION3(ubuntu_ui_session_snapshot_running_session_with_id, int, ubuntu_ui_session_service_snapshot_cb, void*); 
 IMPLEMENT_VOID_FUNCTION1(ubuntu_ui_session_trigger_switch_to_well_known_application, ubuntu_ui_well_known_application);

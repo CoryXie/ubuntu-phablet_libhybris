@@ -671,6 +671,11 @@ struct SessionService : public ubuntu::ui::SessionService
         this->observer->install_session_lifecycle_observer(lifecycle_observer);
     }
 
+    void unfocus_running_sessions()
+    {
+        access_application_manager()->unfocus_running_sessions();
+    }
+
     void focus_running_session_with_id(int id)
     {
         access_application_manager()->focus_running_session_with_id(id);

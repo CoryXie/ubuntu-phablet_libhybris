@@ -458,6 +458,18 @@ void ApplicationManager::focus_running_session_with_id(int id)
     }
 }
 
+void ApplicationManager::unfocus_running_sessions()
+{
+    LOGI("%s", __PRETTY_FUNCTION__);
+    
+    android::Mutex::Autolock al(guard);
+
+    input_setup->input_manager->getDispatcher()->setFocusedApplication(
+        shell_input_setup->shell_application);
+    input_setup->input_manager->getDispatcher()->setInputWindows(
+        shell_input_setup->shell_windows);
+}
+
 int32_t ApplicationManager::query_snapshot_layer_for_session_with_id(int id)
 {
     size_t idx = session_id_to_index(id);

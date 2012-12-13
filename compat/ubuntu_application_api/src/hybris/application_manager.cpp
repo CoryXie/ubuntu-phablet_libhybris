@@ -282,6 +282,11 @@ status_t BnApplicationManager::onTransact(uint32_t code,
         request_update_for_session(session);
         break;
     }
+    case UNFOCUS_RUNNING_SESSIONS_COMMAND:
+    {
+        unfocus_running_sessions();
+        break;
+    }
     case FOCUS_RUNNING_SESSION_WITH_ID_COMMAND:
     {
         int32_t id = data.readInt32();
@@ -379,6 +384,15 @@ void BpApplicationManager::request_update_for_session(const sp<IApplicationManag
     Parcel in, out;
     in.writeStrongBinder(session->asBinder());
     remote()->transact(REQUEST_UPDATE_FOR_SESSION_COMMAND,
+                       in,
+                       &out);
+}
+
+void BpApplicationManager::unfocus_running_sessions()
+{
+    Parcel in, out;
+
+    remote()->transact(UNFOCUS_RUNNING_SESSIONS_COMMAND,
                        in,
                        &out);
 }
