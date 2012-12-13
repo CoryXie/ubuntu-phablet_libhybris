@@ -68,8 +68,9 @@ class WellKnownApplicationRegistry
     {
         android::KeyedVector<android::String8, ubuntu::ui::WellKnownApplication> result;
         result.add(android::String8("/usr/share/applications/gallery.desktop"), ubuntu::ui::gallery_app);
-        result.add(android::String8("/usr/share/applications/camera.desktop"), ubuntu::ui::camera_app);
+        result.add(android::String8("/usr/share/applications/camera-app.desktop"), ubuntu::ui::camera_app);
         result.add(android::String8("/usr/share/applications/snowshoe.desktop"), ubuntu::ui::browser_app);
+        result.add(android::String8("/usr/share/applications/share-app.desktop"), ubuntu::ui::share_app);
         return result;
     }
 
@@ -79,6 +80,7 @@ class WellKnownApplicationRegistry
         result.add(ubuntu::ui::gallery_app, android::String8("/usr/share/applications/gallery.desktop"));
         result.add(ubuntu::ui::camera_app, android::String8("/usr/share/applications/camera.desktop"));
         result.add(ubuntu::ui::browser_app, android::String8("/usr/share/applications/snowshoe.desktop"));
+        result.add(ubuntu::ui::share_app, android::String8("/usr/share/applications/share-app.desktop"));
         return result;
     }
 
