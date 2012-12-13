@@ -534,6 +534,12 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
         const android::sp<mir::ApplicationSession>& session =
                 apps.valueFor(apps_as_added[focused_application]);
 
+        if (session->session_type == ubuntu::application::ui::system_session_type)
+        {
+            LOGI("\t system session - not raising it.");
+            return;
+        }
+
         session->raise_application_surfaces_to_layer(focused_layer);
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
             session->input_application_handle());
