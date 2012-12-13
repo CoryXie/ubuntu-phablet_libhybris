@@ -216,7 +216,7 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
                               props.width,
                               props.height,
                               PIXEL_FORMAT_RGBA_8888,
-                              0x300);
+                              0);
 
         assert(surface_control != NULL);
 
@@ -673,6 +673,7 @@ struct SessionService : public ubuntu::ui::SessionService
 
     void unfocus_running_sessions()
     {
+        LOGI("%s", __PRETTY_FUNCTION__);
         access_application_manager()->unfocus_running_sessions();
     }
 
@@ -683,8 +684,8 @@ struct SessionService : public ubuntu::ui::SessionService
 
     ubuntu::ui::SessionSnapshot::Ptr snapshot_running_session_with_id(int id)
     {
-        static const unsigned int default_width = 720;
-        static const unsigned int default_height = 1280;
+        static const unsigned int default_width = 720;// 360;
+        static const unsigned int default_height = 1280;// 640;
         int32_t layer_min = id > 0 
                 ? access_application_manager()->query_snapshot_layer_for_session_with_id(id) 
                 : 0;
