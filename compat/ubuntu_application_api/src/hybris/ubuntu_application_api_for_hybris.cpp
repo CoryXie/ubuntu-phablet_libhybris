@@ -216,7 +216,7 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
                               props.width,
                               props.height,
                               PIXEL_FORMAT_RGBA_8888,
-                              0x300);
+                              0);
 
         assert(surface_control != NULL);
 
@@ -673,6 +673,7 @@ struct SessionService : public ubuntu::ui::SessionService
 
     void unfocus_running_sessions()
     {
+        LOGI("%s", __PRETTY_FUNCTION__);
         access_application_manager()->unfocus_running_sessions();
     }
 

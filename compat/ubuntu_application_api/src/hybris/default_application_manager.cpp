@@ -42,7 +42,6 @@ namespace mir
 
 int ApplicationManager::ShellInputSetup::looper_callback(int receiveFd, int events, void* ctxt)
 {
-    LOGI("%s: %d", __PRETTY_FUNCTION__, receiveFd);
     bool result = true;
     ShellInputSetup* s = static_cast<ShellInputSetup*>(ctxt);
     android::InputEvent* ev;
@@ -468,6 +467,26 @@ void ApplicationManager::unfocus_running_sessions()
         shell_input_setup->shell_application);
     input_setup->input_manager->getDispatcher()->setInputWindows(
         shell_input_setup->shell_windows);
+
+    if (focused_application < apps.size())
+    {
+        const android::sp<mir::ApplicationSession>& session =
+                apps.valueFor(apps_as_added[focused_application]);
+        
+        if (session->session_type != ubuntu::application::ui::system_session_type)
+        {
+            LOGI("\t Trying to stop ordinary app process.");
+
+            // Stop the session
+            if (0 != kill(session->remote_pid, SIGSTOP))
+            {
+                LOGI("\t Problem stopping process, errno = %d.", errno);
+            } else
+            {
+                LOGI("\t\t Successfully stopped process.");
+            }
+        }
+    }
 }
 
 int32_t ApplicationManager::query_snapshot_layer_for_session_with_id(int id)
@@ -521,7 +540,14 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
         focused_application != index_of_next_focused_app)
     {
         //printf("\tLowering current application now for idx: %d \n", focused_application);
-        //apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(non_focused_application_layer);
+        const android::sp<mir::ApplicationSession>& session =
+                apps.valueFor(apps_as_added[focused_application]);
+        
+        if (session->session_type != ubuntu::application::ui::system_session_type)
+        {
+            // Stop the session
+            kill(session->remote_pid, SIGSTOP);
+        }
     }
 
     focused_application = index_of_next_focused_app;
@@ -539,6 +565,9 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
             LOGI("\t system session - not raising it.");
             return;
         }
+
+        // Continue the session
+        kill(session->remote_pid, SIGCONT);
 
         session->raise_application_surfaces_to_layer(focused_layer);
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
