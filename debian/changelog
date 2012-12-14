@@ -1,7 +1,13 @@
-libhybris (0.41) quantal; urgency=low
+libhybris (0.42) quantal; urgency=low
 
   * Add a callback for session observers that signals when a session is unfocused.
   * Introduce surface flags and a way to express that a surface should be opaque.
+
+ -- Thomas Voß <thomas.voss@canonical.com>  Fri, 14 Dec 2012 12:31:36 +0100
+
+libhybris (0.41) quantal; urgency=low
+
+  * Stop and continue ordinary app sessions.
 
  -- Thomas Voß <thomas.voss@canonical.com>  Fri, 14 Dec 2012 12:00:42 +0100
 

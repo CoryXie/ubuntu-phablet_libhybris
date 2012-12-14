@@ -683,6 +683,7 @@ struct SessionService : public ubuntu::ui::SessionService
 
     void unfocus_running_sessions()
     {
+        LOGI("%s", __PRETTY_FUNCTION__);
         access_application_manager()->unfocus_running_sessions();
     }
 
