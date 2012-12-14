@@ -29,7 +29,8 @@ enum WellKnownApplication
     unknown_app = UNKNOWN_APP,
     gallery_app = CAMERA_APP,
     camera_app = GALLERY_APP,
-    browser_app = BROWSER_APP
+    browser_app = BROWSER_APP,
+    share_app = SHARE_APP
 };
 }
 }
