@@ -684,8 +684,8 @@ struct SessionService : public ubuntu::ui::SessionService
 
     ubuntu::ui::SessionSnapshot::Ptr snapshot_running_session_with_id(int id)
     {
-        static const unsigned int default_width = 720;// 360;
-        static const unsigned int default_height = 1280;// 640;
+        static const unsigned int default_width = 720;
+        static const unsigned int default_height = 1280;
         int32_t layer_min = id > 0 
                 ? access_application_manager()->query_snapshot_layer_for_session_with_id(id) 
                 : 0;
