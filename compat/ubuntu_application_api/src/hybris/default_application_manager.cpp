@@ -468,6 +468,17 @@ void ApplicationManager::unfocus_running_sessions()
         shell_input_setup->shell_application);
     input_setup->input_manager->getDispatcher()->setInputWindows(
         shell_input_setup->shell_windows);
+
+    if (focused_application < apps.size())
+    {
+        const android::sp<mir::ApplicationSession>& session =
+                apps.valueFor(apps_as_added[focused_application]);
+        if (session->session_type != ubuntu::application::ui::system_session_type)
+        {            
+            notify_observers_about_session_unfocused(session->remote_pid,
+                                                     session->desktop_file);
+        }
+    }
 }
 
 int32_t ApplicationManager::query_snapshot_layer_for_session_with_id(int id)
@@ -520,8 +531,14 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
         focused_application < apps.size() &&
         focused_application != index_of_next_focused_app)
     {
-        //printf("\tLowering current application now for idx: %d \n", focused_application);
-        //apps.valueFor(apps_as_added[focused_application])->raise_application_surfaces_to_layer(non_focused_application_layer);
+        const android::sp<mir::ApplicationSession>& session =
+                apps.valueFor(apps_as_added[focused_application]);
+
+        if (session->session_type != ubuntu::application::ui::system_session_type)
+        {
+            notify_observers_about_session_unfocused(session->remote_pid,
+                                                     session->desktop_file);
+        }
     }
 
     focused_application = index_of_next_focused_app;
@@ -603,6 +620,15 @@ void ApplicationManager::notify_observers_about_session_born(int id, const andro
     for(unsigned int i = 0; i < app_manager_observers.size(); i++)
     {
         app_manager_observers[i]->on_session_born(id, desktop_file);
+    }
+}
+
+void ApplicationManager::notify_observers_about_session_unfocused(int id, const android::String8& desktop_file)
+{
+    android::Mutex::Autolock al(observer_guard);
+    for(unsigned int i = 0; i < app_manager_observers.size(); i++)
+    {
+        app_manager_observers[i]->on_session_unfocused(id, desktop_file);
     }
 }
 

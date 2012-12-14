@@ -51,6 +51,7 @@ public:
     
     virtual void on_session_requested(const SessionProperties::Ptr& props) = 0;
     virtual void on_session_born(const SessionProperties::Ptr& props) = 0;
+    virtual void on_session_unfocused(const SessionProperties::Ptr& props) = 0;
     virtual void on_session_focused(const SessionProperties::Ptr& props) = 0;
     virtual void on_session_died(const SessionProperties::Ptr& props) = 0;
 

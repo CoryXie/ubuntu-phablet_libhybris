@@ -155,6 +155,7 @@ ubuntu_application_ui_create_surface(
     int width,
     int height,
     SurfaceRole role,
+    uint32_t flags,
     input_event_cb cb,
     void* ctx)
 {
@@ -168,7 +169,8 @@ ubuntu_application_ui_create_surface(
         "test",
         width,
         height,
-        static_cast<ubuntu::application::ui::SurfaceRole>(role)
+        static_cast<ubuntu::application::ui::SurfaceRole>(role),
+        flags
     };
 
     ubuntu::application::ui::Surface::Ptr surface =

@@ -82,6 +82,9 @@ public:
 
     virtual void on_session_born(int id,
                                  const String8& desktop_file) = 0;
+    
+    virtual void on_session_unfocused(int id,
+                                      const String8& desktop_file) = 0;
 
     virtual void on_session_focused(int id,
                                     const String8& desktop_file) = 0;
@@ -94,6 +97,7 @@ protected:
     {
         ON_SESSION_REQUESTED_NOTIFICATION = IBinder::FIRST_CALL_TRANSACTION,
         ON_SESSION_BORN_NOTIFICATION,
+        ON_SESSION_UNFOCUSED_NOTIFICATION,
         ON_SESSION_FOCUSED_NOTIFICATION,
         ON_SESSION_DIED_NOTIFICATION
     };
@@ -120,6 +124,9 @@ public:
 
     void on_session_born(int id,
                          const String8& desktop_file);
+
+    void on_session_unfocused(int id,
+                            const String8& desktop_file);
 
     void on_session_focused(int id,
                             const String8& desktop_file);

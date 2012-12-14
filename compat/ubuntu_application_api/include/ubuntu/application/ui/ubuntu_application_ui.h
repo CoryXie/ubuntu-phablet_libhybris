@@ -68,6 +68,11 @@ extern "C" {
         SHUTDOWN_DIALOG_ACTOR_ROLE = 7
     } SurfaceRole;
 
+    typedef enum
+    {
+        IS_OPAQUE_FLAG = 1
+    } SurfaceFlags;
+
     enum
     {
         MAX_APPLICATION_NAME_LENGTH = 512
@@ -147,6 +152,7 @@ extern "C" {
         int width,
         int height,
         SurfaceRole role,
+        uint32_t flags,
         input_event_cb cb,
         void* ctx);
 

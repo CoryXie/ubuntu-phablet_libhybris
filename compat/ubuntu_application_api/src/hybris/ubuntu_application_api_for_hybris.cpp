@@ -35,6 +35,7 @@
 #include <binder/IPCThreadState.h>
 #include <binder/IServiceManager.h>
 #include <binder/ProcessState.h>
+#include <surfaceflinger/ISurfaceComposer.h>
 #include <surfaceflinger/SurfaceComposerClient.h>
 #include <ui/DisplayInfo.h>
 #include <ui/InputTransport.h>
@@ -215,8 +216,8 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
                               ubuntu::application::ui::primary_physical_display,
                               props.width,
                               props.height,
-                              PIXEL_FORMAT_RGBA_8888,
-                              0x300);
+                              props.flags & ubuntu::application::ui::is_opaque_flag ? PIXEL_FORMAT_OPAQUE : PIXEL_FORMAT_RGBA_8888,
+                              props.flags & ubuntu::application::ui::is_opaque_flag ? android::ISurfaceComposer::eOpaque : 0);
 
         assert(surface_control != NULL);
 
@@ -575,6 +576,15 @@ struct ApplicationManagerObserver : public android::BnApplicationManagerObserver
             return;
 
         observer->on_session_born(ubuntu::ui::SessionProperties::Ptr(new SessionProperties(id, desktop_file)));
+    }
+
+    virtual void on_session_unfocused(int id,
+                                    const String8& desktop_file)
+    {
+        if (observer == NULL)
+            return;
+
+        observer->on_session_unfocused(ubuntu::ui::SessionProperties::Ptr(new SessionProperties(id, desktop_file)));
     }
 
     virtual void on_session_focused(int id,
