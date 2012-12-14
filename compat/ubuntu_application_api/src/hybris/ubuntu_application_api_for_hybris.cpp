@@ -559,14 +559,12 @@ struct SessionProperties : public ubuntu::ui::SessionProperties
 
 struct ApplicationManagerObserver : public android::BnApplicationManagerObserver
 {
-    void on_session_requested(const String8& desktop_file)
+    void on_session_requested(uint32_t app)
     {
         if (observer == NULL)
             return;
 
-        static int invalid_session_id = -1;
-
-        observer->on_session_requested(ubuntu::ui::SessionProperties::Ptr(new SessionProperties(invalid_session_id, desktop_file)));
+        observer->on_session_requested(static_cast<ubuntu::ui::WellKnownApplication>(app));
     }
 
     void on_session_born(int id,

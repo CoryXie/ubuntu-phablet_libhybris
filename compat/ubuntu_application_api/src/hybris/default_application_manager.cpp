@@ -205,19 +205,6 @@ void ApplicationManager::binderDied(const android::wp<android::IBinder>& who)
 
     const android::sp<mir::ApplicationSession>& dead_session = apps.valueFor(sp);
 
-    ubuntu::ui::WellKnownApplication app = WellKnownApplicationRegistry::type_for_desktop_file(dead_session->desktop_file);
-
-    if (app != ubuntu::ui::unknown_app)
-    {
-        if (well_known_application_registry.has_instance_for_type(app))
-        {
-            if (well_known_application_registry.instance_for_type(app) == sp)
-            {
-                well_known_application_registry.unregister_application_instance_for_type(app);
-            }
-        }
-    }
-
     notify_observers_about_session_died(dead_session->remote_pid,
                                         dead_session->desktop_file);
 
@@ -296,18 +283,6 @@ void ApplicationManager::start_a_new_session(
                 break;
             case ubuntu::application::ui::system_session_type:
                 LOGI("%s: Invoked for system_session_type \n", __PRETTY_FUNCTION__);
-                break;
-        }
-
-        ubuntu::ui::WellKnownApplication app_type = WellKnownApplicationRegistry::type_for_desktop_file(desktop_file);
-
-        switch(app_type)
-        {
-            case ubuntu::ui::unknown_app:
-                break;
-            default:
-                well_known_application_registry.register_application_instance_for_type(
-                    app_type, session->asBinder());
                 break;
         }
     }
@@ -505,31 +480,7 @@ int32_t ApplicationManager::query_snapshot_layer_for_session_with_id(int id)
 
 void ApplicationManager::switch_to_well_known_application(int32_t app)
 {
-    android::Mutex::Autolock al(guard);
-
-    if (!well_known_application_registry.has_instance_for_type(
-            static_cast<ubuntu::ui::WellKnownApplication>(app)))
-    {
-        notify_observers_about_session_requested(mir::WellKnownApplicationRegistry::desktop_file_for_type(static_cast<ubuntu::ui::WellKnownApplication>(app)));
-
-        return;
-    }
-
-    android::sp<android::IBinder> session =
-            well_known_application_registry.instance_for_type(
-                static_cast<ubuntu::ui::WellKnownApplication>(app));
-
-    size_t idx = 0;
-    for(idx = 0; idx < apps_as_added.size(); idx++)
-    {
-        if (apps_as_added.itemAt(idx) == session)
-            break;
-    }
-
-    if (idx < apps_as_added.size())
-    {
-        switch_focused_application_locked(idx);
-    }
+    notify_observers_about_session_requested(app);
 }
 
 void ApplicationManager::switch_focused_application_locked(size_t index_of_next_focused_app)
@@ -621,12 +572,12 @@ size_t ApplicationManager::session_id_to_index(int id)
     return idx;
 }
 
-void ApplicationManager::notify_observers_about_session_requested(const android::String8& desktop_file)
+void ApplicationManager::notify_observers_about_session_requested(uint32_t app)
 {
     android::Mutex::Autolock al(observer_guard);
     for(unsigned int i = 0; i < app_manager_observers.size(); i++)
     {
-        app_manager_observers[i]->on_session_requested(desktop_file);
+        app_manager_observers[i]->on_session_requested(app);
     }
 }
 

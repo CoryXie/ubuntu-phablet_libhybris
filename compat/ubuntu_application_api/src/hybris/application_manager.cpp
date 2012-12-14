@@ -135,8 +135,8 @@ status_t BnApplicationManagerObserver::onTransact(uint32_t code,
     {
     case ON_SESSION_REQUESTED_NOTIFICATION:
         {
-            String8 desktop_file = data.readString8();
-            on_session_requested(desktop_file);
+            uint32_t app = data.readInt32();
+            on_session_requested(app);
             break;
         }
     case ON_SESSION_BORN_NOTIFICATION:
@@ -178,10 +178,10 @@ BpApplicationManagerObserver::BpApplicationManagerObserver(const sp<IBinder>& im
 }
 
 void BpApplicationManagerObserver::on_session_requested(
-    const String8& desktop_file_hint)
+    uint32_t app)
 {
     Parcel in, out;
-    in.writeString8(desktop_file_hint);
+    in.writeInt32(app);
 
     remote()->transact(
         ON_SESSION_REQUESTED_NOTIFICATION,

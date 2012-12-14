@@ -78,7 +78,7 @@ class IApplicationManagerObserver : public IInterface
 public:
     DECLARE_META_INTERFACE(ApplicationManagerObserver);
 
-    virtual void on_session_requested(const String8& desktop_file) = 0;
+    virtual void on_session_requested(uint32_t app) = 0;
 
     virtual void on_session_born(int id,
                                  const String8& desktop_file) = 0;
@@ -120,7 +120,7 @@ class BpApplicationManagerObserver : public BpInterface<IApplicationManagerObser
 public:
     BpApplicationManagerObserver(const sp<IBinder>& impl);
 
-    void on_session_requested(const String8& desktop_file);
+    void on_session_requested(uint32_t app);
 
     void on_session_born(int id,
                          const String8& desktop_file);

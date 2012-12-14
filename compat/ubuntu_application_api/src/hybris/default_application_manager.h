@@ -22,7 +22,6 @@
 #include "default_application_manager_input_setup.h"
 #include "default_application_session.h"
 #include "event_loop.h"
-#include "well_known_application_registry.h"
 
 #include <binder/IPCThreadState.h>
 #include <binder/IServiceManager.h>
@@ -155,13 +154,12 @@ struct ApplicationManager :
     
   private:
     size_t session_id_to_index(int id);
-    void notify_observers_about_session_requested(const android::String8& desktop_file);
+    void notify_observers_about_session_requested(uint32_t app);
     void notify_observers_about_session_born(int id, const android::String8& desktop_file);
     void notify_observers_about_session_unfocused(int id, const android::String8& desktop_file);
     void notify_observers_about_session_focused(int id, const android::String8& desktop_file);
     void notify_observers_about_session_died(int id, const android::String8& desktop_file);
 
-    mir::WellKnownApplicationRegistry well_known_application_registry;
     android::sp<android::InputListenerInterface> input_listener;
     android::sp<InputFilter> input_filter;
     android::sp<android::InputSetup> input_setup;
