@@ -42,7 +42,6 @@ namespace mir
 
 int ApplicationManager::ShellInputSetup::looper_callback(int receiveFd, int events, void* ctxt)
 {
-    LOGI("%s: %d", __PRETTY_FUNCTION__, receiveFd);
     bool result = true;
     ShellInputSetup* s = static_cast<ShellInputSetup*>(ctxt);
     android::InputEvent* ev;
@@ -476,10 +475,15 @@ void ApplicationManager::unfocus_running_sessions()
         
         if (session->session_type != ubuntu::application::ui::system_session_type)
         {
+            LOGI("\t Trying to stop ordinary app process.");
+
             // Stop the session
             if (0 != kill(session->remote_pid, SIGSTOP))
             {
-                LOGI("\t Problem stopping process, errno = %d", errno);
+                LOGI("\t Problem stopping process, errno = %d.", errno);
+            } else
+            {
+                LOGI("\t\t Successfully stopped process.");
             }
         }
     }
@@ -556,7 +560,7 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
         const android::sp<mir::ApplicationSession>& session =
                 apps.valueFor(apps_as_added[focused_application]);
 
-        // Restart the session
+        // Continue the session
         kill(session->remote_pid, SIGCONT);
         
         session->raise_application_surfaces_to_layer(focused_layer);
