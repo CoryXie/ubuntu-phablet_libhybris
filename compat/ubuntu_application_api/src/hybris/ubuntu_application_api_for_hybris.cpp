@@ -216,7 +216,7 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
                               ubuntu::application::ui::primary_physical_display,
                               props.width,
                               props.height,
-                              props.flags & ubuntu::application::ui::is_opaque_flag ? PIXEL_FORMAT_OPAQUE : PIXEL_FORMAT_RGBA_8888,
+                              PIXEL_FORMAT_RGBA_8888,
                               props.flags & ubuntu::application::ui::is_opaque_flag ? android::ISurfaceComposer::eOpaque : 0);
 
         assert(surface_control != NULL);
