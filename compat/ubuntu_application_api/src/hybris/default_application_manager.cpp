@@ -474,9 +474,11 @@ void ApplicationManager::unfocus_running_sessions()
                 apps.valueFor(apps_as_added[focused_application]);
         
         if (session->session_type != ubuntu::application::ui::system_session_type)
-        {
+        {            
+            notify_observers_about_session_unfocused(session->remote_pid,
+                                                     session->desktop_file);
             LOGI("\t Trying to stop ordinary app process.");
-
+            
             // Stop the session
             if (0 != kill(session->remote_pid, SIGSTOP))
             {
@@ -545,6 +547,8 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
         
         if (session->session_type != ubuntu::application::ui::system_session_type)
         {
+            notify_observers_about_session_unfocused(session->remote_pid,
+                                                     session->desktop_file);
             // Stop the session
             kill(session->remote_pid, SIGSTOP);
         }
@@ -632,6 +636,15 @@ void ApplicationManager::notify_observers_about_session_born(int id, const andro
     for(unsigned int i = 0; i < app_manager_observers.size(); i++)
     {
         app_manager_observers[i]->on_session_born(id, desktop_file);
+    }
+}
+
+void ApplicationManager::notify_observers_about_session_unfocused(int id, const android::String8& desktop_file)
+{
+    android::Mutex::Autolock al(observer_guard);
+    for(unsigned int i = 0; i < app_manager_observers.size(); i++)
+    {
+        app_manager_observers[i]->on_session_unfocused(id, desktop_file);
     }
 }
 

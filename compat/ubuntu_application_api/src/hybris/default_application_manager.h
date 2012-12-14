@@ -157,6 +157,7 @@ struct ApplicationManager :
     size_t session_id_to_index(int id);
     void notify_observers_about_session_requested(const android::String8& desktop_file);
     void notify_observers_about_session_born(int id, const android::String8& desktop_file);
+    void notify_observers_about_session_unfocused(int id, const android::String8& desktop_file);
     void notify_observers_about_session_focused(int id, const android::String8& desktop_file);
     void notify_observers_about_session_died(int id, const android::String8& desktop_file);
 

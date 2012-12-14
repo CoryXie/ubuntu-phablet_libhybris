@@ -19,6 +19,7 @@
 #define UBUNTU_APPLICATION_UI_SURFACE_PROPERTIES_H_
 
 #include "ubuntu/application/ui/surface_role.h"
+#include "ubuntu/application/ui/ubuntu_application_ui.h"
 
 namespace ubuntu
 {
@@ -26,6 +27,12 @@ namespace application
 {
 namespace ui
 {
+
+enum SurfaceFlags
+{
+    is_opaque_flag = IS_OPAQUE_FLAG
+};
+
 struct SurfaceProperties
 {
     enum
@@ -37,6 +44,8 @@ struct SurfaceProperties
     int width;
     int height;
     SurfaceRole role;
+    uint32_t flags;
+    bool is_opaque;
 };
 }
 }

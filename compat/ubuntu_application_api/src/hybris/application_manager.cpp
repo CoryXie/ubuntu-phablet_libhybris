@@ -146,6 +146,13 @@ status_t BnApplicationManagerObserver::onTransact(uint32_t code,
             on_session_born(id, desktop_file);
             break;
         }
+    case ON_SESSION_UNFOCUSED_NOTIFICATION:
+        {
+            int id = data.readInt32();
+            String8 desktop_file = data.readString8();
+            on_session_unfocused(id, desktop_file);
+            break;
+        }
     case ON_SESSION_FOCUSED_NOTIFICATION:
         {
             int id = data.readInt32();
@@ -192,6 +199,20 @@ void BpApplicationManagerObserver::on_session_born(int id,
 
     remote()->transact(
         ON_SESSION_BORN_NOTIFICATION,
+        in,
+        &out,
+        android::IBinder::FLAG_ONEWAY);
+}
+
+void BpApplicationManagerObserver::on_session_unfocused(int id,
+        const String8& desktop_file_hint)
+{
+    Parcel in, out;
+    in.writeInt32(id);
+    in.writeString8(desktop_file_hint);
+
+    remote()->transact(
+        ON_SESSION_UNFOCUSED_NOTIFICATION,
         in,
         &out,
         android::IBinder::FLAG_ONEWAY);

@@ -35,6 +35,17 @@ struct SessionLifeCycleObserver : public ubuntu::ui::SessionLifeCycleObserver
         observer->on_session_born(&props, observer->context);
     }
 
+    void on_session_unfocused(const ubuntu::ui::SessionProperties::Ptr& props)
+    {
+        if (!observer)
+            return;
+
+        if (!observer->on_session_unfocused)
+            return;
+
+        observer->on_session_unfocused(&props, observer->context);
+    }
+
     void on_session_focused(const ubuntu::ui::SessionProperties::Ptr& props)
     {
         if (!observer)

@@ -94,6 +94,7 @@ int main(int argc, char** argv)
         600, 
         500,
         MAIN_ACTOR_ROLE,
+        0,
         on_new_event,
         &i);
 
@@ -103,6 +104,7 @@ int main(int argc, char** argv)
         250,
         500,
         MAIN_ACTOR_ROLE,
+        0,
         on_new_event,
         &j);
     
