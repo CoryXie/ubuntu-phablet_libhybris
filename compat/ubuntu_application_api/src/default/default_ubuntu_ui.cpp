@@ -13,7 +13,7 @@ struct SessionLifeCycleObserver : public ubuntu::ui::SessionLifeCycleObserver
     {
     }
 
-    void on_session_requested(const ubuntu::ui::SessionProperties::Ptr& props)
+    void on_session_requested(ubuntu::ui::WellKnownApplication app)
     {
         if (!observer)
             return;
@@ -21,7 +21,7 @@ struct SessionLifeCycleObserver : public ubuntu::ui::SessionLifeCycleObserver
         if (!observer->on_session_requested)
             return;
 
-        observer->on_session_requested(&props, observer->context);
+        observer->on_session_requested(static_cast<ubuntu_ui_well_known_application>(app), observer->context);
     }
 
     void on_session_born(const ubuntu::ui::SessionProperties::Ptr& props)
@@ -78,7 +78,7 @@ const char* ubuntu_ui_session_properties_get_value_for_key(ubuntu_ui_session_pro
 int ubuntu_ui_session_properties_get_application_instance_id(ubuntu_ui_session_properties props)
 {
     if (!props)
-        return NULL;
+        return -1;
 
     const ubuntu::ui::SessionProperties::Ptr* p = static_cast<const ubuntu::ui::SessionProperties::Ptr*>(props);
 

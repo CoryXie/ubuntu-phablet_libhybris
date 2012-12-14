@@ -54,9 +54,9 @@ struct ApplicationManagerSession : public android::BnApplicationManagerSession
 
 struct ApplicationManagerObserver : public android::BnApplicationManagerObserver
 {
-    void on_session_requested(const android::String8& desktop_file)
+    void on_session_requested(uint32_t app)
     {
-        printf("%s: %s \n", __PRETTY_FUNCTION__, desktop_file.string());
+        printf("%s: %d \n", __PRETTY_FUNCTION__, app);
     }
 
     void on_session_born(int id,

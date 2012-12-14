@@ -23,7 +23,7 @@ extern "C" {
 
     typedef struct
     {
-        typedef void (*session_requested_cb)(ubuntu_ui_session_properties props, void* context);
+        typedef void (*session_requested_cb)(ubuntu_ui_well_known_application app, void* context);
         typedef void (*session_born_cb)(ubuntu_ui_session_properties props, void* context);
         typedef void (*session_focused_cb)(ubuntu_ui_session_properties props, void* context);
         typedef void (*session_died_cb)(ubuntu_ui_session_properties props, void * context);
