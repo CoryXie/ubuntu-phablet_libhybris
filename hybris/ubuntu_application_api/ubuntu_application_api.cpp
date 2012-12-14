@@ -133,6 +133,13 @@ extern "C" {
         DLSYM(&f, #symbol);                                             \
         f(_1, _2, _3, _4, _5, _6, _7); }
 
+#define IMPLEMENT_VOID_FUNCTION8(symbol, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) \
+    void symbol(arg1 _1, arg2 _2, arg3 _3, arg4 _4, arg5 _5, arg6 _6, arg7 _7, arg8 _8) \
+    {                                                                   \
+        static void (*f)(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) = NULL; \
+        DLSYM(&f, #symbol);                                             \
+        f(_1, _2, _3, _4, _5, _6, _7, _8); }
+
 
     IMPLEMENT_VOID_FUNCTION2(ubuntu_application_ui_init, int, char**);
     IMPLEMENT_FUNCTION0(StageHint, ubuntu_application_ui_setup_get_stage_hint);
@@ -144,7 +151,7 @@ extern "C" {
     IMPLEMENT_FUNCTION1(int32_t, ubuntu_application_ui_query_vertical_resolution, ubuntu_application_ui_physical_display_info);  
     IMPLEMENT_FUNCTION1(float, ubuntu_application_ui_query_horizontal_dpi, ubuntu_application_ui_physical_display_info);
     IMPLEMENT_FUNCTION1(float, ubuntu_application_ui_query_vertical_dpi, ubuntu_application_ui_physical_display_info);    
-    IMPLEMENT_VOID_FUNCTION7(ubuntu_application_ui_create_surface, ubuntu_application_ui_surface*, const char*, int, int, SurfaceRole, input_event_cb, void*);
+    IMPLEMENT_VOID_FUNCTION8(ubuntu_application_ui_create_surface, ubuntu_application_ui_surface*, const char*, int, int, SurfaceRole, uint32_t, input_event_cb, void*);
     IMPLEMENT_VOID_FUNCTION1(ubuntu_application_ui_destroy_surface, ubuntu_application_ui_surface);
     IMPLEMENT_FUNCTION1(EGLNativeWindowType, ubuntu_application_ui_surface_to_native_window_type, ubuntu_application_ui_surface);
     IMPLEMENT_VOID_FUNCTION1(ubuntu_application_ui_show_surface, ubuntu_application_ui_surface);

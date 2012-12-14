@@ -92,6 +92,7 @@ int main(int argc, char** argv)
         500, 
         500,
         MAIN_ACTOR_ROLE,
+        0,
         on_new_event,
         NULL);
     
