@@ -721,21 +721,25 @@ struct SessionService : public ubuntu::ui::SessionService
     void report_osk_visible()
     {
         LOGI("%s", __PRETTY_FUNCTION__);
+        access_application_manager()->report_osk_visible();
     }
     
     void report_osk_invisible()
     {
         LOGI("%s", __PRETTY_FUNCTION__);
+        access_application_manager()->report_osk_invisible();
     }
 
     void report_notification_visible()
     {
         LOGI("%s", __PRETTY_FUNCTION__);
+        access_application_manager()->report_notification_visible();
     }
     
     void report_notification_invisible()
     {
         LOGI("%s", __PRETTY_FUNCTION__);
+        access_application_manager()->report_notification_invisible();
     }
 
     android::sp<ApplicationManagerObserver> observer;
