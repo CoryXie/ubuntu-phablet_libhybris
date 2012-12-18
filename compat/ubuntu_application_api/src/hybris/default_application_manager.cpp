@@ -39,34 +39,6 @@
 
 namespace mir
 {
-
-int ApplicationManager::ShellInputSetup::looper_callback(int receiveFd, int events, void* ctxt)
-{
-    /*bool result = true;
-    ShellInputSetup* s = static_cast<ShellInputSetup*>(ctxt);
-    android::InputEvent* ev;
-
-    s->input_consumer.receiveDispatchSignal();
-
-    switch(s->input_consumer.consume(&s->event_factory, &ev))
-    {
-        case android::OK:
-            result = true;
-            //printf("We have a client side event for process %d. \n", getpid());
-            s->input_consumer.sendFinishedSignal(result);
-            break;
-        case android::INVALID_OPERATION:
-            result = true;
-            break;
-        case android::NO_MEMORY:
-            result = true;
-            break;
-    }
-
-    return result ? 1 : 0;*/
-    return 0;
-}
-
 template<int x, int y, int w, int h>
 int ApplicationManager::ShellInputSetup::Window<x, y, w, h>::looper_callback(int receiveFd, int events, void* ctxt)
 {

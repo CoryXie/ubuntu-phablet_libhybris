@@ -70,8 +70,6 @@ struct ApplicationManager :
             android::PreallocatedInputEventFactory event_factory;
         };
         
-        static int looper_callback(int receiveFd, int events, void* ctxt);
-    
         ShellInputSetup(const android::sp<android::InputManager>& input_manager);
     
         android::sp<android::InputManager> input_manager;
