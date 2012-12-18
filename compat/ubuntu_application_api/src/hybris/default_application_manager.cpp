@@ -42,7 +42,7 @@ namespace mir
 template<int x, int y, int w, int h>
 int ApplicationManager::ShellInputSetup::Window<x, y, w, h>::looper_callback(int receiveFd, int events, void* ctxt)
 {
-    LOGI("%s", __PRETTY_FUNCTION__);
+    // LOGI("%s", __PRETTY_FUNCTION__);
 
     bool result = true;
     ApplicationManager::ShellInputSetup::Window<x, y, w, h>* window = static_cast<ApplicationManager::ShellInputSetup::Window<x, y, w, h>*>(ctxt);
