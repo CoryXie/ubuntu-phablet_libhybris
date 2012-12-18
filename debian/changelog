@@ -1,6 +1,6 @@
 libhybris (0.44) quantal; urgency=low
 
-  * Fix key event delivery and remove filtering of volume up/down keys.
+  * Fix key event delivery and remove filtering of volume up key.
 
  -- Thomas Voß <thomas.voss@canonical.com>  Tue, 18 Dec 2012 07:29:51 +0100
 
