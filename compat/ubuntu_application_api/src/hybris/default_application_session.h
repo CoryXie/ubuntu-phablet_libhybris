@@ -142,7 +142,7 @@ struct ApplicationSession : public android::RefBase
             mInfo->scaleFactor = 1.f;
             mInfo->visible = true;
             mInfo->canReceiveKeys = true;
-            mInfo->hasFocus = false; //true;
+            mInfo->hasFocus = true;
             mInfo->hasWallpaper = false;
             mInfo->paused = false;
             mInfo->layer = props.layer;
