@@ -327,6 +327,26 @@ status_t BnApplicationManager::onTransact(uint32_t code,
         switch_to_well_known_application(app);
         break;
     }
+    case REPORT_OSK_VISIBLE_COMMAND:
+    {
+        report_osk_visible();
+        break;
+    }
+    case REPORT_OSK_INVISIBLE_COMMAND:
+    {
+        report_osk_invisible();
+        break;
+    }
+    case REPORT_NOTIFICATION_VISIBLE_COMMAND:
+    {
+        report_notification_visible();
+        break;
+    }
+    case REPORT_NOTIFICATION_INVISIBLE_COMMAND:
+    {
+        report_notification_invisible();
+        break;
+    }
     }
     return NO_ERROR;
 }
@@ -446,6 +466,42 @@ void BpApplicationManager::switch_to_well_known_application(int32_t app)
     in.writeInt32(app);
 
     remote()->transact(SWITCH_TO_WELL_KNOWN_APPLICATION_COMMAND,
+                       in,
+                       &out);
+}
+
+void BpApplicationManager::report_osk_visible()
+{
+    Parcel in, out;
+
+    remote()->transact(REPORT_OSK_VISIBLE_COMMAND,
+                       in,
+                       &out);
+}
+    
+void BpApplicationManager::report_osk_invisible()
+{
+    Parcel in, out;
+
+    remote()->transact(REPORT_OSK_INVISIBLE_COMMAND,
+                       in,
+                       &out);
+}
+    
+void BpApplicationManager::report_notification_visible()
+{
+    Parcel in, out;
+
+    remote()->transact(REPORT_NOTIFICATION_VISIBLE_COMMAND,
+                       in,
+                       &out);
+}
+    
+void BpApplicationManager::report_notification_invisible()
+{
+    Parcel in, out;
+
+    remote()->transact(REPORT_NOTIFICATION_INVISIBLE_COMMAND,
                        in,
                        &out);
 }

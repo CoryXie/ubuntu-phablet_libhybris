@@ -75,6 +75,18 @@ extern "C" {
     void 
     ubuntu_ui_session_trigger_switch_to_well_known_application(ubuntu_ui_well_known_application app);
 
+    void
+    ubuntu_ui_report_osk_visible();
+    
+    void
+    ubuntu_ui_report_osk_invisible();
+
+    void
+    ubuntu_ui_report_notification_visible();
+    
+    void
+    ubuntu_ui_report_notification_invisible();
+
 #ifdef __cplusplus
 }
 #endif

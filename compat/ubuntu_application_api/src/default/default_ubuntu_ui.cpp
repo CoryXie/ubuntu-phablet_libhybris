@@ -148,3 +148,23 @@ void ubuntu_ui_session_trigger_switch_to_well_known_application(ubuntu_ui_well_k
     ubuntu::ui::SessionService::instance()->trigger_switch_to_well_known_application(
         static_cast<ubuntu::ui::WellKnownApplication>(app));
 }
+
+void ubuntu_ui_report_osk_visible()
+{
+    ubuntu::ui::SessionService::instance()->report_osk_visible();
+}
+
+void ubuntu_ui_report_osk_invisible()
+{
+    ubuntu::ui::SessionService::instance()->report_osk_invisible();
+}
+
+void ubuntu_ui_report_notification_visible()
+{
+    ubuntu::ui::SessionService::instance()->report_notification_visible();
+}
+
+void ubuntu_ui_report_notification_invisible()
+{
+    ubuntu::ui::SessionService::instance()->report_notification_invisible();
+}

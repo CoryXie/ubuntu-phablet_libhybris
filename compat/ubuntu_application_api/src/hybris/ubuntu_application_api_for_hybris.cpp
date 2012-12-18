@@ -718,6 +718,26 @@ struct SessionService : public ubuntu::ui::SessionService
         access_application_manager()->switch_to_well_known_application(app);
     }
 
+    void report_osk_visible()
+    {
+        LOGI("%s", __PRETTY_FUNCTION__);
+    }
+    
+    void report_osk_invisible()
+    {
+        LOGI("%s", __PRETTY_FUNCTION__);
+    }
+
+    void report_notification_visible()
+    {
+        LOGI("%s", __PRETTY_FUNCTION__);
+    }
+    
+    void report_notification_invisible()
+    {
+        LOGI("%s", __PRETTY_FUNCTION__);
+    }
+
     android::sp<ApplicationManagerObserver> observer;
 };
 

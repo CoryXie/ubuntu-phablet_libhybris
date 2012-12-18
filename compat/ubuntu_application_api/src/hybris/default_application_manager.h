@@ -147,6 +147,14 @@ struct ApplicationManager :
 
     void switch_to_well_known_application(int32_t app);
 
+    void report_osk_visible();
+    
+    void report_osk_invisible();
+
+    void report_notification_visible();
+
+    void report_notification_invisible();
+
     void switch_focused_application_locked(size_t index_of_next_focused_app);
     void switch_focus_to_next_application_locked();
 

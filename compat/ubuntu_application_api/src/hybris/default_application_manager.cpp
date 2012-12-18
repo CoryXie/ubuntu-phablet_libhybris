@@ -483,6 +483,26 @@ void ApplicationManager::switch_to_well_known_application(int32_t app)
     notify_observers_about_session_requested(app);
 }
 
+void ApplicationManager::report_osk_visible()
+{
+    LOGI("%s", __PRETTY_FUNCTION__);
+}
+
+void ApplicationManager::report_osk_invisible()
+{
+    LOGI("%s", __PRETTY_FUNCTION__);
+}
+
+void ApplicationManager::report_notification_visible()
+{
+    LOGI("%s", __PRETTY_FUNCTION__);
+}
+
+void ApplicationManager::report_notification_invisible()
+{
+    LOGI("%s", __PRETTY_FUNCTION__);
+}
+
 void ApplicationManager::switch_focused_application_locked(size_t index_of_next_focused_app)
 {
     static int focused_layer = 0;
