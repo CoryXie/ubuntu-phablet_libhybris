@@ -134,8 +134,6 @@ bool ApplicationManager::InputFilter::filter_event(const android::InputEvent* ev
 
 bool ApplicationManager::InputFilter::handle_key_event(const android::KeyEvent* event)
 {
-    //printf("%s: %p\n", __PRETTY_FUNCTION__, event);
-
     bool result = true;
 
     if (!event)
@@ -145,12 +143,6 @@ bool ApplicationManager::InputFilter::handle_key_event(const android::KeyEvent* 
     {
         switch (event->getKeyCode())
         {
-            case AKEYCODE_VOLUME_UP:
-                manager->lock();
-                manager->switch_focus_to_next_application_locked();
-                manager->unlock();
-                result = false;
-                break;
             case AKEYCODE_VOLUME_DOWN:
                 manager->lock();
                 manager->kill_focused_application_locked();
