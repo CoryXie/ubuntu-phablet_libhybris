@@ -54,18 +54,39 @@ struct ApplicationManager :
 
     struct ShellInputSetup : public android::RefBase
     {
-        static int looper_callback(int receiveFd, int events, void* ctxt);
-    
+        template<int x, int y, int w, int h>
+        struct Window : public android::RefBase
+        {
+            static int looper_callback(int receiveFd, int events, void* ctxt);
+
+            Window(ShellInputSetup* parent);
+            
+            android::sp<android::InputWindowHandle> input_window;
+            
+            ShellInputSetup* parent;
+            android::sp<android::InputChannel> server_channel;
+            android::sp<android::InputChannel> client_channel;
+            android::InputConsumer input_consumer;
+            android::PreallocatedInputEventFactory event_factory;
+        };
+        
         ShellInputSetup(const android::sp<android::InputManager>& input_manager);
     
-        android::sp<android::InputChannel> server_channel;
-        android::sp<android::InputChannel> client_channel;
+        android::sp<android::InputManager> input_manager;
         android::sp<android::InputApplicationHandle> shell_application;
-        android::Vector< android::sp<android::InputWindowHandle> > shell_windows;
+        
         android::sp<android::Looper> looper;
         ubuntu::application::EventLoop event_loop;
-        android::PreallocatedInputEventFactory event_factory;
-        android::InputConsumer input_consumer;
+
+        // TODO(tvoss): Get rid of hard coded values.
+        Window<0, 0, 720, 1280> event_trap_window;
+        // TODO(tvoss): This is really hacky, but we need to
+        // synchronize/reflect state changes across multiple processes
+        // here, i.e.: 
+        //   * maliit-server, which takes care of hiding and showing the osk 
+        //   * notify-osd, which takes care of hiding and showing notifications
+        Window<0, 812, 720, 468> osk_window;
+        Window<36, 18, 684, 216> notifications_window;
     };
 
     class InputFilter : public android::InputFilter
@@ -147,12 +168,22 @@ struct ApplicationManager :
 
     void switch_to_well_known_application(int32_t app);
 
+    void report_osk_visible();
+    
+    void report_osk_invisible();
+
+    void report_notification_visible();
+
+    void report_notification_invisible();
+
     void switch_focused_application_locked(size_t index_of_next_focused_app);
     void switch_focus_to_next_application_locked();
 
     void kill_focused_application_locked();
     
   private:
+    void update_input_setup_locked();
+
     size_t session_id_to_index(int id);
     void notify_observers_about_session_requested(uint32_t app);
     void notify_observers_about_session_born(int id, const android::String8& desktop_file);
@@ -164,6 +195,8 @@ struct ApplicationManager :
     android::sp<InputFilter> input_filter;
     android::sp<android::InputSetup> input_setup;
     android::sp<ShellInputSetup> shell_input_setup;
+    bool is_osk_visible;
+    bool are_notifications_visible;
     android::Mutex guard;
     android::KeyedVector< android::sp<android::IBinder>, android::sp<mir::ApplicationSession> > apps;
     android::Vector< android::sp<android::IBinder> > apps_as_added;

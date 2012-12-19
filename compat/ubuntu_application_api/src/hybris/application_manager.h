@@ -171,7 +171,16 @@ public:
 
     virtual int32_t query_snapshot_layer_for_session_with_id(int id) = 0;
     
-    virtual void switch_to_well_known_application(int32_t app) = 0;    
+    virtual void switch_to_well_known_application(int32_t app) = 0;
+
+    virtual void report_osk_visible() = 0;
+    
+    virtual void report_osk_invisible() = 0;
+    
+    virtual void report_notification_visible() = 0;
+    
+    virtual void report_notification_invisible() = 0;
+
 protected:
     enum
     {
@@ -182,7 +191,11 @@ protected:
         UNFOCUS_RUNNING_SESSIONS_COMMAND,
         FOCUS_RUNNING_SESSION_WITH_ID_COMMAND,
         QUERY_SNAPSHOT_LAYER_FOR_SESSION_WITH_ID_COMMAND,
-        SWITCH_TO_WELL_KNOWN_APPLICATION_COMMAND
+        SWITCH_TO_WELL_KNOWN_APPLICATION_COMMAND,
+        REPORT_OSK_VISIBLE_COMMAND,
+        REPORT_OSK_INVISIBLE_COMMAND,
+        REPORT_NOTIFICATION_VISIBLE_COMMAND,
+        REPORT_NOTIFICATION_INVISIBLE_COMMAND
     };
 };
 
@@ -231,6 +244,14 @@ public:
     int32_t query_snapshot_layer_for_session_with_id(int id);
 
     void switch_to_well_known_application(int32_t app);
+
+    void report_osk_visible();
+    
+    void report_osk_invisible();
+    
+    void report_notification_visible();
+    
+    void report_notification_invisible();
 };
 
 }

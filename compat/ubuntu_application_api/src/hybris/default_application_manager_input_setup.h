@@ -335,8 +335,16 @@ struct InputSetup : public android::RefBase
     struct DummyApplicationWindow : public android::InputWindowHandle
     {
         DummyApplicationWindow(
-            const android::sp<android::InputApplicationHandle>& app_handle) 
-                : android::InputWindowHandle(app_handle)
+            const android::sp<android::InputApplicationHandle>& app_handle,
+            int x = 0,
+            int y = 0,
+            int w = 720,
+            int h = 1280) 
+                : android::InputWindowHandle(app_handle),
+                  x(x),
+                  y(y),
+                  w(w),
+                  h(h)
         {
         }
         
@@ -347,16 +355,16 @@ struct InputSetup : public android::RefBase
             {
                 mInfo = new android::InputWindowInfo();
                 SkRegion touchable_region;
-                touchable_region.setRect(0, 0, 720, 1080);
+                touchable_region.setRect(x, y, x+w, y+h);
                 
                 mInfo->name = "ShellInputWindow";
-                mInfo->layoutParamsFlags = android::InputWindowInfo::FLAG_SPLIT_TOUCH;
+                mInfo->layoutParamsFlags = android::InputWindowInfo::FLAG_NOT_TOUCH_MODAL | android::InputWindowInfo::FLAG_SPLIT_TOUCH;
                 mInfo->layoutParamsType = android::InputWindowInfo::TYPE_APPLICATION;
                 mInfo->touchableRegion = touchable_region;
-                mInfo->frameLeft = 0;
-                mInfo->frameTop = 0;
-                mInfo->frameRight = 720;
-                mInfo->frameBottom = 1080;
+                mInfo->frameLeft = x;
+                mInfo->frameTop = y;
+                mInfo->frameRight = w + w;
+                mInfo->frameBottom = y + h;
                 mInfo->scaleFactor = 1.f;
                 mInfo->visible = true;
                 mInfo->canReceiveKeys = true;
@@ -375,6 +383,10 @@ struct InputSetup : public android::RefBase
         }
 
         android::sp<android::InputChannel> input_channel;
+        int x;
+        int y;
+        int w;
+        int h;
     };
 
     InputSetup(const android::sp<InputFilter>& input_filter)

@@ -1,8 +1,13 @@
+libhybris (0.45) quantal; urgency=low
+
+  * Fix input events being propagated through the osk to ordinary apps underneath.
+ -- Thomas Voß <thomas.voss@canonical.com>  Tue, 18 Dec 2012 07:29:51 +0100
+
 libhybris (0.44) quantal; urgency=low
 
   * Fix key event delivery and remove filtering of volume up key.
 
- -- Thomas Voß <thomas.voss@canonical.com>  Tue, 18 Dec 2012 07:29:51 +0100
+ -- Thomas Voß <thomas.voss@canonical.com>  Mon, 17 Dec 2012 15:31:36 +0100
 
 libhybris (0.43) quantal; urgency=low
 

@@ -57,6 +57,14 @@ public:
 
     virtual ubuntu::ui::SessionSnapshot::Ptr snapshot_running_session_with_id(int id) = 0;
 
+    virtual void report_osk_visible() = 0;
+    
+    virtual void report_osk_invisible() = 0;
+
+    virtual void report_notification_visible() = 0;
+    
+    virtual void report_notification_invisible() = 0;
+    
 protected:
     SessionService() {}
     SessionService(const SessionService&) = delete;

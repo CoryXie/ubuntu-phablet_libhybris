@@ -39,21 +39,23 @@
 
 namespace mir
 {
-
-int ApplicationManager::ShellInputSetup::looper_callback(int receiveFd, int events, void* ctxt)
+template<int x, int y, int w, int h>
+int ApplicationManager::ShellInputSetup::Window<x, y, w, h>::looper_callback(int receiveFd, int events, void* ctxt)
 {
+    // LOGI("%s", __PRETTY_FUNCTION__);
+
     bool result = true;
-    ShellInputSetup* s = static_cast<ShellInputSetup*>(ctxt);
+    ApplicationManager::ShellInputSetup::Window<x, y, w, h>* window = static_cast<ApplicationManager::ShellInputSetup::Window<x, y, w, h>*>(ctxt);
     android::InputEvent* ev;
 
-    s->input_consumer.receiveDispatchSignal();
+    window->input_consumer.receiveDispatchSignal();
 
-    switch(s->input_consumer.consume(&s->event_factory, &ev))
+    switch(window->input_consumer.consume(&window->event_factory, &ev))
     {
         case android::OK:
             result = true;
             //printf("We have a client side event for process %d. \n", getpid());
-            s->input_consumer.sendFinishedSignal(result);
+            window->input_consumer.sendFinishedSignal(result);
             break;
         case android::INVALID_OPERATION:
             result = true;
@@ -66,41 +68,51 @@ int ApplicationManager::ShellInputSetup::looper_callback(int receiveFd, int even
     return result ? 1 : 0;
 }
 
-ApplicationManager::ShellInputSetup::ShellInputSetup(const android::sp<android::InputManager>& input_manager)
-        : shell_application(new android::InputSetup::DummyApplication()),
-          shell_windows(),
-          looper(new android::Looper(true)),
-          event_loop(looper),
-          input_consumer(client_channel)
+template<int x, int y, int w, int h>
+ApplicationManager::ShellInputSetup::Window<x, y, w, h>::Window(
+    ApplicationManager::ShellInputSetup* parent) :
+        parent(parent),
+        input_consumer(client_channel)
 {
-    auto app_window = new android::InputSetup::DummyApplicationWindow(shell_application);
-    shell_windows.push();
-    shell_windows.editItemAt(0) = app_window;
-
+    auto window = new android::InputSetup::DummyApplicationWindow(
+        parent->shell_application,
+        x,
+        y,
+        w,
+        h);
+    
     android::InputChannel::openInputChannelPair(
         android::String8("DummyShellInputChannel"),
         server_channel,
         client_channel);
 
-    app_window->input_channel = server_channel;
-
-    input_manager->getDispatcher()->registerInputChannel(
-        app_window->input_channel,
-        shell_windows[0],
+    window->input_channel = server_channel;
+    input_window = window;
+    parent->input_manager->getDispatcher()->registerInputChannel(
+        window->input_channel,
+        input_window,
         false);
 
     input_consumer = android::InputConsumer(client_channel);
     input_consumer.initialize();
-    looper->addFd(client_channel->getReceivePipeFd(),
-                  0,
-                  ALOOPER_EVENT_INPUT,
-                  looper_callback,
-                  this);
-
-    event_loop.run();
+    parent->looper->addFd(client_channel->getReceivePipeFd(),
+                          0,
+                          ALOOPER_EVENT_INPUT,
+                          looper_callback,
+                          this);
 }
 
-
+ApplicationManager::ShellInputSetup::ShellInputSetup(const android::sp<android::InputManager>& input_manager)
+        : input_manager(input_manager),
+          shell_application(new android::InputSetup::DummyApplication()),
+          looper(new android::Looper(true)),
+          event_loop(looper),
+          event_trap_window(this),
+          osk_window(this),
+          notifications_window(this)
+{
+    event_loop.run();
+}
 
 ApplicationManager::InputFilter::InputFilter(ApplicationManager* manager) : manager(manager)
 {
@@ -176,14 +188,19 @@ ApplicationManager::LockingIterator::~LockingIterator()
 
 ApplicationManager::ApplicationManager() : input_filter(new InputFilter(this)),
                                            input_setup(new android::InputSetup(input_filter)),
+                                           is_osk_visible(false),
+                                           are_notifications_visible(false),
                                            focused_application(0)
 {
     shell_input_setup = new ShellInputSetup(input_setup->input_manager);
 
     input_setup->input_manager->getDispatcher()->setFocusedApplication(
         shell_input_setup->shell_application);
+    
+    android::Vector< android::sp<android::InputWindowHandle> > input_windows;
+    input_windows.push(shell_input_setup->event_trap_window.input_window);
     input_setup->input_manager->getDispatcher()->setInputWindows(
-        shell_input_setup->shell_windows);
+        input_windows);
 
     input_setup->start();
 }
@@ -373,8 +390,10 @@ void ApplicationManager::request_update_for_session(const android::sp<android::I
     {
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
             shell_input_setup->shell_application);
+        android::Vector< android::sp<android::InputWindowHandle> > input_windows;
+        input_windows.push(shell_input_setup->event_trap_window.input_window);
         input_setup->input_manager->getDispatcher()->setInputWindows(
-            shell_input_setup->shell_windows);
+            input_windows);
     } else
     {
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
@@ -432,8 +451,10 @@ void ApplicationManager::unfocus_running_sessions()
 
     input_setup->input_manager->getDispatcher()->setFocusedApplication(
         shell_input_setup->shell_application);
+    android::Vector< android::sp<android::InputWindowHandle> > input_windows;
+        input_windows.push(shell_input_setup->event_trap_window.input_window);
     input_setup->input_manager->getDispatcher()->setInputWindows(
-        shell_input_setup->shell_windows);
+        input_windows);
 
     if (focused_application < apps.size())
     {
@@ -473,6 +494,84 @@ int32_t ApplicationManager::query_snapshot_layer_for_session_with_id(int id)
 void ApplicationManager::switch_to_well_known_application(int32_t app)
 {
     notify_observers_about_session_requested(app);
+}
+
+void ApplicationManager::report_osk_visible()
+{
+    LOGI("%s", __PRETTY_FUNCTION__);
+    android::Mutex::Autolock al(guard);
+    is_osk_visible = true;
+
+    update_input_setup_locked();
+}
+
+void ApplicationManager::report_osk_invisible()
+{
+    LOGI("%s", __PRETTY_FUNCTION__);
+    android::Mutex::Autolock al(guard);
+    is_osk_visible = false;
+
+    update_input_setup_locked();
+}
+
+void ApplicationManager::report_notification_visible()
+{
+    LOGI("%s", __PRETTY_FUNCTION__);
+    android::Mutex::Autolock al(guard);
+    are_notifications_visible = true;
+
+    update_input_setup_locked();
+}
+
+void ApplicationManager::report_notification_invisible()
+{
+    LOGI("%s", __PRETTY_FUNCTION__);
+    android::Mutex::Autolock al(guard);
+    are_notifications_visible = false;
+
+    update_input_setup_locked();
+}
+
+void ApplicationManager::update_input_setup_locked()
+{
+    if (focused_application >= apps.size())
+        return;
+    
+    const android::sp<mir::ApplicationSession>& session =
+            apps.valueFor(apps_as_added[focused_application]);
+    
+    if (session->session_type == ubuntu::application::ui::system_session_type)
+    {
+        input_setup->input_manager->getDispatcher()->setFocusedApplication(
+            shell_input_setup->shell_application);
+        
+        android::Vector< android::sp<android::InputWindowHandle> > input_windows;
+
+        if (is_osk_visible)
+            input_windows.push(shell_input_setup->osk_window.input_window);
+        if (are_notifications_visible)
+            input_windows.push(shell_input_setup->notifications_window.input_window);
+
+        input_windows.push(shell_input_setup->event_trap_window.input_window);
+
+        input_setup->input_manager->getDispatcher()->setInputWindows(
+            input_windows);
+    } else
+    {
+        LOGI("Adjusting input setup to account for change in visibility of osk/notifications");
+
+        input_setup->input_manager->getDispatcher()->setFocusedApplication(
+            session->input_application_handle());
+        
+        android::Vector< android::sp<android::InputWindowHandle> > input_windows;
+        if (is_osk_visible)
+            input_windows.push(shell_input_setup->osk_window.input_window);
+        if (are_notifications_visible)
+            input_windows.push(shell_input_setup->notifications_window.input_window);
+        input_windows.appendVector(session->input_window_handles());
+        input_setup->input_manager->getDispatcher()->setInputWindows(
+            input_windows);
+    }
 }
 
 void ApplicationManager::switch_focused_application_locked(size_t index_of_next_focused_app)
