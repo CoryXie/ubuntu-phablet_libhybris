@@ -39,6 +39,20 @@
 
 namespace mir
 {
+
+bool is_session_allowed_to_run_in_background(
+    const android::sp<mir::ApplicationSession>& session)
+{
+    LOGI("%s: %s", __PRETTY_FUNCTION__, session->desktop_file.string());
+    static const android::String8 telephony_app_desktop_file("/usr/share/applications/telephony-app.desktop");
+    if (session->desktop_file == telephony_app_desktop_file)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 template<int x, int y, int w, int h>
 int ApplicationManager::ShellInputSetup::Window<x, y, w, h>::looper_callback(int receiveFd, int events, void* ctxt)
 {
@@ -398,8 +412,17 @@ void ApplicationManager::request_update_for_session(const android::sp<android::I
     {
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
             as->input_application_handle());
+
+        android::Vector< android::sp<android::InputWindowHandle> > input_windows;
+
+        if (is_osk_visible)
+            input_windows.push(shell_input_setup->osk_window.input_window);
+        if (are_notifications_visible)
+            input_windows.push(shell_input_setup->notifications_window.input_window);
+
+        input_windows.appendVector(as->input_window_handles());
         input_setup->input_manager->getDispatcher()->setInputWindows(
-            as->input_window_handles());
+            input_windows);
     }
 }
 
@@ -465,15 +488,18 @@ void ApplicationManager::unfocus_running_sessions()
         {            
             notify_observers_about_session_unfocused(session->remote_pid,
                                                      session->desktop_file);
-            LOGI("\t Trying to stop ordinary app process.");
-            
+
             // Stop the session
-            if (0 != kill(session->remote_pid, SIGSTOP))
+            if (!is_session_allowed_to_run_in_background(session))
             {
-                LOGI("\t Problem stopping process, errno = %d.", errno);
-            } else
-            {
-                LOGI("\t\t Successfully stopped process.");
+                LOGI("\t Trying to stop ordinary app process.");
+                if (0 != kill(session->remote_pid, SIGSTOP))
+                {
+                    LOGI("\t Problem stopping process, errno = %d.", errno);
+                } else
+                {
+                    LOGI("\t\t Successfully stopped process.");
+                }
             }
         }
     }
@@ -546,12 +572,6 @@ void ApplicationManager::update_input_setup_locked()
             shell_input_setup->shell_application);
         
         android::Vector< android::sp<android::InputWindowHandle> > input_windows;
-
-        if (is_osk_visible)
-            input_windows.push(shell_input_setup->osk_window.input_window);
-        if (are_notifications_visible)
-            input_windows.push(shell_input_setup->notifications_window.input_window);
-
         input_windows.push(shell_input_setup->event_trap_window.input_window);
 
         input_setup->input_manager->getDispatcher()->setInputWindows(
@@ -592,7 +612,8 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
             notify_observers_about_session_unfocused(session->remote_pid,
                                                      session->desktop_file);
             // Stop the session
-            kill(session->remote_pid, SIGSTOP);
+            if (!is_session_allowed_to_run_in_background(session))
+                kill(session->remote_pid, SIGSTOP);
         }
     }
 
@@ -613,13 +634,23 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
         }
 
         // Continue the session
-        kill(session->remote_pid, SIGCONT);
+        if (!is_session_allowed_to_run_in_background(session))
+            kill(session->remote_pid, SIGCONT);
 
         session->raise_application_surfaces_to_layer(focused_layer);
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
             session->input_application_handle());
+
+        android::Vector< android::sp<android::InputWindowHandle> > input_windows;
+
+        if (is_osk_visible)
+            input_windows.push(shell_input_setup->osk_window.input_window);
+        if (are_notifications_visible)
+            input_windows.push(shell_input_setup->notifications_window.input_window);
+
+        input_windows.appendVector(session->input_window_handles());
         input_setup->input_manager->getDispatcher()->setInputWindows(
-            session->input_window_handles());
+            input_windows);
 
         notify_observers_about_session_focused(session->remote_pid,
                                                session->desktop_file);
