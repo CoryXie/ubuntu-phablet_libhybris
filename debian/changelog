@@ -1,3 +1,9 @@
+libhybris (0.46) quantal; urgency=low
+
+  * Add telephony to list of well known apps 
+
+ -- Bill Filler <bill.filler@canonical.com>  Wed, 19 Dec 2012 19:21:58 -0500
+
 libhybris (0.45) quantal; urgency=low
 
   * Fix input events being propagated through the osk to ordinary apps underneath.
