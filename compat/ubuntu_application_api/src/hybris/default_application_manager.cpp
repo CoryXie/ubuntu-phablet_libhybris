@@ -117,7 +117,8 @@ ApplicationManager::ShellInputSetup::Window<x, y, w, h>::Window(
 }
 
 ApplicationManager::ShellInputSetup::ShellInputSetup(const android::sp<android::InputManager>& input_manager)
-        : input_manager(input_manager),
+        : shell_has_focus(true), 
+          input_manager(input_manager),
           shell_application(new android::InputSetup::DummyApplication()),
           looper(new android::Looper(true)),
           event_loop(looper),
@@ -503,6 +504,7 @@ void ApplicationManager::unfocus_running_sessions()
             }
         }
     }
+    shell_input_setup->shell_has_focus = true;
 }
 
 int32_t ApplicationManager::query_snapshot_layer_for_session_with_id(int id)
@@ -566,7 +568,7 @@ void ApplicationManager::update_input_setup_locked()
     const android::sp<mir::ApplicationSession>& session =
             apps.valueFor(apps_as_added[focused_application]);
     
-    if (session->session_type == ubuntu::application::ui::system_session_type)
+    if (shell_input_setup->shell_has_focus)
     {
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
             shell_input_setup->shell_application);
@@ -655,6 +657,7 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
         notify_observers_about_session_focused(session->remote_pid,
                                                session->desktop_file);
 
+        shell_input_setup->shell_has_focus = false;
     }
 }
 
