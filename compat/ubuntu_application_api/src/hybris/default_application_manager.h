@@ -71,6 +71,8 @@ struct ApplicationManager :
         };
         
         ShellInputSetup(const android::sp<android::InputManager>& input_manager);
+
+        bool shell_has_focus;
     
         android::sp<android::InputManager> input_manager;
         android::sp<android::InputApplicationHandle> shell_application;

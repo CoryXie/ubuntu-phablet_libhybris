@@ -1,3 +1,9 @@
+libhybris (0.47) quantal; urgency=low
+
+  * Fix predicate when updating input configuration if osk/notifications visibility changes.
+
+ -- Thomas Voß <thomas.voss@canonical.com>  Thu, 20 Dec 2012 17:15:24 +0100
+
 libhybris (0.46) quantal; urgency=low
 
   * Add telephony to list of well known apps 
