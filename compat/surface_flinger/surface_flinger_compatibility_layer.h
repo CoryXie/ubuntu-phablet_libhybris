@@ -36,7 +36,6 @@ extern "C" {
         SURFACE_FLINGER_DEFAULT_DISPLAY_ID = 0
     };
 
-    size_t sf_get_number_of_displays();
     size_t sf_get_display_width(size_t display_id);
     size_t sf_get_display_height(size_t display_id);
 
