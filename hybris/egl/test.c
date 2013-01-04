@@ -21,9 +21,10 @@ int main(int argc, char **argv)
  	EGLContext context;
 	display = eglGetDisplay(NULL);
 
+	EGLNativeWindowType window = android_createDisplaySurface();
 	eglInitialize(display, 0, 0);
         eglChooseConfig((EGLDisplay) display, attr, &ecfg, 1, &num_config);
-	surface = eglCreateWindowSurface((EGLDisplay) display, ecfg, (EGLNativeWindowType)NULL, NULL);
+	surface = eglCreateWindowSurface((EGLDisplay) display, ecfg, window, NULL);
 	assert(surface != EGL_NO_SURFACE);
 	context = eglCreateContext((EGLDisplay) display, ecfg, EGL_NO_CONTEXT, ctxattr);
         assert(surface != EGL_NO_CONTEXT);
