@@ -18,7 +18,7 @@
 #ifndef INPUT_CONSUMER_THREAD_H_
 #define INPUT_CONSUMER_THREAD_H_
 
-#include <ui/InputTransport.h>
+#include <androidfw/InputTransport.h>
 #include <utils/Looper.h>
 
 namespace android
@@ -30,8 +30,8 @@ struct InputConsumerThread : public android::Thread
         : input_consumer(input_consumer),
           looper(android::Looper::prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS))
     {
-        looper->addFd(input_consumer.getChannel()->getReceivePipeFd(),
-                      input_consumer.getChannel()->getReceivePipeFd(),
+        looper->addFd(input_consumer.getChannel()->getFd(),
+                      input_consumer.getChannel()->getFd(),
                       ALOOPER_EVENT_INPUT,
                       NULL,
                       NULL);
@@ -52,14 +52,15 @@ struct InputConsumerThread : public android::Thread
 
 // printf("%s \n", __PRETTY_FUNCTION__);
             InputEvent* event = NULL;
+            uint32_t consumeSeq;
             bool result = true;
-            switch(input_consumer.consume(&event_factory, &event))
+            switch(input_consumer.consume(&event_factory, true, -1, &consumeSeq, &event))
             {
             case OK:
 //TODO:Dispatch to input listener
                 result = true;
 //printf("Yeah, we have an event client-side.\n");
-                input_consumer.sendFinishedSignal(result);
+                input_consumer.sendFinishedSignal(consumeSeq, result);
                 break;
             case INVALID_OPERATION:
                 result = true;

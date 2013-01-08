@@ -18,6 +18,7 @@
 #include "application_manager.h"
 #include "event_loop.h"
 #include "input_consumer_thread.h"
+#include "log.h"
 
 #include <ubuntu/application/ui/init.h>
 #include <ubuntu/application/ui/session.h>
@@ -35,10 +36,10 @@
 #include <binder/IPCThreadState.h>
 #include <binder/IServiceManager.h>
 #include <binder/ProcessState.h>
-#include <surfaceflinger/ISurfaceComposer.h>
-#include <surfaceflinger/SurfaceComposerClient.h>
+#include <gui/ISurfaceComposer.h>
+#include <gui/SurfaceComposerClient.h>
 #include <ui/DisplayInfo.h>
-#include <ui/InputTransport.h>
+#include <androidfw/InputTransport.h>
 #include <ui/PixelFormat.h>
 #include <ui/Region.h>
 #include <ui/Rect.h>
@@ -135,12 +136,18 @@ struct PhysicalDisplayInfo : public ubuntu::application::ui::PhysicalDisplayInfo
 
     int horizontal_resolution()
     {
-        return SurfaceComposerClient::getDisplayWidth(display_id);
+        DisplayInfo info;
+        SurfaceComposerClient::getDisplayInfo(display_id, &info);
+
+        return info.w;
     }
 
     int vertical_resolution()
     {
-        return SurfaceComposerClient::getDisplayHeight(display_id);
+        DisplayInfo info;
+        SurfaceComposerClient::getDisplayInfo(display_id, &info);
+
+        return info.h;
     }
 
     size_t display_id;
@@ -169,19 +176,18 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
 
     static int looper_callback(int receiveFd, int events, void* ctxt)
     {
+        uint32_t consumeSeq;
         bool result = true;
         UbuntuSurface* s = static_cast<UbuntuSurface*>(ctxt);
         InputEvent* ev;
 
-        s->input_consumer.receiveDispatchSignal();
-
-        switch(s->input_consumer.consume(&s->event_factory, &ev))
+        switch(s->input_consumer.consume(&s->event_factory, -1, true, &consumeSeq, &ev))
         {
         case OK:
             result = true;
             //printf("We have a client side event for process %d. \n", getpid());
             s->translate_and_dispatch_event(ev);
-            s->input_consumer.sendFinishedSignal(result);
+            s->input_consumer.sendFinishedSignal(consumeSeq, result);
             break;
         case INVALID_OPERATION:
             result = true;
@@ -213,11 +219,10 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
 
         surface_control = client->createSurface(
                               String8(props.title),
-                              ubuntu::application::ui::primary_physical_display,
                               props.width,
                               props.height,
                               PIXEL_FORMAT_RGBA_8888,
-                              props.flags & ubuntu::application::ui::is_opaque_flag ? android::ISurfaceComposer::eOpaque : 0);
+                              props.flags & ubuntu::application::ui::is_opaque_flag ? android::ISurfaceComposerClient::eOpaque : 0);
 
         assert(surface_control != NULL);
 
@@ -226,8 +231,7 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
         assert(surface != NULL);
 
         // Setup input channel
-        input_consumer.initialize();
-        looper->addFd(input_channel->getReceivePipeFd(),
+        looper->addFd(input_channel->getFd(),
                       0,
                       ALOOPER_EVENT_INPUT,
                       looper_callback,
@@ -236,7 +240,7 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
 
     ~UbuntuSurface()
     {
-        looper->removeFd(input_channel->getReceivePipeFd());
+        looper->removeFd(input_channel->getFd());
     }
 
     void translate_and_dispatch_event(const android::InputEvent* ev)
@@ -429,9 +433,7 @@ struct Session : public ubuntu::application::ui::Session, public UbuntuSurface::
 
         //printf("Created input channels: \n");
         //printf("\t %d, %d, %d \n",
-        //server_channel->getAshmemFd(),
-        //server_channel->getSendPipeFd(),
-        //server_channel->getReceivePipeFd());
+        //server_channel->getFd());
         //============= This has to die =================
         sp<IServiceManager> service_manager = defaultServiceManager();
         sp<IBinder> service = service_manager->getService(
@@ -443,9 +445,7 @@ struct Session : public ubuntu::application::ui::Session, public UbuntuSurface::
             String8(creds.application_name()),
             String8(ubuntu::application::ui::Setup::instance()->desktop_file_hint()),
             app_manager_session,
-            server_channel->getAshmemFd(),
-            server_channel->getSendPipeFd(),
-            server_channel->getReceivePipeFd());
+            server_channel->getFd());
 
         android::ProcessState::self()->startThreadPool();
         event_loop->run(__PRETTY_FUNCTION__, android::PRIORITY_URGENT_DISPLAY);
@@ -498,9 +498,7 @@ struct Session : public ubuntu::application::ui::Session, public UbuntuSurface::
             app_manager_session,
             props.role,
             token,
-            server_channel->getAshmemFd(),
-            server_channel->getSendPipeFd(),
-            server_channel->getReceivePipeFd());
+            server_channel->getFd());
 
         return ubuntu::application::ui::Surface::Ptr(surface);
     }
@@ -701,8 +699,11 @@ struct SessionService : public ubuntu::ui::SessionService
                 ? access_application_manager()->query_snapshot_layer_for_session_with_id(id) 
                 : id;  
         static android::ScreenshotClient screenshot_client;
-        screenshot_client.update(default_width, default_height, layer_min, layer_max);
- 
+        android::sp<android::IBinder> display(
+                android::SurfaceComposerClient::getBuiltInDisplay(
+                android::ISurfaceComposer::eDisplayIdMain));
+        screenshot_client.update(display, default_width, default_height, layer_min, layer_max);
+
         SessionSnapshot::Ptr ss(
             new SessionSnapshot(
                 screenshot_client.getPixels(),

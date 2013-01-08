@@ -268,11 +268,9 @@ status_t BnApplicationManager::onTransact(uint32_t code,
         String8 desktop_file = data.readString8();
         sp<IBinder> binder = data.readStrongBinder();
         sp<BpApplicationManagerSession> session(new BpApplicationManagerSession(binder));
-        int ashmem_fd = data.readFileDescriptor();
-        int out_fd = data.readFileDescriptor();
-        int in_fd = data.readFileDescriptor();
+        int fd = data.readFileDescriptor();
 
-        start_a_new_session(session_type, app_name, desktop_file, session, ashmem_fd, out_fd, in_fd);
+        start_a_new_session(session_type, app_name, desktop_file, session, fd);
     }
     break;
     case REGISTER_A_SURFACE_COMMAND:
@@ -282,11 +280,9 @@ status_t BnApplicationManager::onTransact(uint32_t code,
         sp<BpApplicationManagerSession> session(new BpApplicationManagerSession(binder));
         int32_t surface_role = data.readInt32();
         int32_t surface_token = data.readInt32();
-        int ashmem_fd = data.readFileDescriptor();
-        int out_fd = data.readFileDescriptor();
-        int in_fd = data.readFileDescriptor();
+        int fd = data.readFileDescriptor();
 
-        register_a_surface(title, session, surface_role, surface_token, ashmem_fd, out_fd, in_fd);
+        register_a_surface(title, session, surface_role, surface_token, fd);
     }
     break;
     case REGISTER_AN_OBSERVER_COMMAND:
@@ -365,9 +361,7 @@ void BpApplicationManager::start_a_new_session(
     const String8& app_name,
     const String8& desktop_file,
     const sp<IApplicationManagerSession>& session,
-    int ashmem_fd,
-    int out_socket_fd,
-    int in_socket_fd)
+    int fd)
 {
     //printf("%s \n", __PRETTY_FUNCTION__);
     Parcel in, out;
@@ -376,9 +370,7 @@ void BpApplicationManager::start_a_new_session(
     in.writeString8(app_name);
     in.writeString8(desktop_file);
     in.writeStrongBinder(session->asBinder());
-    in.writeFileDescriptor(ashmem_fd);
-    in.writeFileDescriptor(out_socket_fd);
-    in.writeFileDescriptor(in_socket_fd);
+    in.writeFileDescriptor(fd);
 
     remote()->transact(START_A_NEW_SESSION_COMMAND,
                        in,
@@ -390,9 +382,7 @@ void BpApplicationManager::register_a_surface(
     const sp<IApplicationManagerSession>& session,
     int32_t surface_role,
     int32_t token,
-    int ashmem_fd,
-    int out_socket_fd,
-    int in_socket_fd)
+    int fd)
 {
     //printf("%s \n", __PRETTY_FUNCTION__);
     Parcel in, out;
@@ -401,9 +391,7 @@ void BpApplicationManager::register_a_surface(
     in.writeStrongBinder(session->asBinder());
     in.writeInt32(surface_role);
     in.writeInt32(token);
-    in.writeFileDescriptor(ashmem_fd);
-    in.writeFileDescriptor(out_socket_fd);
-    in.writeFileDescriptor(in_socket_fd);
+    in.writeFileDescriptor(fd);
 
     remote()->transact(REGISTER_A_SURFACE_COMMAND,
                        in,

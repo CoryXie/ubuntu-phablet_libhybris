@@ -22,6 +22,7 @@
 #include "default_application_manager_input_setup.h"
 #include "default_application_session.h"
 #include "default_shell.h"
+#include "log.h"
 
 #include <binder/IPCThreadState.h>
 #include <binder/IServiceManager.h>
@@ -29,7 +30,7 @@
 
 #include <input/InputListener.h>
 #include <input/InputReader.h>
-#include <ui/InputTransport.h>
+#include <androidfw/InputTransport.h>
 #include <utils/threads.h>
 
 #include <cstdio>
@@ -281,9 +282,7 @@ void ApplicationManager::start_a_new_session(
     const android::String8& app_name,
     const android::String8& desktop_file,
     const android::sp<android::IApplicationManagerSession>& session,
-    int ashmem_fd,
-    int out_socket_fd,
-    int in_socket_fd)
+    int fd)
 {
     (void) session_type;
     android::sp<mir::ApplicationSession> app_session(
@@ -319,17 +318,13 @@ void ApplicationManager::register_a_surface(
     const android::sp<android::IApplicationManagerSession>& session,
     int32_t surface_role,
     int32_t token,
-    int ashmem_fd,
-    int out_socket_fd,
-    int in_socket_fd)
+    int fd)
 {
     android::Mutex::Autolock al(guard);
     android::sp<android::InputChannel> input_channel(
         new android::InputChannel(
             title,
-            dup(ashmem_fd),
-            dup(in_socket_fd),
-            dup(out_socket_fd)));
+            dup(fd)));
 
     android::sp<mir::ApplicationSession::Surface> surface(
         new mir::ApplicationSession::Surface(

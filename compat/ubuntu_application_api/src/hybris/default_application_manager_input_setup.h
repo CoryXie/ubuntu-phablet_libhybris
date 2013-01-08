@@ -24,7 +24,8 @@
 #include <input/InputReader.h>
 #include <input/PointerController.h>
 #include <input/SpriteController.h>
-#include <surfaceflinger/SurfaceComposerClient.h>
+#include <gui/SurfaceComposerClient.h>
+#include "log.h"
 
 #include <cstdio>
 
@@ -143,10 +144,23 @@ public:
         pointer_controller->setDisplaySize(w, h);
         return pointer_controller;
     }
+
+    virtual void notifyInputDevicesChanged(const Vector<InputDeviceInfo>& inputDevices) {
+        mInputDevices = inputDevices;
+    }
+
+    virtual sp<KeyCharacterMap> getKeyboardLayoutOverlay(const String8& inputDeviceDescriptor) {
+        return NULL;
+    }
+
+    virtual String8 getDeviceAlias(const InputDeviceIdentifier& identifier) {
+        return String8::empty();
+    }
 private:
     android::sp<android::Looper> looper;
     int default_layer_for_touch_point_visualization;
     android::InputReaderConfiguration default_configuration;
+    Vector<InputDeviceInfo> mInputDevices;
 };
 
 class InputFilter : public android::RefBase
