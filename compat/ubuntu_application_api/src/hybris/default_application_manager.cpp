@@ -61,16 +61,18 @@ int ApplicationManager::ShellInputSetup::Window<x, y, w, h>::looper_callback(int
 
     bool result = true;
     ApplicationManager::ShellInputSetup::Window<x, y, w, h>* window = static_cast<ApplicationManager::ShellInputSetup::Window<x, y, w, h>*>(ctxt);
+    
+    //window->input_consumer.receiveDispatchSignal();
+    uint32_t seq;
     android::InputEvent* ev;
-
-    window->input_consumer.receiveDispatchSignal();
-
-    switch(window->input_consumer.consume(&window->event_factory, &ev))
+    static const bool consume_batches = true;
+    static const nsecs_t frame_time = -1;
+    switch(window->input_consumer.consume(&window->event_factory, consume_batches, frame_time, &seq, &ev))
     {
         case android::OK:
             result = true;
             //printf("We have a client side event for process %d. \n", getpid());
-            window->input_consumer.sendFinishedSignal(result);
+            window->input_consumer.sendFinishedSignal(seq, result);
             break;
         case android::INVALID_OPERATION:
             result = true;
@@ -109,8 +111,8 @@ ApplicationManager::ShellInputSetup::Window<x, y, w, h>::Window(
         false);
 
     input_consumer = android::InputConsumer(client_channel);
-    input_consumer.initialize();
-    parent->looper->addFd(client_channel->getReceivePipeFd(),
+    // input_consumer.initialize();
+    parent->looper->addFd(client_channel->getFd(), //client_channel->getReceivePipeFd(),
                           0,
                           ALOOPER_EVENT_INPUT,
                           looper_callback,

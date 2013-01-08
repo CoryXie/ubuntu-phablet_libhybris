@@ -24,6 +24,7 @@
 #include <input/InputReader.h>
 #include <input/PointerController.h>
 #include <input/SpriteController.h>
+#include <gui/ISurfaceComposer.h>
 #include <gui/SurfaceComposerClient.h>
 #include "log.h"
 
@@ -84,8 +85,8 @@ public:
 class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInterface
 {
 public:
-    static const android::DisplayID internal_display_id = 0;
-    static const android::DisplayID external_display_id = 1;
+    static const int32_t internal_display_id = android::ISurfaceComposer::eDisplayIdMain;
+    static const int32_t external_display_id = android::ISurfaceComposer::eDisplayIdHdmi;
 
     DefaultInputReaderPolicyInterface(const android::sp<android::Looper>& looper)
         : looper(looper),
@@ -93,26 +94,20 @@ public:
     {
         default_configuration.showTouches = false;
 
+        auto display = android::SurfaceComposerClient::getBuiltInDisplay(
+            android::ISurfaceComposer::eDisplayIdMain);
         android::DisplayInfo info;
         android::SurfaceComposerClient::getDisplayInfo(
-            internal_display_id,
+            display,
             &info);
 
+        android::DisplayViewport viewport;
+        viewport.setNonDisplayViewport(info.w, info.h);
+        viewport.displayId = android::ISurfaceComposer::eDisplayIdMain;
         default_configuration.setDisplayInfo(
-            internal_display_id,
             false, /* external */
-            info.w,
-            info.h,
-            info.orientation);
+            viewport);
 
-        /*android::SurfaceComposerClient::getDisplayInfo(
-          external_display_id,
-          &default_configuration.mExternalDisplay);
-
-          default_configuration.mInternalDisplay.width = info.width;
-          default_configuration.mInternalDisplay.height = info.height;
-          default_configuratoin.mInternalDisplay.orientation = info.orientation;
-        */
     }
 
     void getReaderConfiguration(android::InputReaderConfiguration* outConfig)
@@ -136,12 +131,14 @@ public:
         pointer_controller->setPresentation(
             android::PointerControllerInterface::PRESENTATION_SPOT);
         int32_t w, h, o;
-        default_configuration.getDisplayInfo(internal_display_id,
-                                             false,
-                                             &w,
-                                             &h,
-                                             &o);
-        pointer_controller->setDisplaySize(w, h);
+        auto display = android::SurfaceComposerClient::getBuiltInDisplay(
+            android::ISurfaceComposer::eDisplayIdMain);
+        android::DisplayInfo info;
+        android::SurfaceComposerClient::getDisplayInfo(
+            display,
+            &info);
+
+        pointer_controller->setDisplayViewport(info.w, info.h, info.orientation);
         return pointer_controller;
     }
 
@@ -214,7 +211,7 @@ public:
     {
         REPORT_FUNCTION_CALL();
         static InputDispatcherConfiguration config;
-        config.maxEventsPerSecond = INT_MAX;
+        //config.maxEventsPerSecond = INT_MAX;
         *outConfig = config;
     }
 
@@ -276,8 +273,8 @@ public:
 
     virtual void notifySwitch(
         nsecs_t when,
-        int32_t switchCode,
-        int32_t switchValue,
+        uint32_t switchCode,
+        uint32_t switchValue,
         uint32_t policyFlags)
     {
         REPORT_FUNCTION_CALL();
