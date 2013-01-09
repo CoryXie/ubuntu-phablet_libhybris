@@ -181,20 +181,24 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
         UbuntuSurface* s = static_cast<UbuntuSurface*>(ctxt);
         InputEvent* ev;
 
-        switch(s->input_consumer.consume(&s->event_factory, -1, true, &consumeSeq, &ev))
+        android::status_t status;
+        while((status = s->input_consumer.consume(&s->event_factory, -1, true, &consumeSeq, &ev)) != android::WOULD_BLOCK)
         {
-        case OK:
-            result = true;
-            //printf("We have a client side event for process %d. \n", getpid());
-            s->translate_and_dispatch_event(ev);
-            s->input_consumer.sendFinishedSignal(consumeSeq, result);
-            break;
-        case INVALID_OPERATION:
-            result = true;
-            break;
-        case NO_MEMORY:
-            result = true;
-            break;
+            switch(status)
+            {
+                case OK:
+                    result = true;
+                    //printf("We have a client side event for process %d. \n", getpid());
+                    s->translate_and_dispatch_event(ev);
+                    s->input_consumer.sendFinishedSignal(consumeSeq, result);
+                    break;
+                case INVALID_OPERATION:
+                    result = true;
+                    break;
+                case NO_MEMORY:
+                    result = true;
+                    break;
+            }
         }
 
         return result ? 1 : 0;
