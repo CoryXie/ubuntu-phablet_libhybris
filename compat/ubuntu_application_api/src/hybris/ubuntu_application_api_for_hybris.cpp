@@ -182,7 +182,7 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
         InputEvent* ev;
 
         android::status_t status;
-        while((status = s->input_consumer.consume(&s->event_factory, -1, true, &consumeSeq, &ev)) != android::WOULD_BLOCK)
+        while((status = s->input_consumer.consume(&s->event_factory, true, -1, &consumeSeq, &ev)) != android::WOULD_BLOCK)
         {
             switch(status)
             {
