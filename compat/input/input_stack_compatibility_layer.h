@@ -52,8 +52,8 @@ extern "C" {
             {
                 nsecs_t event_time;
                 uint32_t policy_flags;
-                int32_t switch_code;
-                int32_t switch_value;
+                int32_t switch_values;
+                int32_t switch_mask;
             } hw_switch;
             struct KeyEvent
             {

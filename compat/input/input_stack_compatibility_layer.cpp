@@ -21,10 +21,11 @@
 #include "InputReader.h"
 #include "PointerController.h"
 #include "SpriteController.h"
-#include <surfaceflinger/SurfaceComposerClient.h>
+#include <gui/ISurfaceComposer.h>
+#include <gui/SurfaceComposerClient.h>
+#include "log.h"
 
 #define LOG_TAG "InputStackCompatibilityLayer"
-#include <utils/Log.h>
 
 namespace
 {
@@ -87,8 +88,8 @@ public:
 class DefaultInputReaderPolicyInterface : public android::InputReaderPolicyInterface
 {
 public:
-    static const android::DisplayID internal_display_id = 0;
-    static const android::DisplayID external_display_id = 1;
+    static const int32_t internal_display_id = android::ISurfaceComposer::eDisplayIdMain;
+    static const int32_t external_display_id = android::ISurfaceComposer::eDisplayIdHdmi;
 
     DefaultInputReaderPolicyInterface(
         InputStackConfiguration* configuration,
@@ -98,26 +99,20 @@ public:
     {
         default_configuration.showTouches = configuration->enable_touch_point_visualization;
 
+        auto display = android::SurfaceComposerClient::getBuiltInDisplay(
+            android::ISurfaceComposer::eDisplayIdMain);
         android::DisplayInfo info;
         android::SurfaceComposerClient::getDisplayInfo(
-            internal_display_id,
+            display,
             &info);
 
+        android::DisplayViewport viewport;
+        viewport.setNonDisplayViewport(info.w, info.h);
+        viewport.displayId = android::ISurfaceComposer::eDisplayIdMain;
         default_configuration.setDisplayInfo(
-            internal_display_id,
             false, /* external */
-            info.w,
-            info.h,
-            info.orientation);
+            viewport);
 
-        /*android::SurfaceComposerClient::getDisplayInfo(
-            external_display_id,
-            &default_configuration.mExternalDisplay);
-
-        default_configuration.mInternalDisplay.width = info.width;
-        default_configuration.mInternalDisplay.height = info.height;
-        default_configuratoin.mInternalDisplay.orientation = info.orientation;
-        */
     }
 
     void getReaderConfiguration(android::InputReaderConfiguration* outConfig)
@@ -141,18 +136,33 @@ public:
         pointer_controller->setPresentation(
             android::PointerControllerInterface::PRESENTATION_SPOT);
         int32_t w, h, o;
-        default_configuration.getDisplayInfo(internal_display_id,
-                                             false,
-                                             &w,
-                                             &h,
-                                             &o);
-        pointer_controller->setDisplaySize(w, h);
+        auto display = android::SurfaceComposerClient::getBuiltInDisplay(
+            android::ISurfaceComposer::eDisplayIdMain);
+        android::DisplayInfo info;
+        android::SurfaceComposerClient::getDisplayInfo(
+            display,
+            &info);
+
+        pointer_controller->setDisplayViewport(info.w, info.h, info.orientation);
         return pointer_controller;
+    }
+
+    virtual void notifyInputDevicesChanged(const android::Vector<android::InputDeviceInfo>& inputDevices) {
+        mInputDevices = inputDevices;
+    }
+
+    virtual android::sp<android::KeyCharacterMap> getKeyboardLayoutOverlay(const android::String8& inputDeviceDescriptor) {
+        return NULL;
+    }
+
+    virtual android::String8 getDeviceAlias(const android::InputDeviceIdentifier& identifier) {
+        return android::String8::empty();
     }
 private:
     android::sp<android::Looper> looper;
     int default_layer_for_touch_point_visualization;
     android::InputReaderConfiguration default_configuration;
+    android::Vector<android::InputDeviceInfo> mInputDevices;
 };
 
 class ExportedInputListener : public android::InputListenerInterface
@@ -241,8 +251,8 @@ public:
 
         current_event.details.hw_switch.event_time = args->eventTime;
         current_event.details.hw_switch.policy_flags = args->policyFlags;
-        current_event.details.hw_switch.switch_code = args->switchCode;
-        current_event.details.hw_switch.switch_value = args->switchValue;
+        current_event.details.hw_switch.switch_values = args->switchValues;
+        current_event.details.hw_switch.switch_mask = args->switchMask;
 
         external_listener->on_new_event(&current_event, external_listener->context);
     }
