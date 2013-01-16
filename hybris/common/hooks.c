@@ -11,6 +11,9 @@
 #include <pthread.h>
 #include <signal.h>
 #include <errno.h>
+#include <dirent.h>
+#include <sys/types.h>
+
 
 /* TODO:
 *  - Check if the int arguments at attr_set/get match the ones at Android
@@ -738,7 +741,11 @@ static struct _hook hooks[] = {
     {"rindex",rindex}, 
     {"strcasecmp",strcasecmp}, 
     {"strncasecmp",strncasecmp},
+    /* dirent.h */
+    {"opendir", opendir},
+    {"closedir", closedir},
     /* pthread.h */
+    {"pthread_atfork", pthread_atfork},
     {"pthread_create", my_pthread_create},
     {"pthread_kill", pthread_kill},
     {"pthread_exit", pthread_exit},
