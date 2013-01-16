@@ -54,12 +54,23 @@ struct ApplicationManager :
 
     struct ShellInputSetup : public android::RefBase
     {
+        struct DisplayInfo
+        {
+            DisplayInfo();
+
+            android::DisplayInfo info;
+        };
+
         template<int x, int y, int w, int h>
         struct Window : public android::RefBase
         {
             static int looper_callback(int receiveFd, int events, void* ctxt);
 
-            Window(ShellInputSetup* parent);
+            Window(ShellInputSetup* parent, 
+                   int _x = x,
+                   int _y = y,
+                   int _w = w,
+                   int _h = h);
             
             android::sp<android::InputWindowHandle> input_window;
             
@@ -74,6 +85,8 @@ struct ApplicationManager :
 
         bool shell_has_focus;
     
+        DisplayInfo display_info;
+        
         android::sp<android::InputManager> input_manager;
         android::sp<android::InputApplicationHandle> shell_application;
         

@@ -87,9 +87,12 @@ int ApplicationManager::ShellInputSetup::Window<x, y, w, h>::looper_callback(int
 
 template<int x, int y, int w, int h>
 ApplicationManager::ShellInputSetup::Window<x, y, w, h>::Window(
-    ApplicationManager::ShellInputSetup* parent) :
-        parent(parent),
-        input_consumer(client_channel)
+    ApplicationManager::ShellInputSetup* parent,
+    int _x,
+    int _y,
+    int _w,
+    int _h) : parent(parent),
+              input_consumer(client_channel)
 {
     auto window = new android::InputSetup::DummyApplicationWindow(
         parent->shell_application,
@@ -119,13 +122,23 @@ ApplicationManager::ShellInputSetup::Window<x, y, w, h>::Window(
                           this);
 }
 
+ApplicationManager::ShellInputSetup::DisplayInfo::DisplayInfo()
+{
+    auto display = android::SurfaceComposerClient::getBuiltInDisplay(
+        android::ISurfaceComposer::eDisplayIdMain);
+    
+    android::SurfaceComposerClient::getDisplayInfo(
+        display,
+        &info);
+}
+
 ApplicationManager::ShellInputSetup::ShellInputSetup(const android::sp<android::InputManager>& input_manager)
-        : shell_has_focus(true), 
+        : shell_has_focus(true),
           input_manager(input_manager),
           shell_application(new android::InputSetup::DummyApplication()),
           looper(new android::Looper(true)),
           event_loop(looper),
-          event_trap_window(this),
+          event_trap_window(this, 0, 0, display_info.info.w, display_info.info.h),
           osk_window(this),
           notifications_window(this)
 {
