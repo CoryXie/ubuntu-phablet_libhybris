@@ -1,5 +1,7 @@
 #define MESA_EGL_NO_X11_HEADERS
+#define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 #include <dlfcn.h>
 #include <stddef.h>
 
@@ -153,6 +155,7 @@ static void         (*_glVertexAttrib4f)(GLuint indx, GLfloat x, GLfloat y, GLfl
 static void         (*_glVertexAttrib4fv)(GLuint indx, const GLfloat* values) = NULL;
 static void         (*_glVertexAttribPointer)(GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid* ptr) = NULL;
 static void         (*_glViewport)(GLint x, GLint y, GLsizei width, GLsizei height) = NULL;
+static void         (*_glEGLImageTargetTexture2DOES) (GLenum target, GLeglImageOES image) = NULL;
 
 static void _init_androidglesv2()
 {
@@ -1031,6 +1034,11 @@ void         glViewport (GLint x, GLint y, GLsizei width, GLsizei height)
  return (*_glViewport)(x, y, width, height);
 }
 
+void         glEGLImageTargetTexture2DOES (GLenum target, GLeglImageOES image)
+{
+ GLES2_DLSYM(glEGLImageTargetTexture2DOES);
+ (*_glEGLImageTargetTexture2DOES)(target, image);
+}
 
 
 

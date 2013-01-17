@@ -14,6 +14,7 @@
 #include <dirent.h>
 #include <sys/types.h>
 
+#include <netdb.h>
 
 /* TODO:
 *  - Check if the int arguments at attr_set/get match the ones at Android
@@ -819,11 +820,18 @@ static struct _hook hooks[] = {
     {"fopen", fopen},
     {"fgets", fgets},
     {"fclose", fclose},
+    {"fseeko", fseeko},
     {"sprintf", sprintf},
     {"snprintf", snprintf},
     {"vsprintf", vsprintf},
     {"__errno", __errno_location},
     {"__set_errno", my_set_errno},
+    /* net specifics, to avoid __res_get_state */
+    {"getaddrinfo", getaddrinfo},
+    {"gethostbyaddr", gethostbyaddr},
+    {"gethostbyname", gethostbyname},
+    {"gethostbyname2", gethostbyname2},
+    {"gethostent", gethostent},
     {NULL, NULL},
 };
 

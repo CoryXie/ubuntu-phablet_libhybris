@@ -1,6 +1,9 @@
 #define MESA_EGL_NO_X11_HEADERS
 /* EGL function pointers */
+#define EGL_EGLEXT_PROTOTYPES
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
+
 #include <dlfcn.h>
 #include <stddef.h>
 
@@ -76,6 +79,9 @@ static EGLBoolean  (*_eglCopyBuffers)(EGLDisplay dpy, EGLSurface surface,
 
 static __eglMustCastToProperFunctionPointerType (*_eglGetProcAddress)(const char *procname);
 
+static EGLImageKHR (*_eglCreateImageKHR) (EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, const EGLint *attrib_list) = NULL;
+static EGLBoolean (*_eglDestroyImageKHR) (EGLDisplay dpy, EGLImageKHR image) = NULL;
+
 static void * (*_androidCreateDisplaySurface)();
 
 static void _init_androidegl()
@@ -150,17 +156,17 @@ EGLBoolean eglGetConfigAttrib(EGLDisplay dpy, EGLConfig config,
 			      attribute, value);
 }
 
+EGLNativeWindowType android_createDisplaySurface()
+{
+ UI_DLSYM(&_androidCreateDisplaySurface, "android_createDisplaySurface");
+ return (*_androidCreateDisplaySurface)();
+}
 
 EGLSurface eglCreateWindowSurface(EGLDisplay dpy, EGLConfig config,
 				  EGLNativeWindowType win,
 				  const EGLint *attrib_list)
 {
  EGL_DLSYM(&_eglCreateWindowSurface, "eglCreateWindowSurface");
- if (win == 0)
- {
-   UI_DLSYM(&_androidCreateDisplaySurface, "android_createDisplaySurface");
-   win = (EGLNativeWindowType) (*_androidCreateDisplaySurface)();
- } 
  return (*_eglCreateWindowSurface)(dpy, config,
 				  win,
 				  attrib_list);
@@ -341,4 +347,18 @@ __eglMustCastToProperFunctionPointerType eglGetProcAddress(const char *procname)
 {
  EGL_DLSYM(&_eglGetProcAddress, "eglGetProcAddress");
  return (*_eglGetProcAddress)(procname);
+}
+
+EGLImageKHR eglCreateImageKHR(EGLDisplay dpy, EGLContext ctx,
+                              EGLenum target, EGLClientBuffer buffer,
+                              const EGLint *attrib_list) 
+{
+ EGL_DLSYM(&_eglCreateImageKHR, "eglCreateImageKHR");
+ return (*_eglCreateImageKHR)(dpy, ctx, target, buffer, attrib_list);
+}
+
+EGLBoolean eglDestroyImageKHR(EGLDisplay dpy, EGLImageKHR image)
+{
+ EGL_DLSYM(&_eglDestroyImageKHR, "eglDestroyImageKHR");
+ return (*_eglDestroyImageKHR)(dpy, image);
 }
