@@ -813,6 +813,7 @@ static struct _hook hooks[] = {
     {"fopen", fopen},
     {"fgets", fgets},
     {"fclose", fclose},
+    {"fseeko", fseeko},
     {"sprintf", sprintf},
     {"snprintf", snprintf},
     {"vsprintf", vsprintf},
