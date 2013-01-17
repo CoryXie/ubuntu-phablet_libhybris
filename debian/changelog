@@ -1,3 +1,9 @@
+libhybris (0.48) UNRELEASED; urgency=low
+
+  * Added hook for fseeko function.
+
+ -- Daniel d'Andrada <daniel.dandrada@canonical.com>  Thu, 17 Jan 2013 10:54:53 -0200
+
 libhybris (0.47) quantal; urgency=low
 
   * Fix predicate when updating input configuration if osk/notifications visibility changes.
