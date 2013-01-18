@@ -18,7 +18,6 @@
 #include "application_manager.h"
 #include "event_loop.h"
 #include "input_consumer_thread.h"
-#include "log.h"
 
 #include <ubuntu/application/ui/init.h>
 #include <ubuntu/application/ui/session.h>
@@ -315,17 +314,17 @@ struct UbuntuSurface : public ubuntu::application::ui::Surface
 
     void set_visible(bool visible)
     {
-        LOGI("%s: %s", __PRETTY_FUNCTION__, visible ? "true" : "false");
+        ALOGI("%s: %s", __PRETTY_FUNCTION__, visible ? "true" : "false");
         if (visible)
         {
             client->openGlobalTransaction();
-            LOGI("surface_control->show(INT_MAX): %d", surface_control->show());
+            ALOGI("surface_control->show(INT_MAX): %d", surface_control->show());
             client->closeGlobalTransaction();
         }
         else
         {
             client->openGlobalTransaction();
-            LOGI("surface_control->hide(): %d", surface_control->hide());
+            ALOGI("surface_control->hide(): %d", surface_control->hide());
             client->closeGlobalTransaction();
         }
 
@@ -384,30 +383,30 @@ struct Session : public ubuntu::application::ui::Session, public UbuntuSurface::
         // From IApplicationManagerSession
         void raise_application_surfaces_to_layer(int layer)
         {
-            LOGI("%s: %d \n", __PRETTY_FUNCTION__, layer);
+            ALOGI("%s: %d \n", __PRETTY_FUNCTION__, layer);
             parent->raise_application_surfaces_to_layer(layer);
         }
 
         void raise_surface_to_layer(int32_t token, int layer)
         {
-            LOGI("Enter %s (%d): %d, %d", __PRETTY_FUNCTION__, getpid(), token, layer);
+            ALOGI("Enter %s (%d): %d, %d", __PRETTY_FUNCTION__, getpid(), token, layer);
 
             auto surface = parent->surfaces.valueFor(token);
             if (surface != NULL)
             {
-                LOGI("\tFound surface for token: %d", token);
+                ALOGI("\tFound surface for token: %d", token);
                 surface->set_layer(layer);
             } else
             {
-                LOGI("\tFound NO surface for token: %d", token);
+                ALOGI("\tFound NO surface for token: %d", token);
             }
             
-            LOGI("Leave %s (%d): %d, %d", __PRETTY_FUNCTION__, getpid(), token, layer);
+            ALOGI("Leave %s (%d): %d, %d", __PRETTY_FUNCTION__, getpid(), token, layer);
         }
 
         SurfaceProperties query_surface_properties_for_token(int32_t token)
         {
-            LOGI("%s: %d \n", __PRETTY_FUNCTION__, token);
+            ALOGI("%s: %d \n", __PRETTY_FUNCTION__, token);
             return parent->surfaces.valueFor(token)->properties;
         }
 
@@ -516,11 +515,11 @@ struct Session : public ubuntu::application::ui::Session, public UbuntuSurface::
     void raise_application_surfaces_to_layer(int layer)
     {
         Mutex::Autolock al(surfaces_guard);
-        LOGI("%s: %d\n", __PRETTY_FUNCTION__, layer);
+        ALOGI("%s: %d\n", __PRETTY_FUNCTION__, layer);
         for(size_t i = 0; i < surfaces.size(); i++)
         {
             surfaces.valueAt(i)->set_layer(layer+i);
-            LOGI("\tLayer: %d\n", layer+i);
+            ALOGI("\tLayer: %d\n", layer+i);
         }
     }
 
@@ -683,7 +682,7 @@ struct SessionService : public ubuntu::ui::SessionService
 
     void unfocus_running_sessions()
     {
-        LOGI("%s", __PRETTY_FUNCTION__);
+        ALOGI("%s", __PRETTY_FUNCTION__);
         access_application_manager()->unfocus_running_sessions();
     }
 
@@ -725,25 +724,25 @@ struct SessionService : public ubuntu::ui::SessionService
 
     void report_osk_visible()
     {
-        LOGI("%s", __PRETTY_FUNCTION__);
+        ALOGI("%s", __PRETTY_FUNCTION__);
         access_application_manager()->report_osk_visible();
     }
     
     void report_osk_invisible()
     {
-        LOGI("%s", __PRETTY_FUNCTION__);
+        ALOGI("%s", __PRETTY_FUNCTION__);
         access_application_manager()->report_osk_invisible();
     }
 
     void report_notification_visible()
     {
-        LOGI("%s", __PRETTY_FUNCTION__);
+        ALOGI("%s", __PRETTY_FUNCTION__);
         access_application_manager()->report_notification_visible();
     }
     
     void report_notification_invisible()
     {
-        LOGI("%s", __PRETTY_FUNCTION__);
+        ALOGI("%s", __PRETTY_FUNCTION__);
         access_application_manager()->report_notification_invisible();
     }
 

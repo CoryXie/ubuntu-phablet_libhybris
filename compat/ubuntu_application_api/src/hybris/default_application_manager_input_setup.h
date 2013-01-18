@@ -26,7 +26,6 @@
 #include <input/SpriteController.h>
 #include <gui/ISurfaceComposer.h>
 #include <gui/SurfaceComposerClient.h>
-#include "log.h"
 
 #include <cstdio>
 
@@ -331,7 +330,7 @@ struct InputSetup : public android::RefBase
     {
         bool updateInfo()
         {
-            LOGI("%s", __PRETTY_FUNCTION__);
+            ALOGI("%s", __PRETTY_FUNCTION__);
             if (mInfo == NULL)
             {
                 mInfo = new android::InputApplicationInfo();
@@ -361,7 +360,7 @@ struct InputSetup : public android::RefBase
         
         bool updateInfo()
         {
-            LOGI("%s", __PRETTY_FUNCTION__);
+            ALOGI("%s", __PRETTY_FUNCTION__);
             if (mInfo == NULL)
             {
                 mInfo = new android::InputWindowInfo();
