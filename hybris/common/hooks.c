@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <sys/types.h>
+#include <sys/xattr.h>
 
 
 /* TODO:
@@ -691,6 +692,8 @@ static struct _hook hooks[] = {
     {"memalign", memalign },
     {"valloc", valloc },
     {"pvalloc", pvalloc },
+    {"fread", fread },
+    {"getxattr", getxattr},
     /* string.h */
     {"memccpy",memccpy}, 
     {"memchr",memchr}, 
@@ -822,6 +825,7 @@ static struct _hook hooks[] = {
     {"sprintf", sprintf},
     {"snprintf", snprintf},
     {"vsprintf", vsprintf},
+    {"vsnprintf", vsnprintf},
     {"__errno", __errno_location},
     {"__set_errno", my_set_errno},
     {NULL, NULL},
