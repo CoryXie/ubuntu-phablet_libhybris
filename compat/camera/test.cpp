@@ -207,7 +207,7 @@ ClientWithSurface client_with_surface(bool setup_surface_with_egl)
         return cs;
     }
 
-    static const int32_t primary_display = android::ISurfaceComposer::eDisplayIdMain;
+    static const size_t primary_display = 0;
 
     SfSurfaceCreationParameters params =
     {

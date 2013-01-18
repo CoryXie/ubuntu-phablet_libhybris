@@ -22,6 +22,7 @@
 #include <utils/misc.h>
 
 #include <gui/SurfaceComposerClient.h>
+#include <gui/ISurfaceComposer.h>
 #include <ui/DisplayInfo.h>
 #include <ui/PixelFormat.h>
 #include <ui/Region.h>
@@ -64,15 +65,41 @@ void report_surface_is_null_during_creation()
 
 }
 
-size_t sf_get_display_width(const android::sp<android::IBinder>& display)
+size_t sf_get_display_width(size_t display_id)
 {
+    android::sp<android::IBinder> display;
+
+    if (display_id == 0) {
+        display = android::SurfaceComposerClient::getBuiltInDisplay(
+                    android::ISurfaceComposer::eDisplayIdMain);
+    } else if (display_id == 1) {
+        display = android::SurfaceComposerClient::getBuiltInDisplay(
+                    android::ISurfaceComposer::eDisplayIdHdmi);
+    } else {
+        fprintf(stderr, "Warning: sf_get_display_width invalid display_id (0 || 1)\n");
+        return -1;
+    }
+
     android::DisplayInfo info;
     android::SurfaceComposerClient::getDisplayInfo(display, &info);
     return info.w;
 }
 
-size_t sf_get_display_height(const android::sp<android::IBinder>& display)
+size_t sf_get_display_height(size_t display_id)
 {
+    android::sp<android::IBinder> display;
+
+    if (display_id == 0) {
+        display = android::SurfaceComposerClient::getBuiltInDisplay(
+                    android::ISurfaceComposer::eDisplayIdMain);
+    } else if (display_id == 1) {
+        display = android::SurfaceComposerClient::getBuiltInDisplay(
+                    android::ISurfaceComposer::eDisplayIdHdmi);
+    } else {
+        fprintf(stderr, "Warning: sf_get_display_height invalid display_id (0 || 1)\n");
+        return -1;
+    }
+
     android::DisplayInfo info;
     android::SurfaceComposerClient::getDisplayInfo(display, &info);
     return info.h;
