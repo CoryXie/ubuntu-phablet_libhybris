@@ -64,17 +64,17 @@ void report_surface_is_null_during_creation()
 
 }
 
-size_t sf_get_display_width(size_t display_id)
+size_t sf_get_display_width(const android::sp<android::IBinder>& display)
 {
     android::DisplayInfo info;
-    android::SurfaceComposerClient::getDisplayInfo(display_id, &info);
+    android::SurfaceComposerClient::getDisplayInfo(display, &info);
     return info.w;
 }
 
-size_t sf_get_display_height(size_t display_id)
+size_t sf_get_display_height(const android::sp<android::IBinder>& display)
 {
     android::DisplayInfo info;
-    android::SurfaceComposerClient::getDisplayInfo(display_id, &info);
+    android::SurfaceComposerClient::getDisplayInfo(display, &info);
     return info.h;
 }
 

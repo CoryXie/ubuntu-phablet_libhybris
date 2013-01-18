@@ -19,6 +19,8 @@
 #ifndef SURFACE_FLINGER_COMPATIBILITY_LAYER_H_
 #define SURFACE_FLINGER_COMPATIBILITY_LAYER_H_
 
+#include <binder/IBinder.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,8 +38,8 @@ extern "C" {
         SURFACE_FLINGER_DEFAULT_DISPLAY_ID = 0
     };
 
-    size_t sf_get_display_width(size_t display_id);
-    size_t sf_get_display_height(size_t display_id);
+    size_t sf_get_display_width(const android::sp<android::IBinder>& display);
+    size_t sf_get_display_height(const android::sp<android::IBinder>& display);
 
     // The egl_support parameter disables the use of EGL inside the
     // library. sf_client_create() enables the use of EGL by default. When
