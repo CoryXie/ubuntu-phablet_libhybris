@@ -478,10 +478,13 @@ void android_camera_set_preview_texture(CameraControl* control, int texture_id)
     assert(control);
 
     static const bool allow_synchronous_mode = false;
-    control->preview_texture = android::sp<android::SurfaceTexture>(
-                                   new android::SurfaceTexture(
-                                       texture_id,
-                                       allow_synchronous_mode));
+   
+    if (control->preview_texture == NULL) {
+        control->preview_texture = android::sp<android::SurfaceTexture>(
+                                        new android::SurfaceTexture(
+                                            texture_id,
+                                            allow_synchronous_mode));
+    }
 
     control->preview_texture->setFrameAvailableListener(
         android::sp<android::SurfaceTexture::FrameAvailableListener>(control));
@@ -513,6 +516,10 @@ void android_camera_stop_preview(CameraControl* control)
     assert(control);
 
     android::Mutex::Autolock al(control->guard);
+
+    if (control->preview_texture != NULL)
+        control->preview_texture->abandon();
+
     control->camera->stopPreview();
 }
 
