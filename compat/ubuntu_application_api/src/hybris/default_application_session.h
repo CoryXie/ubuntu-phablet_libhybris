@@ -121,7 +121,7 @@ struct ApplicationSession : public android::RefBase
             }
             
             android::IApplicationManagerSession::SurfaceProperties props = surface->query_properties();
-            LOGI("%s: touchable_region = (%d, %d, %d, %d)", 
+            ALOGI("%s: touchable_region = (%d, %d, %d, %d)", 
                  __PRETTY_FUNCTION__,
                  props.left, 
                  props.top, 

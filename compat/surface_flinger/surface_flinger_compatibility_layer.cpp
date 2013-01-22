@@ -21,7 +21,9 @@
 
 #include <utils/misc.h>
 
-#include <surfaceflinger/SurfaceComposerClient.h>
+#include <gui/SurfaceComposerClient.h>
+#include <gui/ISurfaceComposer.h>
+#include <ui/DisplayInfo.h>
 #include <ui/PixelFormat.h>
 #include <ui/Region.h>
 #include <ui/Rect.h>
@@ -63,19 +65,44 @@ void report_surface_is_null_during_creation()
 
 }
 
-size_t sf_get_number_of_displays()
-{
-    return android::SurfaceComposerClient::getNumberOfDisplays();
-}
-
 size_t sf_get_display_width(size_t display_id)
 {
-    return android::SurfaceComposerClient::getDisplayWidth(display_id);
+    android::sp<android::IBinder> display;
+
+    if (display_id == 0) {
+        display = android::SurfaceComposerClient::getBuiltInDisplay(
+                    android::ISurfaceComposer::eDisplayIdMain);
+    } else if (display_id == 1) {
+        display = android::SurfaceComposerClient::getBuiltInDisplay(
+                    android::ISurfaceComposer::eDisplayIdHdmi);
+    } else {
+        fprintf(stderr, "Warning: sf_get_display_width invalid display_id (0 || 1)\n");
+        return -1;
+    }
+
+    android::DisplayInfo info;
+    android::SurfaceComposerClient::getDisplayInfo(display, &info);
+    return info.w;
 }
 
 size_t sf_get_display_height(size_t display_id)
 {
-    return android::SurfaceComposerClient::getDisplayHeight(display_id);
+    android::sp<android::IBinder> display;
+
+    if (display_id == 0) {
+        display = android::SurfaceComposerClient::getBuiltInDisplay(
+                    android::ISurfaceComposer::eDisplayIdMain);
+    } else if (display_id == 1) {
+        display = android::SurfaceComposerClient::getBuiltInDisplay(
+                    android::ISurfaceComposer::eDisplayIdHdmi);
+    } else {
+        fprintf(stderr, "Warning: sf_get_display_height invalid display_id (0 || 1)\n");
+        return -1;
+    }
+
+    android::DisplayInfo info;
+    android::SurfaceComposerClient::getDisplayInfo(display, &info);
+    return info.h;
 }
 
 SfClient* sf_client_create_full(bool egl_support)
@@ -201,7 +228,6 @@ SfSurface* sf_surface_create(SfClient* client, SfSurfaceCreationParameters* para
     surface->client = client;
     surface->surface_control = surface->client->client->createSurface(
                                    android::String8(params->name),
-                                   0,
                                    params->w,
                                    params->h,
                                    android::PIXEL_FORMAT_RGBA_8888,

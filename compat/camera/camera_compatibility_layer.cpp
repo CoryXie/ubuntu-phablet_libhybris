@@ -26,12 +26,13 @@
 #include <camera/CameraParameters.h>
 #include <gui/SurfaceTexture.h>
 
+#undef LOG_TAG
 #define LOG_TAG "CameraCompatibilityLayer"
 #include <utils/KeyedVector.h>
 #include <utils/Log.h>
 
 
-#define REPORT_FUNCTION() LOGV("%s \n", __PRETTY_FUNCTION__);
+#define REPORT_FUNCTION() ALOGV("%s \n", __PRETTY_FUNCTION__);
 
 struct CameraControl : public android::CameraListener,
     public android::SurfaceTexture::FrameAvailableListener
@@ -477,14 +478,17 @@ void android_camera_set_preview_texture(CameraControl* control, int texture_id)
     assert(control);
 
     static const bool allow_synchronous_mode = false;
-    control->preview_texture = android::sp<android::SurfaceTexture>(
-                                   new android::SurfaceTexture(
-                                       texture_id,
-                                       allow_synchronous_mode));
+   
+    if (control->preview_texture == NULL) {
+        control->preview_texture = android::sp<android::SurfaceTexture>(
+                                        new android::SurfaceTexture(
+                                            texture_id,
+                                            allow_synchronous_mode));
+    }
 
     control->preview_texture->setFrameAvailableListener(
         android::sp<android::SurfaceTexture::FrameAvailableListener>(control));
-    control->camera->setPreviewTexture(control->preview_texture);
+    control->camera->setPreviewTexture(control->preview_texture->getBufferQueue());
 }
 
 void android_camera_set_preview_surface(CameraControl* control, SfSurface* surface)
@@ -512,6 +516,10 @@ void android_camera_stop_preview(CameraControl* control)
     assert(control);
 
     android::Mutex::Autolock al(control->guard);
+
+    if (control->preview_texture != NULL)
+        control->preview_texture->abandon();
+
     control->camera->stopPreview();
 }
 

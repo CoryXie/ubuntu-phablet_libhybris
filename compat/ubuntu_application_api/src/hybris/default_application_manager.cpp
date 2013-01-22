@@ -15,6 +15,7 @@
  *
  * Authored by: Thomas Voß <thomas.voss@canonical.com>
  */
+#undef LOG_TAG
 #define LOG_TAG "mir::ApplicationManager"
 
 #include "default_application_manager.h"
@@ -29,7 +30,7 @@
 
 #include <input/InputListener.h>
 #include <input/InputReader.h>
-#include <ui/InputTransport.h>
+#include <androidfw/InputTransport.h>
 #include <utils/threads.h>
 
 #include <cstdio>
@@ -43,7 +44,7 @@ namespace mir
 bool is_session_allowed_to_run_in_background(
     const android::sp<mir::ApplicationSession>& session)
 {
-    LOGI("%s: %s", __PRETTY_FUNCTION__, session->desktop_file.string());
+    ALOGI("%s: %s", __PRETTY_FUNCTION__, session->desktop_file.string());
     static const android::String8 telephony_app_desktop_file("/usr/share/applications/telephony-app.desktop");
     if (session->desktop_file == telephony_app_desktop_file)
     {
@@ -56,20 +57,22 @@ bool is_session_allowed_to_run_in_background(
 template<int x, int y, int w, int h>
 int ApplicationManager::ShellInputSetup::Window<x, y, w, h>::looper_callback(int receiveFd, int events, void* ctxt)
 {
-    // LOGI("%s", __PRETTY_FUNCTION__);
+    // ALOGI("%s", __PRETTY_FUNCTION__);
 
     bool result = true;
     ApplicationManager::ShellInputSetup::Window<x, y, w, h>* window = static_cast<ApplicationManager::ShellInputSetup::Window<x, y, w, h>*>(ctxt);
+    
+    //window->input_consumer.receiveDispatchSignal();
+    uint32_t seq;
     android::InputEvent* ev;
-
-    window->input_consumer.receiveDispatchSignal();
-
-    switch(window->input_consumer.consume(&window->event_factory, &ev))
+    static const bool consume_batches = true;
+    static const nsecs_t frame_time = -1;
+    switch(window->input_consumer.consume(&window->event_factory, consume_batches, frame_time, &seq, &ev))
     {
         case android::OK:
             result = true;
             //printf("We have a client side event for process %d. \n", getpid());
-            window->input_consumer.sendFinishedSignal(result);
+            window->input_consumer.sendFinishedSignal(seq, result);
             break;
         case android::INVALID_OPERATION:
             result = true;
@@ -108,8 +111,8 @@ ApplicationManager::ShellInputSetup::Window<x, y, w, h>::Window(
         false);
 
     input_consumer = android::InputConsumer(client_channel);
-    input_consumer.initialize();
-    parent->looper->addFd(client_channel->getReceivePipeFd(),
+    // input_consumer.initialize();
+    parent->looper->addFd(client_channel->getFd(), //client_channel->getReceivePipeFd(),
                           0,
                           ALOOPER_EVENT_INPUT,
                           looper_callback,
@@ -223,7 +226,7 @@ ApplicationManager::ApplicationManager() : input_filter(new InputFilter(this)),
 // From DeathRecipient
 void ApplicationManager::binderDied(const android::wp<android::IBinder>& who)
 {
-    LOGI("%s \n", __PRETTY_FUNCTION__);
+    ALOGI("%s \n", __PRETTY_FUNCTION__);
     android::Mutex::Autolock al(guard);
     android::sp<android::IBinder> sp = who.promote();
 
@@ -281,9 +284,7 @@ void ApplicationManager::start_a_new_session(
     const android::String8& app_name,
     const android::String8& desktop_file,
     const android::sp<android::IApplicationManagerSession>& session,
-    int ashmem_fd,
-    int out_socket_fd,
-    int in_socket_fd)
+    int fd)
 {
     (void) session_type;
     android::sp<mir::ApplicationSession> app_session(
@@ -303,10 +304,10 @@ void ApplicationManager::start_a_new_session(
         switch(session_type)
         {
             case ubuntu::application::ui::user_session_type:
-                LOGI("%s: Invoked for user_session_type \n", __PRETTY_FUNCTION__);
+                ALOGI("%s: Invoked for user_session_type \n", __PRETTY_FUNCTION__);
                 break;
             case ubuntu::application::ui::system_session_type:
-                LOGI("%s: Invoked for system_session_type \n", __PRETTY_FUNCTION__);
+                ALOGI("%s: Invoked for system_session_type \n", __PRETTY_FUNCTION__);
                 break;
         }
     }
@@ -319,17 +320,13 @@ void ApplicationManager::register_a_surface(
     const android::sp<android::IApplicationManagerSession>& session,
     int32_t surface_role,
     int32_t token,
-    int ashmem_fd,
-    int out_socket_fd,
-    int in_socket_fd)
+    int fd)
 {
     android::Mutex::Autolock al(guard);
     android::sp<android::InputChannel> input_channel(
         new android::InputChannel(
             title,
-            dup(ashmem_fd),
-            dup(in_socket_fd),
-            dup(out_socket_fd)));
+            dup(fd)));
 
     android::sp<mir::ApplicationSession::Surface> surface(
         new mir::ApplicationSession::Surface(
@@ -340,7 +337,7 @@ void ApplicationManager::register_a_surface(
 
     auto registered_session = apps.valueFor(session->asBinder());
 
-    LOGI("Registering input channel as observer: %s",
+    ALOGI("Registering input channel as observer: %s",
          registered_session->session_type == ubuntu::application::ui::system_session_type ? "true" : "false");
 
     input_setup->input_manager->getDispatcher()->registerInputChannel(
@@ -352,7 +349,7 @@ void ApplicationManager::register_a_surface(
 
     if (registered_session->session_type == ubuntu::application::ui::system_session_type)
     {
-        LOGI("New surface for system session, adjusting layer now.");
+        ALOGI("New surface for system session, adjusting layer now.");
         switch(surface_role)
         {
             case ubuntu::application::ui::dash_actor_role:
@@ -392,7 +389,7 @@ void ApplicationManager::register_a_surface(
 
 void ApplicationManager::request_update_for_session(const android::sp<android::IApplicationManagerSession>& session)
 {
-    LOGI("%s", __PRETTY_FUNCTION__);
+    ALOGI("%s", __PRETTY_FUNCTION__);
     android::Mutex::Autolock al(guard);
 
     if (apps_as_added[focused_application] != session->asBinder())
@@ -469,7 +466,7 @@ void ApplicationManager::focus_running_session_with_id(int id)
 
 void ApplicationManager::unfocus_running_sessions()
 {
-    LOGI("%s", __PRETTY_FUNCTION__);
+    ALOGI("%s", __PRETTY_FUNCTION__);
     
     android::Mutex::Autolock al(guard);
 
@@ -493,13 +490,13 @@ void ApplicationManager::unfocus_running_sessions()
             // Stop the session
             if (!is_session_allowed_to_run_in_background(session))
             {
-                LOGI("\t Trying to stop ordinary app process.");
+                ALOGI("\t Trying to stop ordinary app process.");
                 if (0 != kill(session->remote_pid, SIGSTOP))
                 {
-                    LOGI("\t Problem stopping process, errno = %d.", errno);
+                    ALOGI("\t Problem stopping process, errno = %d.", errno);
                 } else
                 {
-                    LOGI("\t\t Successfully stopped process.");
+                    ALOGI("\t\t Successfully stopped process.");
                 }
             }
         }
@@ -526,7 +523,7 @@ void ApplicationManager::switch_to_well_known_application(int32_t app)
 
 void ApplicationManager::report_osk_visible()
 {
-    LOGI("%s", __PRETTY_FUNCTION__);
+    ALOGI("%s", __PRETTY_FUNCTION__);
     android::Mutex::Autolock al(guard);
     is_osk_visible = true;
 
@@ -535,7 +532,7 @@ void ApplicationManager::report_osk_visible()
 
 void ApplicationManager::report_osk_invisible()
 {
-    LOGI("%s", __PRETTY_FUNCTION__);
+    ALOGI("%s", __PRETTY_FUNCTION__);
     android::Mutex::Autolock al(guard);
     is_osk_visible = false;
 
@@ -544,7 +541,7 @@ void ApplicationManager::report_osk_invisible()
 
 void ApplicationManager::report_notification_visible()
 {
-    LOGI("%s", __PRETTY_FUNCTION__);
+    ALOGI("%s", __PRETTY_FUNCTION__);
     android::Mutex::Autolock al(guard);
     are_notifications_visible = true;
 
@@ -553,7 +550,7 @@ void ApplicationManager::report_notification_visible()
 
 void ApplicationManager::report_notification_invisible()
 {
-    LOGI("%s", __PRETTY_FUNCTION__);
+    ALOGI("%s", __PRETTY_FUNCTION__);
     android::Mutex::Autolock al(guard);
     are_notifications_visible = false;
 
@@ -580,7 +577,7 @@ void ApplicationManager::update_input_setup_locked()
             input_windows);
     } else
     {
-        LOGI("Adjusting input setup to account for change in visibility of osk/notifications");
+        ALOGI("Adjusting input setup to account for change in visibility of osk/notifications");
 
         input_setup->input_manager->getDispatcher()->setFocusedApplication(
             session->input_application_handle());
@@ -625,13 +622,13 @@ void ApplicationManager::switch_focused_application_locked(size_t index_of_next_
     {
         focused_layer += focused_layer_increment;
 
-        LOGI("Raising application now for idx: %d \n", focused_application);
+        ALOGI("Raising application now for idx: %d \n", focused_application);
         const android::sp<mir::ApplicationSession>& session =
                 apps.valueFor(apps_as_added[focused_application]);
 
         if (session->session_type == ubuntu::application::ui::system_session_type)
         {
-            LOGI("\t system session - not raising it.");
+            ALOGI("\t system session - not raising it.");
             return;
         }
 
@@ -665,7 +662,7 @@ void ApplicationManager::switch_focus_to_next_application_locked()
 {
     size_t new_idx = (focused_application + 1) % apps.size();
 
-    LOGI("current: %d, next: %d \n", focused_application, new_idx);
+    ALOGI("current: %d, next: %d \n", focused_application, new_idx);
 
     switch_focused_application_locked(new_idx);
 }

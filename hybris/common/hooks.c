@@ -11,6 +11,10 @@
 #include <pthread.h>
 #include <signal.h>
 #include <errno.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/xattr.h>
+
 #include <netdb.h>
 
 /* TODO:
@@ -689,6 +693,8 @@ static struct _hook hooks[] = {
     {"memalign", memalign },
     {"valloc", valloc },
     {"pvalloc", pvalloc },
+    {"fread", fread },
+    {"getxattr", getxattr},
     /* string.h */
     {"memccpy",memccpy}, 
     {"memchr",memchr}, 
@@ -739,7 +745,11 @@ static struct _hook hooks[] = {
     {"rindex",rindex}, 
     {"strcasecmp",strcasecmp}, 
     {"strncasecmp",strncasecmp},
+    /* dirent.h */
+    {"opendir", opendir},
+    {"closedir", closedir},
     /* pthread.h */
+    {"pthread_atfork", pthread_atfork},
     {"pthread_create", my_pthread_create},
     {"pthread_kill", pthread_kill},
     {"pthread_exit", pthread_exit},
@@ -817,6 +827,7 @@ static struct _hook hooks[] = {
     {"sprintf", sprintf},
     {"snprintf", snprintf},
     {"vsprintf", vsprintf},
+    {"vsnprintf", vsnprintf},
     {"__errno", __errno_location},
     {"__set_errno", my_set_errno},
     /* net specifics, to avoid __res_get_state */

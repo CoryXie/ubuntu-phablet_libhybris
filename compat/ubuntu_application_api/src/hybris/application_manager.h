@@ -149,17 +149,13 @@ public:
                                      const String8& app_name,
                                      const String8& desktop_file,
                                      const sp<IApplicationManagerSession>& session,
-                                     int ashmem_fd,
-                                     int out_socket_fd,
-                                     int in_socket_fd) = 0;
+                                     int fd) = 0;
 
     virtual void register_a_surface(const String8& title,
                                     const sp<IApplicationManagerSession>& session,
                                     int32_t surface_role,
                                     int32_t token,
-                                    int ashmem_fd,
-                                    int out_socket_fd,
-                                    int in_socket_fd) = 0;
+                                    int fd) = 0;
 
     virtual void request_update_for_session(const sp<IApplicationManagerSession>& session) = 0;
 
@@ -221,17 +217,13 @@ public:
                              const String8& app_name,
                              const String8& desktop_file,
                              const sp<IApplicationManagerSession>& session,
-                             int ashmem_fd,
-                             int out_socket_fd,
-                             int in_socket_fd);
+                             int fd);
 
     void register_a_surface(const String8& title,
                             const android::sp<android::IApplicationManagerSession>& session,
                             int32_t surface_role,
                             int32_t token,
-                            int ashmem_fd,
-                            int out_socket_fd,
-                            int in_socket_fd);
+                            int fd);
 
     void request_update_for_session(const sp<IApplicationManagerSession>& session);
 

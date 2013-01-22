@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 {
     android::ProcessState::self()->startThreadPool();
 
-    int test_fd = open("test.file", O_CREAT);
+    int test_fd = open("test.file", O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
 
     android::sp<ApplicationManagerObserver> observer(new ApplicationManagerObserver());
     android::sp<ApplicationManagerSession> session(new ApplicationManagerSession());
@@ -108,8 +108,6 @@ int main(int argc, char** argv)
         android::String8("default_application_manager_test"),
         android::String8("default_application_manager_test"),
         session,
-        test_fd,
-        test_fd,
         test_fd);
 
     for(;;) {}

@@ -18,7 +18,7 @@ LOCAL_MODULE := libubuntu_application_api
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := \
-	libui \
+	libandroidfw \
 	libbinder \
 	libutils \
 	libgui \
@@ -41,7 +41,7 @@ LOCAL_MODULE:= direct_ubuntu_application_api_for_hybris_test
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := \
-	libui \
+	libandroidfw \
 	libutils \
 	libEGL \
 	libGLESv2 \
@@ -63,7 +63,7 @@ LOCAL_MODULE:= direct_ubuntu_application_c_api_for_hybris_test
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := \
-	libui \
+	libandroidfw \
 	libutils \
 	libEGL \
 	libGLESv2 \
@@ -85,7 +85,7 @@ LOCAL_MODULE:= direct_ubuntu_application_session_c_api_for_hybris_test
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := \
-	libui \
+	libandroidfw \
 	libutils \
 	libEGL \
 	libGLESv2 \
@@ -107,7 +107,7 @@ LOCAL_MODULE:= direct_osk_visibility
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := \
-	libui \
+	libandroidfw \
 	libutils \
 	libEGL \
 	libGLESv2 \
@@ -129,7 +129,7 @@ LOCAL_MODULE:= direct_ubuntu_application_sensors_c_api_for_hybris_test
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := \
-	libui \
+	libandroidfw \
 	libutils \
 	libEGL \
 	libGLESv2 \
@@ -151,7 +151,7 @@ LOCAL_MODULE:= direct_ubuntu_application_sensors_for_hybris_test
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := \
-	libui \
+	libandroidfw \
 	libutils \
 	libEGL \
 	libGLESv2 \
@@ -180,7 +180,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libinput \
 	libgui \
 	libskia \
-	libui \
+	libandroidfw \
 	libutils \
 	libEGL \
 	libGLESv2 \
@@ -204,7 +204,7 @@ LOCAL_MODULE_TAGS := optional
 
 LOCAL_SHARED_LIBRARIES := \
 	libbinder \
-	libui \
+	libandroidfw \
 	libutils \
 	libEGL \
 	libGLESv2 \

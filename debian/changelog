@@ -1,8 +1,12 @@
-libhybris (0.48) UNRELEASED; urgency=low
+libhybris (0.48) quantal; urgency=low
 
+  [ Daniel d'Andrada ]
   * Added hook for fseeko function.
 
- -- Daniel d'Andrada <daniel.dandrada@canonical.com>  Thu, 17 Jan 2013 10:54:53 -0200
+  [ Ricardo Salveti de Araujo ]
+  * Rebase compat code to work with Android's JB 4.2.1
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Tue, 22 Jan 2013 16:31:06 -0200
 
 libhybris (0.47) quantal; urgency=low
 

@@ -1,6 +1,8 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
+LOCAL_CFLAGS += -std=gnu++0x
+
 LOCAL_SRC_FILES:= input_stack_compatibility_layer.cpp
 
 LOCAL_MODULE:= libis_compat_layer
@@ -12,7 +14,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libutils \
 	libskia \
 	libgui \
-	libui
+	libandroidfw
 
 LOCAL_C_INCLUDES := \
     external/skia/include/core \
@@ -21,6 +23,8 @@ LOCAL_C_INCLUDES := \
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
+
+LOCAL_CFLAGS += -std=gnu++0x
 
 LOCAL_SRC_FILES:=		\
 	android_input_stack_compatibility_layer_test.cpp
@@ -41,7 +45,7 @@ LOCAL_SHARED_LIBRARIES := \
 	libutils \
 	libskia \
 	libgui \
-	libui
+	libandroidfw
 
 static_libraries := \
     libgtest \
