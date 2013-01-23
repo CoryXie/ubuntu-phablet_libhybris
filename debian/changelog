@@ -1,3 +1,9 @@
+libhybris (0.49) quantal; urgency=low
+
+  * Added public API functions to enable/disable specific sensors.
+
+ -- Jim Hodapp <jim.hodapp@canonical.com>  Wed, 23 Jan 2013 11:52:36 -0500
+
 libhybris (0.48) quantal; urgency=low
 
   * Fix predicate when updating input configuration if osk/notifications visibility changes.
