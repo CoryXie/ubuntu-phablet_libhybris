@@ -1,6 +1,24 @@
+/*
+ * Copyright © 2013 Canonical Ltd.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 3 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Authored by: Daniel d'Andrada <daniel.dandrada@canonical.com>
+ */
 #include <ubuntu/application/ubuntu_application_gps.h>
 
 #include <ctime>
+#include <sigint.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -199,6 +217,18 @@ bool GPSTest::stop()
     return ok;
 }
 
+void wait_for_sigint()
+{
+    sigset_t signals;
+    sigemptyset(&signals);
+    sigaddset(&signals, SIGINT);
+
+    int sig;
+    int result = sigwait(&signals, &sig);
+    if (result != 0)
+        printf("sigwait failed!\n");
+}
+
 int main(int argc, char** argv)
 {
     int return_value = 0;
@@ -207,13 +237,8 @@ int main(int argc, char** argv)
     if (!test.init_and_start())
         return 1;
 
-    printf("GPS initialized and started. Now waiting for callbacks or quit signal.\n");
-    bool quit = false;
-    while (!quit)
-    {
-        sleep(2);
-        quit = access("./quit_gps_test", F_OK ) != -1;
-    }
+    printf("GPS initialized and started. Now waiting for callbacks or SIGINT (to quit).\n");
+    wait_for_sigint();
     printf("Exiting...\n");
 
     if (!test.stop())
