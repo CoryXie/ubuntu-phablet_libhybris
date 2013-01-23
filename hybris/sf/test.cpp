@@ -84,6 +84,10 @@ int main(int argc, char** argv)
     EGLSurface surface = sf_surface_get_egl_surface(sf_surface);
 
     setupGraphics();
+
+    sf_blank(0);
+    sleep(1);
+    sf_unblank(0);
   
     for(;;)
     {

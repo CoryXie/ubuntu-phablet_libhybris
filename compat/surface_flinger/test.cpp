@@ -63,6 +63,10 @@ int main(int argc, char** argv)
 
     setupGraphics();
 
+    sf_blank(0);
+    sleep(1);
+    sf_unblank(0);
+
     for(;;)
     {
         hw_render(disp, surface);
