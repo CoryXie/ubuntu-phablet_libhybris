@@ -18,7 +18,7 @@
 #include <ubuntu/application/ubuntu_application_gps.h>
 
 #include <ctime>
-#include <sigint.h>
+#include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
