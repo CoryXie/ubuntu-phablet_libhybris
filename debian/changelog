@@ -1,3 +1,9 @@
+libhybris (0.49) quantal; urgency=low
+
+  * Adding more stdio.h hooks to avoid calling __sfvwrite (malloc -> pthread)
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Wed, 23 Jan 2013 00:39:41 -0200
+
 libhybris (0.48) quantal; urgency=low
 
   [ Daniel d'Andrada ]
