@@ -95,6 +95,25 @@ enum
     UBUNTU_AGPS_TYPE_C2K = 2
 };
 
+
+enum
+{
+    /** Mode for running GPS standalone (no assistance). */
+    UBUNTU_GPS_POSITION_MODE_STANDALONE = 0,
+    /** AGPS MS-Based mode. */
+    UBUNTU_GPS_POSITION_MODE_MS_BASED = 1,
+    /** AGPS MS-Assisted mode. */
+    UBUNTU_GPS_POSITION_MODE_MS_ASSISTED = 2
+};
+
+enum
+{
+    /** Receive GPS fixes on a recurring basis at a specified period. */
+    UBUNTU_GPS_POSITION_RECURRENCE_PERIODIC = 0,
+    /** Request a single shot GPS fix. */
+    UBUNTU_GPS_POSITION_RECURRENCE_SINGLE = 1
+};
+
 enum
 {
     /** GPS requests data connection for AGPS. */
@@ -279,6 +298,9 @@ typedef void (* UbuntuAgpsStatusCallback)(UbuntuAgpsStatus* status, void* contex
  */
 typedef void (*UbuntuGpsNiNotifyCallback)(UbuntuGpsNiNotification *notification, void* context);
 
+/*
+ Callback for AGPS RIL (Radio Interface Library) set id
+*/
 typedef void (*UbuntuAgpsRilRequestSetId)(uint32_t flags, void* context);
 typedef void (*UbuntuAgpsRilRequestRefLoc)(uint32_t flags, void* context);
 
@@ -322,6 +344,14 @@ void ubuntu_gps_inject_time(UbuntuGps self, int64_t time, int64_t time_reference
 
 void ubuntu_gps_inject_location(UbuntuGps self, double latitude, double longitude, float accuracy);
 void ubuntu_gps_delete_aiding_data(UbuntuGps self, uint16_t flags);
+
+/*
+    \param mode One of the UBUNTU_GPS_POSITION_MODE_* values
+    \param recurrence One of the UBUNTU_GPS_POSITION_RECURRENCE_* values
+    \param min_interval represents the time between fixes in milliseconds.
+    \param preferred_accuracy The requested fix accuracy in meters. Can be zero.
+    \param preferred_time The requested time to first fix in milliseconds. Can be zero.
+ */
 bool ubuntu_gps_set_position_mode(UbuntuGps self, uint32_t mode, uint32_t recurrence,
                                   uint32_t min_interval, uint32_t preferred_accuracy,
                                   uint32_t preferred_time);
