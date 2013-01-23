@@ -172,11 +172,13 @@ struct SensorService : public ubuntu::application::sensors::SensorService
 {
     static int looper_callback(int receiveFd, int events, void* ctxt)
     {
+        /*
         printf("%s: %d, %d, %p \n",
                __PRETTY_FUNCTION__,
                receiveFd,
                events,
                ctxt);
+        */
 
         static const int success_and_continue = 1;
         static const int error_and_abort = 0;

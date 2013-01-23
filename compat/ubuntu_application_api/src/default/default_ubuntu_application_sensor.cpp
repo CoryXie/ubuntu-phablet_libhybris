@@ -94,7 +94,6 @@ ubuntu::application::sensors::SensorListener::Ptr proximity_listener;
 ubuntu::application::sensors::SensorListener::Ptr light_listener;
 }
 
-
 void ubuntu_sensor_install_observer(ubuntu_sensor_observer* observer)
 {
     assert(observer);
@@ -112,7 +111,7 @@ void ubuntu_sensor_install_observer(ubuntu_sensor_observer* observer)
         accelerometer->register_listener(accelerometer_listener);
         accelerometer->enable();
     }
-    
+
     if (observer->on_new_proximity_reading_cb && proximity == NULL)
     {
         proximity =
@@ -142,4 +141,51 @@ void ubuntu_sensor_install_observer(ubuntu_sensor_observer* observer)
         light->register_listener(light_listener);
         light->enable();
     }
+}
+
+void ubuntu_sensor_uninstall_observer(ubuntu_sensor_observer* observer)
+{
+    if (observer == NULL)
+        return;
+}
+
+static void sensor_set_state(ubuntu_sensor_type sensor_type, bool enable)
+{
+    switch (sensor_type)
+    {
+        case ubuntu_sensor_type_accelerometer:
+            if (accelerometer != NULL)
+                (enable) ? accelerometer->enable() : accelerometer->disable();
+            break;
+        case ubuntu_sensor_type_magnetic_field:
+            break;
+        case ubuntu_sensor_type_gyroscope:
+            break;
+        case ubuntu_sensor_type_light:
+            if (light != NULL)
+                (enable) ? light->enable() : light->disable();
+            break;
+        case ubuntu_sensor_type_proximity:
+            if (proximity != NULL)
+                (enable) ? proximity->enable() : proximity->disable();
+            break;
+        case ubuntu_sensor_type_orientation:
+            break;
+        case ubuntu_sensor_type_linear_acceleration:
+            break;
+        case ubuntu_sensor_type_rotation_vector:
+            break;
+        default:
+            return;
+    }
+}
+
+void ubuntu_sensor_enable_sensor(ubuntu_sensor_type sensor_type)
+{
+    sensor_set_state(sensor_type, true);
+}
+
+void ubuntu_sensor_disable_sensor(ubuntu_sensor_type sensor_type)
+{
+    sensor_set_state(sensor_type, false);
 }
