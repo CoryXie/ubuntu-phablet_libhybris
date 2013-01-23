@@ -1,5 +1,6 @@
 libhybris (0.48) quantal; urgency=low
 
+  * Fix predicate when updating input configuration if osk/notifications visibility changes.
   [ Daniel d'Andrada ]
   * Added hook for fseeko function.
 
