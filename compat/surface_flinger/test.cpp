@@ -63,6 +63,12 @@ int main(int argc, char** argv)
 
     setupGraphics();
 
+    printf("Turning off screen\n");
+    sf_blank(0);
+    sleep(1);
+    printf("Turning on screen\n");
+    sf_unblank(0);
+
     for(;;)
     {
         hw_render(disp, surface);

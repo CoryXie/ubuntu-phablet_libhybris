@@ -65,6 +65,42 @@ void report_surface_is_null_during_creation()
 
 }
 
+void sf_blank(size_t display_id)
+{
+    android::sp<android::IBinder> display;
+
+    if (display_id == 0) {
+        display = android::SurfaceComposerClient::getBuiltInDisplay(
+                    android::ISurfaceComposer::eDisplayIdMain);
+    } else if (display_id == 1) {
+        display = android::SurfaceComposerClient::getBuiltInDisplay(
+                    android::ISurfaceComposer::eDisplayIdHdmi);
+    } else {
+        fprintf(stderr, "Warning: sf_get_display_width invalid display_id (0 || 1)\n");
+        return;
+    }
+
+    android::SurfaceComposerClient::blankDisplay(display);
+}
+
+void sf_unblank(size_t display_id)
+{
+    android::sp<android::IBinder> display;
+
+    if (display_id == 0) {
+        display = android::SurfaceComposerClient::getBuiltInDisplay(
+                    android::ISurfaceComposer::eDisplayIdMain);
+    } else if (display_id == 1) {
+        display = android::SurfaceComposerClient::getBuiltInDisplay(
+                    android::ISurfaceComposer::eDisplayIdHdmi);
+    } else {
+        fprintf(stderr, "Warning: sf_get_display_width invalid display_id (0 || 1)\n");
+        return;
+    }
+
+    android::SurfaceComposerClient::unblankDisplay(display);
+}
+
 size_t sf_get_display_width(size_t display_id)
 {
     android::sp<android::IBinder> display;
