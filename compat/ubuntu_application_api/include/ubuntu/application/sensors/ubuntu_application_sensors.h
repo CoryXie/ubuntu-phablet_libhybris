@@ -74,6 +74,9 @@ extern "C" {
         void* context;
     } ubuntu_sensor_observer;
 
+    // Initialize and get an ubuntu_sensor_observer instance ready to be used by
+    // a client application.
+    void ubuntu_sensor_initialize_observer(ubuntu_sensor_observer* observer);
     void ubuntu_sensor_install_observer(ubuntu_sensor_observer* observer);
     void ubuntu_sensor_uninstall_observer(ubuntu_sensor_observer* observer);
 

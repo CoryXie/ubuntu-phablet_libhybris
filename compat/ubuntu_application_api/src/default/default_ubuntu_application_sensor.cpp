@@ -94,6 +94,17 @@ ubuntu::application::sensors::SensorListener::Ptr proximity_listener;
 ubuntu::application::sensors::SensorListener::Ptr light_listener;
 }
 
+void ubuntu_sensor_initialize_observer(ubuntu_sensor_observer* observer)
+{
+    if (observer == NULL)
+        return;
+
+    observer->on_new_proximity_reading_cb = NULL;
+    observer->on_new_ambient_light_reading_cb = NULL;
+    observer->on_new_accelerometer_reading_cb = NULL;
+    observer->context = NULL;
+}
+
 void ubuntu_sensor_install_observer(ubuntu_sensor_observer* observer)
 {
     assert(observer);

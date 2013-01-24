@@ -173,6 +173,7 @@ IMPLEMENT_VOID_FUNCTION0(ubuntu_ui_report_notification_visible);
 IMPLEMENT_VOID_FUNCTION0(ubuntu_ui_report_notification_invisible);
 
 // Sensor service
+IMPLEMENT_VOID_FUNCTION1(ubuntu_sensor_initialize_observer, ubuntu_sensor_observer*);
 IMPLEMENT_VOID_FUNCTION1(ubuntu_sensor_install_observer, ubuntu_sensor_observer*);
 IMPLEMENT_VOID_FUNCTION1(ubuntu_sensor_uninstall_observer, ubuntu_sensor_observer*);
 IMPLEMENT_VOID_FUNCTION1(ubuntu_sensor_enable_sensor, ubuntu_sensor_type);
