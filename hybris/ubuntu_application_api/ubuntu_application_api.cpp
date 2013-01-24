@@ -18,6 +18,7 @@
 
 #include <ubuntu/application/sensors/ubuntu_application_sensors.h>
 #include <ubuntu/application/ui/ubuntu_application_ui.h>
+#include <ubuntu/application/ubuntu_application_gps.h>
 #include <ubuntu/ui/ubuntu_ui_session_service.h>
 
 #include <assert.h>
@@ -75,7 +76,7 @@ extern "C" {
 /*********** Implementation starts here *******************/
 /**********************************************************/
 
-#define DLSYM(fptr, sym) if (*(fptr) == NULL) { *(fptr) = (void *) bridge.resolve_symbol(sym); }
+#define DLSYM(fptr, sym) if (*(fptr) == NULL) { *((void**)fptr) = (void *) bridge.resolve_symbol(sym); }
     
 #define IMPLEMENT_FUNCTION0(return_type, symbol)  \
     return_type symbol()                          \
@@ -125,6 +126,20 @@ extern "C" {
         static void (*f)(arg1, arg2, arg3) = NULL;              \
         DLSYM(&f, #symbol);                                     \
         f(_1, _2, _3); }
+
+#define IMPLEMENT_VOID_FUNCTION4(symbol, arg1, arg2, arg3, arg4) \
+    void symbol(arg1 _1, arg2 _2, arg3 _3, arg4 _4)              \
+    {                                                            \
+        static void (*f)(arg1, arg2, arg3, arg4) = NULL;         \
+        DLSYM(&f, #symbol);                                      \
+        f(_1, _2, _3, _4); }
+
+#define IMPLEMENT_FUNCTION6(return_type, symbol, arg1, arg2, arg3, arg4, arg5, arg6) \
+    return_type symbol(arg1 _1, arg2 _2, arg3 _3, arg4 _4, arg5 _5, arg6 _6)         \
+    {                                                                                \
+        static return_type (*f)(arg1, arg2, arg3, arg4, arg5, arg6) = NULL;          \
+        DLSYM(&f, #symbol);                                                          \
+        return f(_1, _2, _3, _4, _5, _6); }
 
 #define IMPLEMENT_VOID_FUNCTION7(symbol, arg1, arg2, arg3, arg4, arg5, arg6, arg7) \
     void symbol(arg1 _1, arg2 _2, arg3 _3, arg4 _4, arg5 _5, arg6 _6, arg7 _7) \
@@ -178,6 +193,18 @@ IMPLEMENT_VOID_FUNCTION1(ubuntu_sensor_install_observer, ubuntu_sensor_observer*
 IMPLEMENT_VOID_FUNCTION1(ubuntu_sensor_uninstall_observer, ubuntu_sensor_observer*);
 IMPLEMENT_VOID_FUNCTION1(ubuntu_sensor_enable_sensor, ubuntu_sensor_type);
 IMPLEMENT_VOID_FUNCTION1(ubuntu_sensor_disable_sensor, ubuntu_sensor_type);
+
+// GPS
+IMPLEMENT_FUNCTION1(UbuntuGps, ubuntu_gps_new, UbuntuGpsParams*);
+IMPLEMENT_VOID_FUNCTION1(ubuntu_gps_delete, UbuntuGps);
+IMPLEMENT_FUNCTION1(bool, ubuntu_gps_start, UbuntuGps);
+IMPLEMENT_FUNCTION1(bool, ubuntu_gps_stop, UbuntuGps);
+IMPLEMENT_VOID_FUNCTION4(ubuntu_gps_inject_time, UbuntuGps, int64_t, int64_t, int);
+IMPLEMENT_VOID_FUNCTION4(ubuntu_gps_inject_location, UbuntuGps, double, double, float);
+IMPLEMENT_VOID_FUNCTION2(ubuntu_gps_delete_aiding_data, UbuntuGps, uint16_t);
+IMPLEMENT_FUNCTION6(bool, ubuntu_gps_set_position_mode, UbuntuGps, uint32_t, uint32_t,
+                                                        uint32_t, uint32_t, uint32_t);
+IMPLEMENT_VOID_FUNCTION3(ubuntu_gps_inject_xtra_data, UbuntuGps, char*, int);
 
 #ifdef __cplusplus
 }

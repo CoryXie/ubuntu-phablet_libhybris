@@ -8,6 +8,7 @@ LOCAL_C_INCLUDES := \
 
 LOCAL_SRC_FILES := \
 	ubuntu_application_api_for_hybris.cpp \
+	ubuntu_application_gps_for_hybris.cpp \
 	ubuntu_application_sensors_for_hybris.cpp \
 	../default/default_ubuntu_application_sensor.cpp \
 	../default/default_ubuntu_application_ui.cpp \
@@ -23,7 +24,9 @@ LOCAL_SHARED_LIBRARIES := \
 	libutils \
 	libgui \
 	libEGL \
-	libGLESv2
+	libGLESv2 \
+	libhardware \
+	libhardware_legacy
 
 include $(BUILD_SHARED_LIBRARY)
 
@@ -208,6 +211,30 @@ LOCAL_SHARED_LIBRARIES := \
 	libutils \
 	libEGL \
 	libGLESv2 \
+	libubuntu_application_api
+
+include $(BUILD_EXECUTABLE)
+
+include $(CLEAR_VARS)
+
+LOCAL_CFLAGS += -std=gnu++0x
+
+LOCAL_C_INCLUDES := \
+	canonical/hybris/compat/ubuntu_application_api/include
+
+LOCAL_SRC_FILES:= \
+	test_gps_api.cpp \
+
+LOCAL_MODULE:= direct_ubuntu_application_gps_c_api_for_hybris_test
+LOCAL_MODULE_TAGS := optional
+
+LOCAL_SHARED_LIBRARIES := \
+	libui \
+	libutils \
+	libEGL \
+	libGLESv2 \
+	libhardware \
+	libhardware_legacy \
 	libubuntu_application_api
 
 include $(BUILD_EXECUTABLE)
