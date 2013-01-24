@@ -210,10 +210,12 @@ void android_camera_get_flash_mode(CameraControl* control, FlashMode* mode)
     assert(control);
 
     android::Mutex::Autolock al(control->guard);
-    *mode = flash_modes_lut.valueFor(
-                android::String8(
-                    control->camera_parameters.get(
-                        android::CameraParameters::KEY_FLASH_MODE)));
+    static const char* flash_mode = control->camera_parameters.get(
+                            android::CameraParameters::KEY_FLASH_MODE);
+    if (flash_mode)
+        *mode = flash_modes_lut.valueFor(android::String8(flash_mode));
+    else
+        *mode = FLASH_MODE_OFF;
 }
 
 void android_camera_set_white_balance_mode(CameraControl* control, WhiteBalanceMode mode)
