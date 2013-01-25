@@ -94,12 +94,19 @@ ApplicationManager::ShellInputSetup::Window<x, y, w, h>::Window(
     int _h) : parent(parent),
               input_consumer(client_channel)
 {
+    LOGI("%s: %d, %d, %d, %d", 
+         __PRETTY_FUNCTION__,
+         _x,
+         _y,
+         _w,
+         _h);
+    
     auto window = new android::InputSetup::DummyApplicationWindow(
         parent->shell_application,
-        x,
-        y,
-        w,
-        h);
+        _x,
+        _y,
+        _w,
+        _h);
     
     android::InputChannel::openInputChannelPair(
         android::String8("DummyShellInputChannel"),
