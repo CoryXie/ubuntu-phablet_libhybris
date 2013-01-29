@@ -149,6 +149,7 @@ IMPLEMENT_VOID_FUNCTION3(android_media_set_video_size_cb, MediaPlayerWrapper *, 
 IMPLEMENT_VOID_FUNCTION3(android_media_set_video_texture_needs_update_cb, MediaPlayerWrapper *, on_video_texture_needs_update, void*);
 IMPLEMENT_VOID_FUNCTION3(android_media_set_error_cb, MediaPlayerWrapper *, on_msg_error, void*);
 IMPLEMENT_VOID_FUNCTION3(android_media_set_playback_complete_cb, MediaPlayerWrapper *, on_playback_complete, void*);
+IMPLEMENT_VOID_FUNCTION3(android_media_set_media_prepared_cb, MediaPlayerWrapper *, on_media_prepared, void*);
 
 #ifdef __cplusplus
 }
