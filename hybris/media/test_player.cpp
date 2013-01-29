@@ -374,6 +374,11 @@ void set_video_size_cb(int height, int width, void *context)
     Width = width;
 }
 
+void media_prepared_cb(void *context)
+{
+    printf("Media is prepared for playback.\n");
+}
+
 int main(int argc, char **argv)
 {
     if (argc < 2)
@@ -391,6 +396,8 @@ int main(int argc, char **argv)
 
     // Set player event cb for when the video size is known:
     android_media_set_video_size_cb(player, set_video_size_cb, NULL);
+
+    android_media_set_media_prepared_cb(player, media_prepared_cb, NULL);
 
     printf("Setting data source to: %s.\n", argv[1]);
 

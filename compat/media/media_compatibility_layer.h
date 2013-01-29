@@ -33,6 +33,7 @@ extern "C" {
     typedef void (*on_video_texture_needs_update)(void *context);
     typedef void (*on_msg_error)(void *context);
     typedef void (*on_playback_complete)(void *context);
+    typedef void (*on_media_prepared)(void *context);
 
     struct MediaPlayerWrapper;
 
@@ -43,6 +44,7 @@ extern "C" {
     void android_media_set_video_texture_needs_update_cb(MediaPlayerWrapper *mp, on_video_texture_needs_update cb, void *context);
     void android_media_set_error_cb(MediaPlayerWrapper *mp, on_msg_error cb, void *context);
     void android_media_set_playback_complete_cb(MediaPlayerWrapper *mp, on_playback_complete cb, void *context);
+    void android_media_set_media_prepared_cb(MediaPlayerWrapper *mp, on_media_prepared cb, void *context);
 
     // Main player control API
     MediaPlayerWrapper *android_media_new_player();

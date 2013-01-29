@@ -1,3 +1,10 @@
+libhybris (0.54) quantal; urgency=low
+
+  * Added mediaPrepared callback which signifies when libstagefright is ready
+    to play the loaded media.
+
+ -- Jim Hodapp <jim.hodapp@canonical.com>  Tue, 29 Jan 2013 15:46:08 -0500
+
 libhybris (0.53) quantal; urgency=low
 
   [ Daniel d'Andrada ]

@@ -72,7 +72,9 @@ public:
           error_cb(NULL),
           error_context(NULL),
           playback_complete_cb(NULL),
-          playback_complete_context(NULL)
+          playback_complete_context(NULL),
+          media_prepared_cb(NULL),
+          media_prepared_context(NULL)
     {
     }
 
@@ -84,6 +86,11 @@ public:
         {
             case android::MEDIA_PREPARED:
                 ALOGV("\tMEDIA_PREPARED msg\n");
+                if (media_prepared_cb != NULL)
+                    media_prepared_cb(media_prepared_context);
+                else
+                    ALOGW("Failed to signal media prepared, callback not set.");
+
                 break;
             case android::MEDIA_PLAYBACK_COMPLETE:
                 ALOGV("\tMEDIA_PLAYBACK_COMPLETE msg\n");
@@ -151,6 +158,14 @@ public:
         playback_complete_context = context;
     }
 
+    void setMediaPreparedCb(on_media_prepared cb, void *context)
+    {
+        REPORT_FUNCTION();
+
+        media_prepared_cb = cb;
+        media_prepared_context = context;
+    }
+
 private:
     on_msg_set_video_size set_video_size_cb;
     void *video_size_context;
@@ -158,6 +173,8 @@ private:
     void *error_context;
     on_playback_complete playback_complete_cb;
     void *playback_complete_context;
+    on_media_prepared media_prepared_cb;
+    void *media_prepared_context;
 };
 
 // ----- MediaPlayer Wrapper ----- //
@@ -232,12 +249,20 @@ public:
         media_player_listener->setErrorCb(cb, context);
     }
 
-    void setPlaybackCompleteCb(on_msg_error cb, void *context)
+    void setPlaybackCompleteCb(on_playback_complete cb, void *context)
     {
         REPORT_FUNCTION();
 
         assert(media_player_listener != NULL);
         media_player_listener->setPlaybackCompleteCb(cb, context);
+    }
+
+    void setMediaPreparedCb(on_media_prepared cb, void *context)
+    {
+        REPORT_FUNCTION();
+
+        assert(media_player_listener != NULL);
+        media_player_listener->setMediaPreparedCb(cb, context);
     }
 
     void getVolume(float *leftVolume, float *rightVolume)
@@ -321,6 +346,19 @@ void android_media_set_playback_complete_cb(MediaPlayerWrapper *mp, on_playback_
     }
 
     mp->setPlaybackCompleteCb(cb, context);
+}
+
+void android_media_set_media_prepared_cb(MediaPlayerWrapper *mp, on_media_prepared cb, void *context)
+{
+    REPORT_FUNCTION()
+
+    if (mp == NULL)
+    {
+        ALOGE("mp must not be NULL");
+        return;
+    }
+
+    mp->setMediaPreparedCb(cb, context);
 }
 
 MediaPlayerWrapper *android_media_new_player()
