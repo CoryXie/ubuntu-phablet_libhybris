@@ -10,7 +10,10 @@ libhybris (0.53) quantal; urgency=low
   [ Daniel d'Andrada ]
   * Added API to expose android's GPS through hybris
 
- -- Jim Hodapp <jim.hodapp@canonical.com>  Tue, 29 Jan 2013 10:38:45 -0500
+  [ Ricardo Salveti de Araujo ]
+  * hybris/common: removing debugging prints by default
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Tue, 29 Jan 2013 08:59:18 -0500
 
 libhybris (0.52) quantal; urgency=low
 
