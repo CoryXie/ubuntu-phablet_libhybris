@@ -365,7 +365,7 @@ struct InputSetup : public android::RefBase
             {
                 mInfo = new android::InputWindowInfo();
                 SkRegion touchable_region;
-                touchable_region.setRect(x, y, x+w+1, y+h+1);
+                touchable_region.setRect(x, y, x+w, y+h);
                 
                 mInfo->name = "ShellInputWindow";
                 mInfo->layoutParamsFlags = android::InputWindowInfo::FLAG_SPLIT_TOUCH | android::InputWindowInfo::FLAG_WATCH_OUTSIDE_TOUCH;
