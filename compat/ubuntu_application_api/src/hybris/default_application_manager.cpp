@@ -41,6 +41,12 @@
 namespace mir
 {
 
+template<typename T, typename U>
+const T& min(const T& lhs, const U& rhs)
+{
+    return lhs < rhs ? lhs : rhs;
+}
+
 bool is_session_allowed_to_run_in_background(
     const android::sp<mir::ApplicationSession>& session)
 {
@@ -158,30 +164,9 @@ bool ApplicationManager::InputFilter::filter_event(const android::InputEvent* ev
         case AINPUT_EVENT_TYPE_KEY:
             result = handle_key_event(static_cast<const android::KeyEvent*>(event));
             break;
-        case AINPUT_EVENT_TYPE_KEY:
-            result = handle_motion_event(static_cast<const android::MotionEvent*>(event));
-            break
     }
 
     return result;
-}
-
-bool ApplicationManager::InputFilter::handle_motion_event(const android::MotionEvent* event)
-{
-    for (unsigned int i = 0; i < event->getPointerCount(); i++)
-    {
-        event->getRawPointerCoords(i)->setAxisValue(
-            AMOTION_EVENT_AXIS_X,
-            std::min(
-                manager->shell_input_setup->display_info->info.w,
-                event->getRawPointerCoords(i)->getAxisValue(AMOTION_EVENT_AXIS_X)));
-
-        event->getRawPointerCoords(i)->setAxisValue(
-            AMOTION_EVENT_AXIS_Y,
-            std::min(
-                manager->shell_input_setup->display_info->info.h,
-                event->getRawPointerCoords(i)->getAxisValue(AMOTION_EVENT_AXIS_Y)));
-    }
 }
 
 bool ApplicationManager::InputFilter::handle_key_event(const android::KeyEvent* event)
