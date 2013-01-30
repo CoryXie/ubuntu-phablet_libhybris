@@ -34,7 +34,7 @@
 
 #include <utils/Log.h>
 
-#define REPORT_FUNCTION() LOGV("%s \n", __PRETTY_FUNCTION__);
+#define REPORT_FUNCTION() ALOGV("%s \n", __PRETTY_FUNCTION__);
 
 struct FrameAvailableListener : public android::SurfaceTexture::FrameAvailableListener
 {
@@ -72,58 +72,65 @@ public:
           error_cb(NULL),
           error_context(NULL),
           playback_complete_cb(NULL),
-          playback_complete_context(NULL)
+          playback_complete_context(NULL),
+          media_prepared_cb(NULL),
+          media_prepared_context(NULL)
     {
     }
 
     void notify(int msg, int ext1, int ext2, const android::Parcel *obj)
     {
-        LOGV("\tmsg: %d, ext1: %d, ext2: %d \n", msg, ext1, ext2);
+        ALOGV("\tmsg: %d, ext1: %d, ext2: %d \n", msg, ext1, ext2);
 
         switch(msg)
         {
             case android::MEDIA_PREPARED:
-                LOGV("\tMEDIA_PREPARED msg\n");
+                ALOGV("\tMEDIA_PREPARED msg\n");
+                if (media_prepared_cb != NULL)
+                    media_prepared_cb(media_prepared_context);
+                else
+                    ALOGW("Failed to signal media prepared, callback not set.");
+
                 break;
             case android::MEDIA_PLAYBACK_COMPLETE:
-                LOGV("\tMEDIA_PLAYBACK_COMPLETE msg\n");
+                ALOGV("\tMEDIA_PLAYBACK_COMPLETE msg\n");
                 if (playback_complete_cb != NULL)
                     playback_complete_cb(playback_complete_context);
                 else
-                    LOGW("Failed to signal end of playback, callback not set.");
+                    ALOGW("Failed to signal end of playback, callback not set.");
 
                 break;
             case android::MEDIA_BUFFERING_UPDATE:
-                LOGV("\tMEDIA_BUFFERING_UPDATE msg\n");
+                ALOGV("\tMEDIA_BUFFERING_UPDATE msg\n");
                 break;
             case android::MEDIA_SEEK_COMPLETE:
-                LOGV("\tMEDIA_SEEK_COMPLETE msg\n");
+                ALOGV("\tMEDIA_SEEK_COMPLETE msg\n");
                 break;
             case android::MEDIA_SET_VIDEO_SIZE:
-                LOGV("\tMEDIA_SET_VIDEO_SIZE msg\n");
+                ALOGV("\tMEDIA_SET_VIDEO_SIZE msg\n");
                 if (set_video_size_cb != NULL)
                     set_video_size_cb(ext2, ext1, video_size_context);
                 else
-                    LOGE("Failed to set video size. set_video_size_cb is NULL.");
+                    ALOGE("Failed to set video size. set_video_size_cb is NULL.");
 
                 break;
             case android::MEDIA_TIMED_TEXT:
-                LOGV("\tMEDIA_TIMED_TEXT msg\n");
+                ALOGV("\tMEDIA_TIMED_TEXT msg\n");
                 break;
             case android::MEDIA_ERROR:
-                LOGV("\tMEDIA_ERROR msg\n");
+                ALOGV("\tMEDIA_ERROR msg\n");
                 // TODO: Extend this cb to include the error message
                 if (error_cb != NULL)
                     error_cb(error_context);
                 else
-                    LOGE("Failed to signal error to app layer, callback not set.");
+                    ALOGE("Failed to signal error to app layer, callback not set.");
 
                 break;
             case android::MEDIA_INFO:
-                LOGV("\tMEDIA_INFO msg\n");
+                ALOGV("\tMEDIA_INFO msg\n");
                 break;
             default:
-                LOGV("\tUnknown media msg\n");
+                ALOGV("\tUnknown media msg\n");
         }
     }
 
@@ -151,6 +158,14 @@ public:
         playback_complete_context = context;
     }
 
+    void setMediaPreparedCb(on_media_prepared cb, void *context)
+    {
+        REPORT_FUNCTION();
+
+        media_prepared_cb = cb;
+        media_prepared_context = context;
+    }
+
 private:
     on_msg_set_video_size set_video_size_cb;
     void *video_size_context;
@@ -158,6 +173,8 @@ private:
     void *error_context;
     on_playback_complete playback_complete_cb;
     void *playback_complete_context;
+    on_media_prepared media_prepared_cb;
+    void *media_prepared_context;
 };
 
 // ----- MediaPlayer Wrapper ----- //
@@ -189,11 +206,11 @@ public:
     {
         REPORT_FUNCTION();
 
-        surfaceTexture->setBufferCount(5);
+        surfaceTexture->getBufferQueue()->setBufferCount(5);
         texture = surfaceTexture;
         texture->setFrameAvailableListener(frame_listener);
 
-        return MediaPlayer::setVideoSurfaceTexture(surfaceTexture);
+        return MediaPlayer::setVideoSurfaceTexture(surfaceTexture->getBufferQueue());
     }
 
     void updateSurfaceTexture()
@@ -232,12 +249,20 @@ public:
         media_player_listener->setErrorCb(cb, context);
     }
 
-    void setPlaybackCompleteCb(on_msg_error cb, void *context)
+    void setPlaybackCompleteCb(on_playback_complete cb, void *context)
     {
         REPORT_FUNCTION();
 
         assert(media_player_listener != NULL);
         media_player_listener->setPlaybackCompleteCb(cb, context);
+    }
+
+    void setMediaPreparedCb(on_media_prepared cb, void *context)
+    {
+        REPORT_FUNCTION();
+
+        assert(media_player_listener != NULL);
+        media_player_listener->setMediaPreparedCb(cb, context);
     }
 
     void getVolume(float *leftVolume, float *rightVolume)
@@ -277,7 +302,7 @@ void android_media_set_video_size_cb(MediaPlayerWrapper *mp, on_msg_set_video_si
 
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return;
     }
 
@@ -290,7 +315,7 @@ void android_media_set_video_texture_needs_update_cb(MediaPlayerWrapper *mp, on_
 
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return;
     }
 
@@ -303,7 +328,7 @@ void android_media_set_error_cb(MediaPlayerWrapper *mp, on_msg_error cb, void *c
 
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return;
     }
 
@@ -316,11 +341,24 @@ void android_media_set_playback_complete_cb(MediaPlayerWrapper *mp, on_playback_
 
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return;
     }
 
     mp->setPlaybackCompleteCb(cb, context);
+}
+
+void android_media_set_media_prepared_cb(MediaPlayerWrapper *mp, on_media_prepared cb, void *context)
+{
+    REPORT_FUNCTION()
+
+    if (mp == NULL)
+    {
+        ALOGE("mp must not be NULL");
+        return;
+    }
+
+    mp->setMediaPreparedCb(cb, context);
 }
 
 MediaPlayerWrapper *android_media_new_player()
@@ -330,7 +368,7 @@ MediaPlayerWrapper *android_media_new_player()
     MediaPlayerWrapper *mp = new MediaPlayerWrapper();
     if (mp == NULL)
     {
-        LOGE("Failed to create new MediaPlayerWrapper instance.");
+        ALOGE("Failed to create new MediaPlayerWrapper instance.");
         return NULL;
     }
 
@@ -346,20 +384,20 @@ int android_media_set_data_source(MediaPlayerWrapper *mp, const char* url)
 
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return BAD_VALUE;
     }
 
     if (url == NULL)
     {
-        LOGE("url must not be NULL");
+        ALOGE("url must not be NULL");
         return BAD_VALUE;
     }
 
     int fd = open(url, O_RDONLY);
     if (fd < 0)
     {
-        LOGE("Failed to open source data at: %s\n", url);
+        ALOGE("Failed to open source data at: %s\n", url);
         return BAD_VALUE;
     }
 
@@ -368,7 +406,7 @@ int android_media_set_data_source(MediaPlayerWrapper *mp, const char* url)
     struct stat st;
     stat(url, &st);
 
-    LOGD("source file length: %lld\n", st.st_size);
+    ALOGD("source file length: %lld\n", st.st_size);
 
     mp->setDataSource(fd, 0, st.st_size);
 
@@ -381,7 +419,7 @@ int android_media_set_preview_texture(MediaPlayerWrapper *mp, int texture_id)
 
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return BAD_VALUE;
     }
 
@@ -399,7 +437,7 @@ void android_media_update_surface_texture(MediaPlayerWrapper *mp)
 {
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return;
     }
 
@@ -410,7 +448,7 @@ void android_media_surface_texture_get_transformation_matrix(MediaPlayerWrapper 
 {
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return;
     }
 
@@ -423,14 +461,14 @@ int android_media_play(MediaPlayerWrapper *mp)
 
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return BAD_VALUE;
     }
 
     mp->prepare();
     mp->start();
     const char *tmp = mp->isPlaying() ? "yes" : "no";
-    LOGV("Is playing?: %s\n", tmp);
+    ALOGV("Is playing?: %s\n", tmp);
 
     return OK;
 }
@@ -441,7 +479,7 @@ int android_media_pause(MediaPlayerWrapper *mp)
 
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return BAD_VALUE;
     }
 
@@ -456,7 +494,7 @@ int android_media_stop(MediaPlayerWrapper *mp)
 
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return BAD_VALUE;
     }
 
@@ -486,7 +524,7 @@ int android_media_seek_to(MediaPlayerWrapper *mp, int msec)
 
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return BAD_VALUE;
     }
 
@@ -497,7 +535,7 @@ int android_media_get_current_position(MediaPlayerWrapper *mp, int *msec)
 {
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return BAD_VALUE;
     }
 
@@ -510,7 +548,7 @@ int android_media_get_duration(MediaPlayerWrapper *mp, int *msec)
 
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return BAD_VALUE;
     }
 
@@ -523,13 +561,13 @@ int android_media_get_volume(MediaPlayerWrapper *mp, int *volume)
 
     if (volume == NULL)
     {
-        LOGE("volume must not be NULL");
+        ALOGE("volume must not be NULL");
         return BAD_VALUE;
     }
 
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return BAD_VALUE;
     }
 
@@ -546,7 +584,7 @@ int android_media_set_volume(MediaPlayerWrapper *mp, int volume)
 
     if (mp == NULL)
     {
-        LOGE("mp must not be NULL");
+        ALOGE("mp must not be NULL");
         return BAD_VALUE;
     }
 

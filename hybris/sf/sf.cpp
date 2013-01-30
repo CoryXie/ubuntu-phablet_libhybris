@@ -35,6 +35,9 @@ extern "C" {
 extern void *android_dlopen(const char *filename, int flag);
 extern void *android_dlsym(void *handle, const char *symbol);
 
+static void (*_sf_blank)(size_t display_id) = NULL;
+static void (*_sf_unblank)(size_t display_id) = NULL;
+
 static size_t (*_sf_get_display_width)(size_t display_id) = NULL;
 static size_t (*_sf_get_display_height)(size_t display_id) = NULL;
 
@@ -64,6 +67,19 @@ static void _init_androidsf()
 }
 
 #define SF_DLSYM(fptr, sym) do { if (_libsf == NULL) { _init_androidsf(); }; if (*(fptr) == NULL) { *(fptr) = (void *) android_dlsym(_libsf, sym); } } while (0)
+
+void sf_blank(size_t display_id)
+{
+    SF_DLSYM(&_sf_blank, "sf_blank");
+    return (*_sf_blank)(display_id);
+}
+
+void sf_unblank(size_t display_id)
+{
+    SF_DLSYM(&_sf_unblank, "sf_unblank");
+    return (*_sf_unblank)(display_id);
+}
+
 
 size_t sf_get_display_width(size_t display_id)
 {

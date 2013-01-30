@@ -43,9 +43,23 @@ extern "C" {
     typedef struct
     {
         int64_t timestamp;
-        
+
         float light;
     } ubuntu_sensor_ambient_light_reading;
+
+    enum ubuntu_sensor_type
+    {
+        first_defined_sensor_type = 0,
+        ubuntu_sensor_type_accelerometer = first_defined_sensor_type,
+        ubuntu_sensor_type_magnetic_field,
+        ubuntu_sensor_type_gyroscope,
+        ubuntu_sensor_type_light,
+        ubuntu_sensor_type_proximity,
+        ubuntu_sensor_type_orientation,
+        ubuntu_sensor_type_linear_acceleration,
+        ubuntu_sensor_type_rotation_vector,
+        undefined_sensor_type
+    };
 
     typedef struct
     {
@@ -56,11 +70,18 @@ extern "C" {
         on_new_accelerometer_reading on_new_accelerometer_reading_cb;
         on_new_proximity_reading on_new_proximity_reading_cb;
         on_new_ambient_light_reading on_new_ambient_light_reading_cb;
-        
+
         void* context;
     } ubuntu_sensor_observer;
 
+    // Initialize and get an ubuntu_sensor_observer instance ready to be used by
+    // a client application.
+    void ubuntu_sensor_initialize_observer(ubuntu_sensor_observer* observer);
     void ubuntu_sensor_install_observer(ubuntu_sensor_observer* observer);
+    void ubuntu_sensor_uninstall_observer(ubuntu_sensor_observer* observer);
+
+    void ubuntu_sensor_enable_sensor(ubuntu_sensor_type sensor_type);
+    void ubuntu_sensor_disable_sensor(ubuntu_sensor_type sensor_type);
 
 #ifdef __cplusplus
 }

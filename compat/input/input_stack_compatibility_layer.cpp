@@ -23,16 +23,17 @@
 #include "SpriteController.h"
 #include <gui/ISurfaceComposer.h>
 #include <gui/SurfaceComposerClient.h>
-#include "log.h"
 
+#undef LOG_TAG
 #define LOG_TAG "InputStackCompatibilityLayer"
+#include <utils/Log.h>
 
 namespace
 {
 static bool enable_verbose_function_reporting = false;
 }
 
-#define REPORT_FUNCTION() LOGV("%s\n", __PRETTY_FUNCTION__);
+#define REPORT_FUNCTION() ALOGV("%s\n", __PRETTY_FUNCTION__);
 
 namespace
 {

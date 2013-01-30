@@ -1,3 +1,54 @@
+libhybris (0.54) quantal; urgency=low
+
+  * Added mediaPrepared callback which signifies when libstagefright is ready
+    to play the loaded media.
+
+ -- Jim Hodapp <jim.hodapp@canonical.com>  Tue, 29 Jan 2013 15:46:08 -0500
+
+libhybris (0.53) quantal; urgency=low
+
+  [ Daniel d'Andrada ]
+  * Added API to expose android's GPS through hybris
+
+  [ Ricardo Salveti de Araujo ]
+  * hybris/common: removing debugging prints by default
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Tue, 29 Jan 2013 08:59:18 -0500
+
+libhybris (0.52) quantal; urgency=low
+
+  * Added a function to initialize an ubuntu_sensor_observer instance for use by a client app.
+
+ -- Jim Hodapp <jim.hodapp@canonical.com>  Thu, 24 Jan 2013 14:42:26 -0500
+
+libhybris (0.51) quantal; urgency=low
+
+  * Added blank / unblank methods to control power to display.
+
+ -- Michael Frey <michael.frey@canonical.com>  Thu, 24 Jan 2013 09:36:45 -0500
+
+libhybris (0.50) quantal; urgency=low
+
+  * Added public API functions to enable/disable specific sensors.
+
+ -- Jim Hodapp <jim.hodapp@canonical.com>  Wed, 23 Jan 2013 12:55:23 -0500
+
+libhybris (0.49) quantal; urgency=low
+
+  * Adding more stdio.h hooks to avoid calling __sfvwrite (malloc -> pthread)
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Wed, 23 Jan 2013 00:39:41 -0200
+
+libhybris (0.48) quantal; urgency=low
+
+  [ Daniel d'Andrada ]
+  * Added hook for fseeko function.
+
+  [ Ricardo Salveti de Araujo ]
+  * Rebase compat code to work with Android's JB 4.2.1
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Tue, 22 Jan 2013 16:31:06 -0200
+
 libhybris (0.47) quantal; urgency=low
 
   * Fix predicate when updating input configuration if osk/notifications visibility changes.

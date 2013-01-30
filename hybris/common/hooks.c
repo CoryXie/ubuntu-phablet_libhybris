@@ -13,7 +13,9 @@
 #include <errno.h>
 #include <dirent.h>
 #include <sys/types.h>
+#include <sys/xattr.h>
 
+#include <netdb.h>
 
 /* TODO:
 *  - Check if the int arguments at attr_set/get match the ones at Android
@@ -37,6 +39,13 @@
 #define ANDROID_PTHREAD_COND_INITIALIZER             0
 #define ANDROID_PTHREAD_RWLOCK_INITIALIZER           0
 
+/* Debug */
+#ifdef HYBRIS_DEBUG
+#define LOGD(message, args...) \
+	fprintf(stderr, "HYBRIS %s:%d - " message "\n", __FUNCTION__, __LINE__, ##args)
+#else
+#define LOGD(message, args...)
+#endif
 
 static int nvidia_hack = 0;
 
@@ -339,13 +348,13 @@ static int my_pthread_mutex_lock(pthread_mutex_t *__mutex)
         return 0;
 
     if (!__mutex) {
-        printf("HYBRIS: null mutex lock, not locking.\n");
+        LOGD("Null mutex lock, not locking.");
         return 0;
     }
 
     int value = (*(int *) __mutex);
     if (hybris_check_android_shared_mutex(value)) {
-        printf("HYBRIS: shared mutex with Android, not locking.\n");
+        LOGD("Shared mutex with Android, not locking.");
         return 0;
     }
 
@@ -364,7 +373,7 @@ static int my_pthread_mutex_trylock(pthread_mutex_t *__mutex)
     int value = (*(int *) __mutex);
 
     if (hybris_check_android_shared_mutex(value)) {
-        printf("HYBRIS: shared mutex with Android, not try locking.\n");
+        LOGD("Shared mutex with Android, not try locking.");
         return 0;
     }
 
@@ -384,19 +393,19 @@ static int my_pthread_mutex_unlock(pthread_mutex_t *__mutex)
         return 0;
 
     if (!__mutex) {
-        printf("HYBRIS: null mutex lock, not unlocking.\n");
+        LOGD("Null mutex lock, not unlocking.");
         return 0;
     }
 
     int value = (*(int *) __mutex);
     if (hybris_check_android_shared_mutex(value)) {
-        printf("HYBRIS: shared mutex with Android, not unlocking.\n");
+        LOGD("Shared mutex with Android, not unlocking.");
         return 0;
     }
 
     if (value <= ANDROID_TOP_ADDR_VALUE_MUTEX) {
-        printf("HYBRIS: trying to unlock a lock that's not locked/initialized"
-               " by Hybris, not unlocking.\n");
+        LOGD("Trying to unlock a lock that's not locked/initialized"
+               " by Hybris, not unlocking.");
         return 0;
     }
 
@@ -448,7 +457,7 @@ static int my_pthread_cond_broadcast(pthread_cond_t *cond)
 
     int value = (*(int *) cond);
     if (hybris_check_android_shared_cond(value)) {
-        printf("HYBRIS: shared condition with Android, not broadcasting.\n");
+        LOGD("shared condition with Android, not broadcasting.");
         return 0;
     }
 
@@ -467,7 +476,7 @@ static int my_pthread_cond_signal(pthread_cond_t *cond)
     int value = (*(int *) cond);
 
     if (hybris_check_android_shared_cond(value)) {
-        printf("HYBRIS: shared condition with Android, not signaling.\n");
+        LOGD("Shared condition with Android, not signaling.");
         return 0;
     }
 
@@ -489,7 +498,7 @@ static int my_pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex)
 
     if (hybris_check_android_shared_cond(cvalue) ||
          hybris_check_android_shared_mutex(mvalue)) {
-        printf("HYBRIS: shared condition/mutex with Android, not waiting.\n");
+        LOGD("Shared condition/mutex with Android, not waiting.");
         return 0;
     }
 
@@ -520,7 +529,7 @@ static int my_pthread_cond_timedwait(pthread_cond_t *cond,
 
     if (hybris_check_android_shared_cond(cvalue) ||
          hybris_check_android_shared_mutex(mvalue)) {
-        printf("HYBRIS: shared condition/mutex with Android, not waiting.\n");
+        LOGD("Shared condition/mutex with Android, not waiting.");
         return 0;
     }
 
@@ -663,8 +672,8 @@ static int my_pthread_rwlock_unlock(pthread_rwlock_t *__rwlock)
 {
     int value = (*(int *) __rwlock);
     if (value <= ANDROID_TOP_ADDR_VALUE_RWLOCK) {
-        printf("HYBRIS: trying to unlock a rwlock that's not locked/initialized"
-               " by Hybris, not unlocking.\n");
+        LOGD("Trying to unlock a rwlock that's not locked/initialized"
+               " by Hybris, not unlocking.");
         return 0;
     }
     pthread_rwlock_t *realrwlock = (pthread_rwlock_t *) value;
@@ -691,6 +700,8 @@ static struct _hook hooks[] = {
     {"memalign", memalign },
     {"valloc", valloc },
     {"pvalloc", pvalloc },
+    {"fread", fread },
+    {"getxattr", getxattr},
     /* string.h */
     {"memccpy",memccpy}, 
     {"memchr",memchr}, 
@@ -816,14 +827,28 @@ static struct _hook hooks[] = {
     {"pthread_rwlock_trywrlock", my_pthread_rwlock_trywrlock},
     {"pthread_rwlock_timedrdlock", my_pthread_rwlock_timedrdlock},
     {"pthread_rwlock_timedwrlock", my_pthread_rwlock_timedwrlock},
+    /* stdio.h */
     {"fopen", fopen},
     {"fgets", fgets},
     {"fclose", fclose},
+    {"fputs", fputs},
+    {"fseeko", fseeko},
+    {"fwrite", fwrite},
+    {"puts", puts},
+    {"putw", putw},
     {"sprintf", sprintf},
     {"snprintf", snprintf},
+    {"vfprintf", vfprintf},
     {"vsprintf", vsprintf},
+    {"vsnprintf", vsnprintf},
     {"__errno", __errno_location},
     {"__set_errno", my_set_errno},
+    /* net specifics, to avoid __res_get_state */
+    {"getaddrinfo", getaddrinfo},
+    {"gethostbyaddr", gethostbyaddr},
+    {"gethostbyname", gethostbyname},
+    {"gethostbyname2", gethostbyname2},
+    {"gethostent", gethostent},
     {NULL, NULL},
 };
 

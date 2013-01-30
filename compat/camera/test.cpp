@@ -25,6 +25,8 @@
 
 #include <surface_flinger_compatibility_layer.h>
 
+#include <gui/ISurfaceComposer.h>
+
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
@@ -119,7 +121,7 @@ void jpeg_data_cb(void* data, uint32_t data_size, void* context)
 
     char fn[256];
     sprintf(fn, "/data/shot_%d.jpeg", shot_counter);
-    int fd = open(fn, O_RDWR | O_CREAT);
+    int fd = open(fn, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
     write(fd, data, data_size);
     close(fd);
     shot_counter++;
@@ -211,8 +213,8 @@ ClientWithSurface client_with_surface(bool setup_surface_with_egl)
     {
         0,
         0,
-        sf_get_display_width(primary_display),
-        sf_get_display_height(primary_display),
+        (int) sf_get_display_width(primary_display),
+        (int) sf_get_display_height(primary_display),
         -1, //PIXEL_FORMAT_RGBA_8888,
         15000,
         0.5f,
