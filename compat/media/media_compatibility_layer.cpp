@@ -409,6 +409,7 @@ int android_media_set_data_source(MediaPlayerWrapper *mp, const char* url)
     ALOGD("source file length: %lld\n", st.st_size);
 
     mp->setDataSource(fd, 0, st.st_size);
+    mp->prepare();
 
     return OK;
 }
@@ -465,7 +466,6 @@ int android_media_play(MediaPlayerWrapper *mp)
         return BAD_VALUE;
     }
 
-    mp->prepare();
     mp->start();
     const char *tmp = mp->isPlaying() ? "yes" : "no";
     ALOGV("Is playing?: %s\n", tmp);
