@@ -540,9 +540,13 @@ void ApplicationManager::switch_to_well_known_application(int32_t app)
     notify_observers_about_session_requested(app);
 }
 
-void ApplicationManager::report_osk_visible()
+void ApplicationManager::report_osk_visible(int32_t width, int32_t height)
 {
     ALOGI("%s", __PRETTY_FUNCTION__);
+    
+    shell_input_setup->osk_window.input_window->w = width;
+    shell_input_setup->osk_window.input_window->h = height;
+
     android::Mutex::Autolock al(guard);
     is_osk_visible = true;
 

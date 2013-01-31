@@ -72,7 +72,7 @@ struct ApplicationManager :
                    int _w = w,
                    int _h = h);
             
-            android::sp<android::InputWindowHandle> input_window;
+            android::sp<android::InputSetup::DummyApplicationWindow> input_window;
             
             ShellInputSetup* parent;
             android::sp<android::InputChannel> server_channel;
@@ -179,7 +179,7 @@ struct ApplicationManager :
 
     void switch_to_well_known_application(int32_t app);
 
-    void report_osk_visible();
+    void report_osk_visible(int32_t width, int32_t height);
     
     void report_osk_invisible();
 
