@@ -129,16 +129,16 @@ struct ApplicationSession : public android::RefBase
                  props.bottom);
             
             SkRegion touchable_region;
-            touchable_region.setRect(props.left, props.top, props.right, props.bottom);
+            touchable_region.setRect(props.left, props.top, props.right+1, props.bottom+1);
             
             mInfo->name = parent->app_name;
-            mInfo->layoutParamsFlags = android::InputWindowInfo::FLAG_NOT_TOUCH_MODAL | android::InputWindowInfo::FLAG_SPLIT_TOUCH;
+            mInfo->layoutParamsFlags = android::InputWindowInfo::FLAG_NOT_TOUCH_MODAL;
             mInfo->layoutParamsType = android::InputWindowInfo::TYPE_APPLICATION;
             mInfo->touchableRegion = touchable_region;
             mInfo->frameLeft = props.left;
             mInfo->frameTop = props.top;
-            mInfo->frameRight = props.right;
-            mInfo->frameBottom = props.bottom;
+            mInfo->frameRight = props.right+1;
+            mInfo->frameBottom = props.bottom+1;
             mInfo->scaleFactor = 1.f;
             mInfo->visible = true;
             mInfo->canReceiveKeys = true;
