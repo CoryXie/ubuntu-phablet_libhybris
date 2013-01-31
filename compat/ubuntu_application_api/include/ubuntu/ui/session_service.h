@@ -57,7 +57,7 @@ public:
 
     virtual ubuntu::ui::SessionSnapshot::Ptr snapshot_running_session_with_id(int id) = 0;
 
-    virtual void report_osk_visible() = 0;
+    virtual void report_osk_visible(int width, int height) = 0;
     
     virtual void report_osk_invisible() = 0;
 

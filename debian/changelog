@@ -1,3 +1,13 @@
+libhybris (0.55) quantal; urgency=low
+
+  [ Thomas Voss ]
+  * Get rid of hard-coded sizes for input trap window.
+
+  [ Ricardo Mendoza ]
+  * Dynamically resize the OSK input window according to reported size 
+
+ -- Ricardo Mendoza <ricardo.mendoza@canonical.com>  Thu, 31 Jan 2013 18:48:27 -0430
+
 libhybris (0.54) quantal; urgency=low
 
   * Added mediaPrepared callback which signifies when libstagefright is ready

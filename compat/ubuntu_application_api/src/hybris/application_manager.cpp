@@ -325,7 +325,9 @@ status_t BnApplicationManager::onTransact(uint32_t code,
     }
     case REPORT_OSK_VISIBLE_COMMAND:
     {
-        report_osk_visible();
+        int32_t width = data.readInt32();
+        int32_t height = data.readInt32();
+        report_osk_visible(width, height);
         break;
     }
     case REPORT_OSK_INVISIBLE_COMMAND:
@@ -458,9 +460,11 @@ void BpApplicationManager::switch_to_well_known_application(int32_t app)
                        &out);
 }
 
-void BpApplicationManager::report_osk_visible()
+void BpApplicationManager::report_osk_visible(int32_t width, int32_t height)
 {
     Parcel in, out;
+    in.writeInt32(width);
+    in.writeInt32(height);
 
     remote()->transact(REPORT_OSK_VISIBLE_COMMAND,
                        in,

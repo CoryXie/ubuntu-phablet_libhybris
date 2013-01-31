@@ -149,9 +149,9 @@ void ubuntu_ui_session_trigger_switch_to_well_known_application(ubuntu_ui_well_k
         static_cast<ubuntu::ui::WellKnownApplication>(app));
 }
 
-void ubuntu_ui_report_osk_visible()
+void ubuntu_ui_report_osk_visible(int width, int height)
 {
-    ubuntu::ui::SessionService::instance()->report_osk_visible();
+    ubuntu::ui::SessionService::instance()->report_osk_visible(width, height);
 }
 
 void ubuntu_ui_report_osk_invisible()
