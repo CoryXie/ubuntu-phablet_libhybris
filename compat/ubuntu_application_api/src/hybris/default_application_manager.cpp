@@ -542,7 +542,7 @@ void ApplicationManager::switch_to_well_known_application(int32_t app)
 
 void ApplicationManager::report_osk_visible(int32_t width, int32_t height)
 {
-    ALOGI("%s", __PRETTY_FUNCTION__);
+    ALOGI("%s(width=%d, height=%d)", __PRETTY_FUNCTION__, width, height);
     
     shell_input_setup->osk_window.input_window->w = width;
     shell_input_setup->osk_window.input_window->h = height;
