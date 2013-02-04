@@ -325,8 +325,8 @@ status_t BnApplicationManager::onTransact(uint32_t code,
     }
     case REPORT_OSK_VISIBLE_COMMAND:
     {
-	int32_t x = data.readInt32();
-	int32_t y = data.readInt32();
+        int32_t x = data.readInt32();
+        int32_t y = data.readInt32();
         int32_t width = data.readInt32();
         int32_t height = data.readInt32();
         report_osk_visible(x, y, width, height);
