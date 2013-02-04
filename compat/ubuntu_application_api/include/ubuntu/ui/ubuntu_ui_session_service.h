@@ -22,14 +22,14 @@ extern "C" {
 
     typedef void (*ubuntu_ui_session_service_snapshot_cb)(const void* pixels, unsigned int width, unsigned int height, unsigned int stride, void* context);
 
+    typedef void (*session_requested_cb)(ubuntu_ui_well_known_application app, void* context);
+    typedef void (*session_born_cb)(ubuntu_ui_session_properties props, void* context);
+    typedef void (*session_unfocused_cb)(ubuntu_ui_session_properties props, void* context);
+    typedef void (*session_focused_cb)(ubuntu_ui_session_properties props, void* context);
+    typedef void (*session_died_cb)(ubuntu_ui_session_properties props, void * context);
+
     typedef struct
     {
-        typedef void (*session_requested_cb)(ubuntu_ui_well_known_application app, void* context);
-        typedef void (*session_born_cb)(ubuntu_ui_session_properties props, void* context);
-        typedef void (*session_unfocused_cb)(ubuntu_ui_session_properties props, void* context);
-        typedef void (*session_focused_cb)(ubuntu_ui_session_properties props, void* context);
-        typedef void (*session_died_cb)(ubuntu_ui_session_properties props, void * context);
-
         session_requested_cb on_session_requested;
         session_born_cb on_session_born;
         session_unfocused_cb on_session_unfocused;
@@ -56,7 +56,7 @@ extern "C" {
     ubuntu_ui_session_install_session_lifecycle_observer(
         ubuntu_ui_session_lifecycle_observer* observer);
 
-    bool 
+    int /* boolean */
     ubuntu_ui_session_preview_provider_update_session_preview_texture_with_id(
         ubuntu_ui_session_preview_provider pp,
         int id,
