@@ -1,3 +1,9 @@
+libhybris (0.57) quantal; urgency=low
+
+  * Place OSK input grab window according to coordinates and not only size
+
+ -- Ricardo Mendoza <ricardo.mendoza@canonical.com>  Mon, 04 Feb 2013 13:33:25 -0430
+
 libhybris (0.56) quantal; urgency=low
 
   * Correctly set window flags for input propagation

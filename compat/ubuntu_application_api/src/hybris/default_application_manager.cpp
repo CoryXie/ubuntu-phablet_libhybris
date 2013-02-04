@@ -540,10 +540,12 @@ void ApplicationManager::switch_to_well_known_application(int32_t app)
     notify_observers_about_session_requested(app);
 }
 
-void ApplicationManager::report_osk_visible(int32_t width, int32_t height)
+void ApplicationManager::report_osk_visible(int32_t x, int32_t y, int32_t width, int32_t height)
 {
-    ALOGI("%s(width=%d, height=%d)", __PRETTY_FUNCTION__, width, height);
+    ALOGI("%s(x=%d, y=%d, width=%d, height=%d)", __PRETTY_FUNCTION__, x, y, width, height);
     
+    shell_input_setup->osk_window.input_window->x = x;
+    shell_input_setup->osk_window.input_window->y = y;   
     shell_input_setup->osk_window.input_window->w = width;
     shell_input_setup->osk_window.input_window->h = height;
 
