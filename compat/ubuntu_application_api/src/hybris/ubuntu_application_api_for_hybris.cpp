@@ -722,10 +722,10 @@ struct SessionService : public ubuntu::ui::SessionService
         access_application_manager()->switch_to_well_known_application(app);
     }
 
-    void report_osk_visible(int32_t width, int32_t height)
+    void report_osk_visible(int32_t x, int32_t y, int32_t width, int32_t height)
     {
         ALOGI("%s", __PRETTY_FUNCTION__);
-        access_application_manager()->report_osk_visible(width, height);
+        access_application_manager()->report_osk_visible(x, y, width, height);
     }
     
     void report_osk_invisible()

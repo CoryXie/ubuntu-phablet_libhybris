@@ -12,7 +12,7 @@ int main(int argc, char** argv)
     }
 
     if (strcmp("show", argv[1]) == 0)
-        ubuntu_ui_report_osk_visible(0, 0);
+        ubuntu_ui_report_osk_visible(0, 0, 0, 0);
     else if (strcmp("hide", argv[1]) == 0)
         ubuntu_ui_report_osk_invisible();
     

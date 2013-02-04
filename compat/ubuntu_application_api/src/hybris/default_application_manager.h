@@ -179,7 +179,7 @@ struct ApplicationManager :
 
     void switch_to_well_known_application(int32_t app);
 
-    void report_osk_visible(int32_t width, int32_t height);
+    void report_osk_visible(int32_t x, int32_t y, int32_t width, int32_t height);
     
     void report_osk_invisible();
 
