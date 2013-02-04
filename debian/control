@@ -18,7 +18,9 @@ Description: Allows to run bionic-based HW adaptations in glibc systems
 Package: libhybris-dev
 Section: devel
 Architecture: armel armhf i386
-Depends: libhybris (= ${binary:Version}), ${misc:Depends}
+Depends: libhybris (= ${binary:Version}),
+         ${misc:Depends},
+         libgles2-mesa-dev,
 Description: Development headers and libraries for libhybris
  Contains the header files for use in developing applications that use
  the libhybris library.
