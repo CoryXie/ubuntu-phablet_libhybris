@@ -1,12 +1,7 @@
 hybris/test_egl		#BINDIR#
 hybris/test_glesv2	#BINDIR#
-hybris/test_gps_api	#BINDIR#
 hybris/test_hw		#BINDIR#
 hybris/test_sensors	#BINDIR#
 hybris/test_sf		#BINDIR#
 hybris/test_camera	#BINDIR#
 hybris/test_media_player	#BINDIR#
-hybris/test_ubuntu_app_api	#BINDIR#
-hybris/test_ubuntu_session_api	#BINDIR#
-hybris/test_ubuntu_app_api_multiple_surfaces	#BINDIR#
-hybris/test_sensors_api	#BINDIR#
