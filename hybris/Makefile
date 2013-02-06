@@ -15,7 +15,7 @@ COMMON_SOURCES=common/strlcpy.c common/hooks.c common/properties.c
 
 ICS_SOURCES=ics/linker.c ics/dlfcn.c ics/rt.c ics/linker_environ.c ics/linker_format.c ics/init.c
 
-all:  libhybris_ics.so libEGL.so.1 libGLESv2.so.2 libcamera.so libmediaplayer.so libhardware.so libis.so libsf.so libubuntu_application_api.so test_camera test_media_player test_sf test_egl test_hw test_sensors test_ubuntu_app_api test_ubuntu_app_api_multiple_surfaces test_ubuntu_session_api test_gps_api test_sensors_api test_glesv2
+all:  libhybris_ics.so libEGL.so.1 libGLESv2.so.2 libcamera.so libmediaplayer.so libhardware.so libis.so libsf.so test_camera test_media_player test_sf test_egl test_hw test_sensors test_glesv2
 
 libhybris_ics.so: $(COMMON_SOURCES) $(ICS_SOURCES)
 	$(CC) -g -shared -o $@ -ldl -pthread -fPIC -Iics -Icommon -DLINKER_DEBUG=1 -DLINKER_TEXT_BASE=0xB0000100 -DLINKER_AREA_SIZE=0x01000000 $(ARCHFLAGS) \
@@ -45,24 +45,6 @@ libis.so.1.0: is/is.cpp
 
 libsf.so.1.0: sf/sf.cpp
 	$(CXX) -g -fpermissive -shared -o $@ -fPIC -I../compat/surface_flinger -Wl,-soname,libsf.so.1 $< libhybris_ics.so
-
-libubuntu_application_api.so.1.0: ubuntu_application_api/ubuntu_application_api.cpp
-	$(CXX) -g -fpermissive -shared -o $@ -fPIC -I../compat/ubuntu_application_api/include -Wl,-soname,libubuntu_application_api.so.1 $< libhybris_ics.so
-
-test_ubuntu_app_api: 
-	$(CXX) -g -o $@ ubuntu_application_api/test_c_api.cpp libubuntu_application_api.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/ubuntu_application_api/include
-
-test_ubuntu_app_api_multiple_surfaces: 
-	$(CXX) -g -o $@ ubuntu_application_api/test_multiple_surfaces_event_delivery.cpp libubuntu_application_api.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/ubuntu_application_api/include
-
-test_ubuntu_session_api: 
-	$(CXX) -g -o $@ ubuntu_application_api/test_session_c_api.cpp libubuntu_application_api.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/ubuntu_application_api/include
-
-test_gps_api:
-	$(CXX) -g -o $@ ubuntu_application_api/test_gps_api.cpp libubuntu_application_api.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/ubuntu_application_api/include
-
-test_sensors_api: 
-	$(CXX) -g -o $@ ubuntu_application_api/test_sensors_api.cpp libubuntu_application_api.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/ubuntu_application_api/include
 
 libEGL.so.1: libEGL.so.1.0
 	ln -sf libEGL.so.1.0 libEGL.so.1
@@ -97,12 +79,6 @@ libmediaplayer.so.1: libmediaplayer.so.1.0
 libmediaplayer.so: libmediaplayer.so.1
 	ln -sf libmediaplayer.so.1.0 libmediaplayer.so
 
-libubuntu_application_api.so.1: libubuntu_application_api.so.1.0
-	ln -sf libubuntu_application_api.so.1.0 libubuntu_application_api.so.1
-
-libubuntu_application_api.so: libubuntu_application_api.so.1
-	ln -sf libubuntu_application_api.so.1.0 libubuntu_application_api.so
-
 test_egl: libEGL.so.1 libGLESv2.so.2 egl/test.c libhybris_ics.so
 	$(CC) -g -o $@ egl/test.c libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I .
 
@@ -133,4 +109,3 @@ clean:
 	rm -rf libmediaplayer*
 	rm -rf libis*
 	rm -rf test_*
-	rm -rf libubuntu_application_api.so*
