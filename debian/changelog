@@ -1,4 +1,4 @@
-libhybris (0.58) UNRELEASED; urgency=low
+libhybris (0.58) quantal; urgency=low
 
   * Removing code from ubuntu platform api, as it's now available at a
     different package (ubuntu-platform-api).
