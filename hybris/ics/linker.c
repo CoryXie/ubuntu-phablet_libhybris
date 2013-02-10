@@ -657,7 +657,7 @@ is_prelinked(int fd, const char *name)
     }
 
     if (strncmp(info.tag, "PRE ", 4)) {
-        WARN("`%s` is not a prelinked library\n", name);
+        // WARN("`%s` is not a prelinked library\n", name);
         return 0;
     }
 
@@ -827,8 +827,8 @@ alloc_mem_region(soinfo *si)
         goto err;
     }
     si->base = (unsigned) base;
-    PRINT("%5d mapped library '%s' to %08x via kernel allocator.\n",
-          pid, si->name, si->base);
+    /* PRINT("%5d mapped library '%s' to %08x via kernel allocator.\n",
+          pid, si->name, si->base); */
     return 0;
 
 err:
