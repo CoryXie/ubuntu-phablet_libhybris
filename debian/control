@@ -10,14 +10,14 @@ Vcs-Browser: https://bazaar.launchpad.net/~rocket-scientists/aal+/trunk/files
 
 Package: libhybris-test
 Section: devel
-Architecture: armel armhf i386
+Architecture: any
 Depends: libhybris (= ${binary:Version}), ${misc:Depends}
 Description: Allows to run bionic-based HW adaptations in glibc systems
  This package provides the test applications for libhybris
 
 Package: libhybris-dev
 Section: devel
-Architecture: armel armhf i386
+Architecture: any
 Depends: libhybris (= ${binary:Version}),
          ${misc:Depends},
          libgles2-mesa-dev,
@@ -30,7 +30,7 @@ Description: Development headers and libraries for libhybris
 
 Package: libhybris
 Section: libs
-Architecture: armel armhf i386
+Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Allows to run bionic-based HW adaptations in glibc systems
  Hybris is a solution that commits hybris, by allowing us to use bionic-based

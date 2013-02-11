@@ -2,6 +2,8 @@ libhybris (0.59) UNRELEASED; urgency=low
 
   * Removing extra debug from linker in case the library is not prelinked
     (disabled at recent Android versions)
+  * Making libhybris buildable x86 64 (useful to avoid dependencies issues
+    for packages depending but not using hybris at run time)
 
  -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Sun, 10 Feb 2013 21:43:35 -0200
 
