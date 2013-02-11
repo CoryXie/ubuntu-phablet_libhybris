@@ -364,10 +364,10 @@ android_dl_iterate_phdr(int (*cb)(struct dl_phdr_info *info, size_t size, void *
 }
 #endif
 
-static Elf32_Sym *_elf_lookup(soinfo *si, unsigned hash, const char *name)
+static Elf_Sym *_elf_lookup(soinfo *si, unsigned hash, const char *name)
 {
-    Elf32_Sym *s;
-    Elf32_Sym *symtab = si->symtab;
+    Elf_Sym *s;
+    Elf_Sym *symtab = si->symtab;
     const char *strtab = si->strtab;
     unsigned n;
 
@@ -409,11 +409,11 @@ static unsigned elfhash(const char *_name)
     return h;
 }
 
-static Elf32_Sym *
+static Elf_Sym *
 _do_lookup(soinfo *si, const char *name, unsigned *base)
 {
     unsigned elf_hash = elfhash(name);
-    Elf32_Sym *s;
+    Elf_Sym *s;
     unsigned *d;
     soinfo *lsi = si;
     int i;
@@ -484,17 +484,17 @@ done:
 /* This is used by dl_sym().  It performs symbol lookup only within the
    specified soinfo object and not in any of its dependencies.
  */
-Elf32_Sym *lookup_in_library(soinfo *si, const char *name)
+Elf_Sym *lookup_in_library(soinfo *si, const char *name)
 {
     return _elf_lookup(si, elfhash(name), name);
 }
 
 /* This is used by dl_sym().  It performs a global symbol lookup.
  */
-Elf32_Sym *lookup(const char *name, soinfo **found, soinfo *start)
+Elf_Sym *lookup(const char *name, soinfo **found, soinfo *start)
 {
     unsigned elf_hash = elfhash(name);
-    Elf32_Sym *s = NULL;
+    Elf_Sym *s = NULL;
     soinfo *si;
 
     printf("Lookup %s\n", name);
@@ -537,7 +537,7 @@ soinfo *find_containing_library(const void *addr)
     return NULL;
 }
 
-Elf32_Sym *find_containing_symbol(const void *addr, soinfo *si)
+Elf_Sym *find_containing_symbol(const void *addr, soinfo *si)
 {
     unsigned int i;
     unsigned soaddr = (unsigned)addr - si->base;
@@ -545,7 +545,7 @@ Elf32_Sym *find_containing_symbol(const void *addr, soinfo *si)
     /* Search the library's symbol table for any defined symbol which
      * contains this address */
     for(i=0; i<si->nchain; i++) {
-        Elf32_Sym *sym = &si->symtab[i];
+        Elf_Sym *sym = &si->symtab[i];
 
         if(sym->st_shndx != SHN_UNDEF &&
            soaddr >= sym->st_value &&
@@ -560,7 +560,7 @@ Elf32_Sym *find_containing_symbol(const void *addr, soinfo *si)
 #if 0
 static void dump(soinfo *si)
 {
-    Elf32_Sym *s = si->symtab;
+    Elf_Sym *s = si->symtab;
     unsigned n;
 
     for(n = 0; n < si->nchain; n++) {
@@ -657,7 +657,7 @@ is_prelinked(int fd, const char *name)
     }
 
     if (strncmp(info.tag, "PRE ", 4)) {
-        WARN("`%s` is not a prelinked library\n", name);
+        // WARN("`%s` is not a prelinked library\n", name);
         return 0;
     }
 
@@ -676,7 +676,7 @@ is_prelinked(int fd, const char *name)
 static int
 verify_elf_object(void *base, const char *name)
 {
-    Elf32_Ehdr *hdr = (Elf32_Ehdr *) base;
+    Elf_Ehdr *hdr = (Elf_Ehdr *) base;
 
     if (hdr->e_ident[EI_MAG0] != ELFMAG0) return -1;
     if (hdr->e_ident[EI_MAG1] != ELFMAG1) return -1;
@@ -721,8 +721,8 @@ get_lib_extents(int fd, const char *name, void *__hdr, unsigned *total_sz)
     unsigned min_vaddr = 0xffffffff;
     unsigned max_vaddr = 0;
     unsigned char *_hdr = (unsigned char *)__hdr;
-    Elf32_Ehdr *ehdr = (Elf32_Ehdr *)_hdr;
-    Elf32_Phdr *phdr;
+    Elf_Ehdr *ehdr = (Elf_Ehdr *)_hdr;
+    Elf_Phdr *phdr;
     int cnt;
 
     TRACE("[ %5d Computing extents for '%s'. ]\n", pid, name);
@@ -741,7 +741,7 @@ get_lib_extents(int fd, const char *name, void *__hdr, unsigned *total_sz)
         TRACE("[ %5d - Non-prelinked library '%s' found. ]\n", pid, name);
     }
 
-    phdr = (Elf32_Phdr *)(_hdr + ehdr->e_phoff);
+    phdr = (Elf_Phdr *)(_hdr + ehdr->e_phoff);
 
     /* find the min/max p_vaddrs from all the PT_LOAD segments so we can
      * get the range. */
@@ -827,8 +827,8 @@ alloc_mem_region(soinfo *si)
         goto err;
     }
     si->base = (unsigned) base;
-    PRINT("%5d mapped library '%s' to %08x via kernel allocator.\n",
-          pid, si->name, si->base);
+    /* PRINT("%5d mapped library '%s' to %08x via kernel allocator.\n",
+          pid, si->name, si->base); */
     return 0;
 
 err:
@@ -858,9 +858,9 @@ err:
 static int
 load_segments(int fd, void *header, soinfo *si)
 {
-    Elf32_Ehdr *ehdr = (Elf32_Ehdr *)header;
-    Elf32_Phdr *phdr = (Elf32_Phdr *)((unsigned char *)header + ehdr->e_phoff);
-    unsigned char *base = (Elf32_Addr) si->base;
+    Elf_Ehdr *ehdr = (Elf_Ehdr *)header;
+    Elf_Phdr *phdr = (Elf_Phdr *)((unsigned char *)header + ehdr->e_phoff);
+    unsigned char *base = (Elf_Addr) si->base;
     int cnt;
     unsigned len;
     unsigned char *tmp;
@@ -929,7 +929,7 @@ load_segments(int fd, void *header, soinfo *si)
              *                  |                     |
              *                 _+---------------------+  page boundary
              */
-            tmp = (Elf32_Addr)(((unsigned)pbase + len + PAGE_SIZE - 1) &
+            tmp = (Elf_Addr)(((unsigned)pbase + len + PAGE_SIZE - 1) &
                                     (~PAGE_MASK));
             if (tmp < (base + phdr->p_vaddr + phdr->p_memsz)) {
                 extra_len = base + phdr->p_vaddr + phdr->p_memsz - tmp;
@@ -1029,11 +1029,11 @@ fail:
  */
 #if 0
 static unsigned
-get_wr_offset(int fd, const char *name, Elf32_Ehdr *ehdr)
+get_wr_offset(int fd, const char *name, Elf_Ehdr *ehdr)
 {
-    Elf32_Shdr *shdr_start;
-    Elf32_Shdr *shdr;
-    int shdr_sz = ehdr->e_shnum * sizeof(Elf32_Shdr);
+    Elf_Shdr *shdr_start;
+    Elf_Shdr *shdr;
+    int shdr_sz = ehdr->e_shnum * sizeof(Elf_Shdr);
     int cnt;
     unsigned wr_offset = 0xffffffff;
 
@@ -1066,7 +1066,7 @@ load_library(const char *name)
     unsigned req_base;
     const char *bname;
     soinfo *si = NULL;
-    Elf32_Ehdr *hdr;
+    Elf_Ehdr *hdr;
 
     if(fd == -1) {
         DL_ERR("Library '%s' not found", name);
@@ -1123,8 +1123,8 @@ load_library(const char *name)
 
     /* this might not be right. Technically, we don't even need this info
      * once we go through 'load_segments'. */
-    hdr = (Elf32_Ehdr *)si->base;
-    si->phdr = (Elf32_Phdr *)((unsigned char *)si->base + hdr->e_phoff);
+    hdr = (Elf_Ehdr *)si->base;
+    si->phdr = (Elf_Phdr *)((unsigned char *)si->base + hdr->e_phoff);
     si->phnum = hdr->e_phnum;
     /**/
 
@@ -1245,16 +1245,16 @@ unsigned unload_library(soinfo *si)
 }
 
 /* TODO: don't use unsigned for addrs below. It works, but is not
- * ideal. They should probably be either uint32_t, Elf32_Addr, or unsigned
+ * ideal. They should probably be either uint32_t, Elf_Addr, or unsigned
  * long.
  */
-static int reloc_library(soinfo *si, Elf32_Rel *rel, unsigned count)
+static int reloc_library(soinfo *si, Elf_Rel *rel, unsigned count)
 {
-    Elf32_Sym *symtab = si->symtab;
+    Elf_Sym *symtab = si->symtab;
     const char *strtab = si->strtab;
-    Elf32_Sym *s;
+    Elf_Sym *s;
     unsigned base;
-    Elf32_Rel *start = rel;
+    Elf_Rel *start = rel;
     unsigned idx;
 
     for (idx = 0; idx < count; ++idx) {
@@ -1461,13 +1461,13 @@ static int reloc_library(soinfo *si, Elf32_Rel *rel, unsigned count)
 }
 
 #if defined(ANDROID_SH_LINKER)
-static int reloc_library_a(soinfo *si, Elf32_Rela *rela, unsigned count)
+static int reloc_library_a(soinfo *si, Elf_Rela *rela, unsigned count)
 {
-    Elf32_Sym *symtab = si->symtab;
+    Elf_Sym *symtab = si->symtab;
     const char *strtab = si->strtab;
-    Elf32_Sym *s;
+    Elf_Sym *s;
     unsigned base;
-    Elf32_Rela *start = rela;
+    Elf_Rela *start = rela;
     unsigned idx;
 
     for (idx = 0; idx < count; ++idx) {
@@ -1719,7 +1719,7 @@ static int nullify_closed_stdio (void)
 static int link_image(soinfo *si, unsigned wr_offset)
 {
     unsigned *d;
-    Elf32_Phdr *phdr = si->phdr;
+    Elf_Phdr *phdr = si->phdr;
     int phnum = si->phnum;
 
     INFO("[ %5d linking %s ]\n", pid, si->name);
@@ -1809,7 +1809,7 @@ static int link_image(soinfo *si, unsigned wr_offset)
             si->strtab = (const char *) (si->base + *d);
             break;
         case DT_SYMTAB:
-            si->symtab = (Elf32_Sym *) (si->base + *d);
+            si->symtab = (Elf_Sym *) (si->base + *d);
             break;
 #if !defined(ANDROID_SH_LINKER)
         case DT_PLTREL:
@@ -1821,28 +1821,28 @@ static int link_image(soinfo *si, unsigned wr_offset)
 #endif
 #ifdef ANDROID_SH_LINKER
         case DT_JMPREL:
-            si->plt_rela = (Elf32_Rela*) (si->base + *d);
+            si->plt_rela = (Elf_Rela*) (si->base + *d);
             break;
         case DT_PLTRELSZ:
-            si->plt_rela_count = *d / sizeof(Elf32_Rela);
+            si->plt_rela_count = *d / sizeof(Elf_Rela);
             break;
 #else
         case DT_JMPREL:
-            si->plt_rel = (Elf32_Rel*) (si->base + *d);
+            si->plt_rel = (Elf_Rel*) (si->base + *d);
             break;
         case DT_PLTRELSZ:
             si->plt_rel_count = *d / 8;
             break;
 #endif
         case DT_REL:
-            si->rel = (Elf32_Rel*) (si->base + *d);
+            si->rel = (Elf_Rel*) (si->base + *d);
             break;
         case DT_RELSZ:
             si->rel_count = *d / 8;
             break;
 #ifdef ANDROID_SH_LINKER
         case DT_RELASZ:
-            si->rela_count = *d / sizeof(Elf32_Rela);
+            si->rela_count = *d / sizeof(Elf_Rela);
              break;
 #endif
         case DT_PLTGOT:
@@ -1855,7 +1855,7 @@ static int link_image(soinfo *si, unsigned wr_offset)
             break;
 #ifdef ANDROID_SH_LINKER
         case DT_RELA:
-            si->rela = (Elf32_Rela *) (si->base + *d);
+            si->rela = (Elf_Rela *) (si->base + *d);
             break;
 #else
          case DT_RELA:
@@ -1878,7 +1878,7 @@ static int link_image(soinfo *si, unsigned wr_offset)
                   pid, si->name, si->init_array);
             break;
         case DT_INIT_ARRAYSZ:
-            si->init_array_count = ((unsigned)*d) / sizeof(Elf32_Addr);
+            si->init_array_count = ((unsigned)*d) / sizeof(Elf_Addr);
             break;
         case DT_FINI_ARRAY:
             si->fini_array = (unsigned *)(si->base + *d);
@@ -1886,7 +1886,7 @@ static int link_image(soinfo *si, unsigned wr_offset)
                   pid, si->name, si->fini_array);
             break;
         case DT_FINI_ARRAYSZ:
-            si->fini_array_count = ((unsigned)*d) / sizeof(Elf32_Addr);
+            si->fini_array_count = ((unsigned)*d) / sizeof(Elf_Addr);
             break;
         case DT_PREINIT_ARRAY:
             si->preinit_array = (unsigned *)(si->base + *d);
@@ -1894,7 +1894,7 @@ static int link_image(soinfo *si, unsigned wr_offset)
                   pid, si->name, si->preinit_array);
             break;
         case DT_PREINIT_ARRAYSZ:
-            si->preinit_array_count = ((unsigned)*d) / sizeof(Elf32_Addr);
+            si->preinit_array_count = ((unsigned)*d) / sizeof(Elf_Addr);
             break;
         case DT_TEXTREL:
             /* TODO: make use of this. */
@@ -2184,7 +2184,7 @@ unsigned __linker_init(unsigned **elfdata)
     while(vecs[0] != 0){
         switch(vecs[0]){
         case AT_PHDR:
-            si->phdr = (Elf32_Phdr*) vecs[1];
+            si->phdr = (Elf_Phdr*) vecs[1];
             break;
         case AT_PHNUM:
             si->phnum = (int) vecs[1];
