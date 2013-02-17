@@ -1,6 +1,8 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
+HYBRIS_PATH := $(LOCAL_PATH)/../../
+
 LOCAL_SRC_FILES:= \
 	camera_compatibility_layer.cpp
 
@@ -8,8 +10,8 @@ LOCAL_MODULE:= libcamera_compat_layer
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_C_INCLUDES := \
-	canonical/hybris/compat/surface_flinger \
-	canonical/hybris/compat/input
+	$(HYBRIS_PATH)/compat/surface_flinger \
+	$(HYBRIS_PATH)/compat/input
 
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
@@ -36,8 +38,8 @@ LOCAL_C_INCLUDES := \
 	external/gtest/include \
 	external/stlport/stlport \
 	external/skia/include/core \
-	canonical/hybris/compat/surface_flinger \
-	canonical/hybris/compat/input
+	$(HYBRIS_PATH)/compat/surface_flinger \
+	$(HYBRIS_PATH)/compat/input
 
 LOCAL_SHARED_LIBRARIES := \
 	libis_compat_layer \
