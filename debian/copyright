@@ -2,27 +2,48 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: libhybris
 Source: https://github.com/stskeeps/libhybris
 
-Files: *
-Copyright: 2012 Carsten Munk <carsten@merproject.org>
-           2012 Michael Frey <michael.frey@canonical.com>
-License: Unknown
- Unknown or to be determined
+Files: compat/* hybris/camera/* hybris/hardware/hardware.* hybris/hardware/test.c hybris/media/* hybris/sf/* debian/*
+Copyright: 2012 Canonical Ltd
+License: LGPL-3
 
-Files: debian/*
-Copyright: 2012 Sergio Schvezov <sergio.schvezov@canonical.com>
-License: GPL-2+
- This package is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
+Files: hybris/common/strlcpy.c
+Copyright: 1998 Todd C. Miller <Todd.Miller@courtesan.com>
+License: Expat
+ Permission to use, copy, modify, and distribute this software for any
+ purpose with or without fee is hereby granted, provided that the above
+ copyright notice and this permission notice appear in all copies.
  .
- This package is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+Files: hybris/common/hooks.c
+Copyright: 2012 Carsten Munk <carsten@merproject.org>
+           2012 Canonical Ltd
+License: Apache 2.0
+
+Files: hybris/common/properties.* hybris/test.c hybris/testcases/* hybris/egl/* hybris/glesv2/*
+Copyright: 2012 Carsten Munk <carsten@merproject.org>
+License: Apache 2.0
+
+Files: hybris/gingerbread/* hybris/ics/* hybris/jb/*
+Copyright: 2008-2010 The Android Open Source Project
+License: Apache 2.0
+
+License: Apache 2.0
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
  .
- You should have received a copy of the GNU General Public License
- along with this program. If not, see <http://www.gnu.org/licenses/>
+ http://www.apache.org/licenses/LICENSE-2.0
  .
- On Debian systems, the complete text of the GNU General
- Public License version 2 can be found in "/usr/share/common-licenses/GPL-2".
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+
