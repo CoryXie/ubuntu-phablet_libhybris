@@ -1,3 +1,9 @@
+libhybris (0.60) quantal; urgency=low
+
+  * Updating licenses and packaging to better fit Ubuntu's standards
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Sun, 17 Feb 2013 23:58:15 -0300
+
 libhybris (0.59) quantal; urgency=low
 
   * Removing extra debug from linker in case the library is not prelinked
