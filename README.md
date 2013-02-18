@@ -1,3 +1,10 @@
+Hybris
+------
+
+This is a custom version of the upstream project hosted at https://github.com/stskeeps/libhybris.git
+
+Goal is to be merged with upstream asap.
+
 Layout
 ------
 
@@ -16,5 +23,8 @@ Notes
 
 Currently tested on the following hardware:
 
-Galaxy Nexus (ICS)
+Galaxy Nexus (JB)
 HTC One X (ICS)
+Nexus 4 (JB)
+Nexus 7 (JB)
+Nexus 10 (JB)
