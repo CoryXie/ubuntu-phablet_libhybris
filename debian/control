@@ -8,16 +8,15 @@ Section: libs
 Vcs-Bzr: lp:phablet-extras/libhybris
 
 Package: libhybris
-Section: libs
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends}
-Description: Allows to run bionic-based HW adaptations in glibc systems
+Description: Allows to run bionic-based HW adaptations in glibc systems - libs
  Hybris is a solution that commits hybris, by allowing us to use bionic-based
- HW adaptations in glibc systems
+ HW adaptations in glibc systems.
 
 Package: libhybris-dev
-Section: devel
+Section: libdevel
 Architecture: any
 Depends: libhybris (= ${binary:Version}),
          ${misc:Depends},
@@ -27,12 +26,12 @@ Description: Development headers and libraries for libhybris
  the libhybris library.
  .
  Hybris is a solution that commits hybris, by allowing us to use bionic-based
- HW adaptations in glibc systems
+ HW adaptations in glibc systems.
 
 Package: libhybris-test
 Section: devel
 Architecture: any
 Depends: libhybris (= ${binary:Version}),
          ${misc:Depends}
-Description: Allows to run bionic-based HW adaptations in glibc systems
- This package provides the test applications for libhybris
+Description: Allows to run bionic-based HW adaptations in glibc systems - tests
+ This package provides the test applications for libhybris.
