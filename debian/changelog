@@ -1,6 +1,7 @@
 libhybris (0.60) quantal; urgency=low
 
   * Updating licenses and packaging to better fit Ubuntu's standards
+    (LP: #1097083)
 
  -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Sun, 17 Feb 2013 23:58:15 -0300
 
