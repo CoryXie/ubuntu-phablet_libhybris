@@ -1,3 +1,9 @@
+libhybris (0.61-0phablet1) quantal; urgency=low
+
+  * Changing Canonical's GPL/LGPLv3 code to use Apache v2.0 instead
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Mon, 04 Mar 2013 20:08:42 -0300
+
 libhybris (0.60-0phablet1) quantal; urgency=low
 
   * Updating licenses and packaging to better fit Ubuntu's standards
