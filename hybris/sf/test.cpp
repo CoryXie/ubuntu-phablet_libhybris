@@ -22,6 +22,9 @@
 
 #include <unistd.h>
 
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
 #include "surface_flinger_compatibility_layer.h"
 
 SfSurface* sf_surface_create(SfClient* client, SfSurfaceCreationParameters* params);
