@@ -1,3 +1,9 @@
+libhybris (0.62-0phablet1) UNRELEASED; urgency=low
+
+  * Do not call releaseRecordingFrame() after capture (LP: #1169352)
+
+ -- Guenter Schwann <guenter.schwann@canonical.com>  Mon, 22 Apr 2013 13:37:26 +0200
+
 libhybris (0.61-0phablet1) quantal; urgency=low
 
   * Changing Canonical's GPL/LGPLv3 code to use Apache v2.0 instead
