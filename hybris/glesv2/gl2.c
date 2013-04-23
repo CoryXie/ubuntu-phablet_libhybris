@@ -128,7 +128,7 @@ static void         (*_glRenderbufferStorage)(GLenum target, GLenum internalform
 static void         (*_glSampleCoverage)(GLclampf value, GLboolean invert) FP_ATTRIB = NULL;
 static void         (*_glScissor)(GLint x, GLint y, GLsizei width, GLsizei height) = NULL;
 static void         (*_glShaderBinary)(GLsizei n, const GLuint* shaders, GLenum binaryformat, const GLvoid* binary, GLsizei length) = NULL;
-static void         (*_glShaderSource)(GLuint shader, GLsizei count, const GLchar** string, const GLint* length) = NULL;
+static void         (*_glShaderSource)(GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length) = NULL;
 static void         (*_glStencilFunc)(GLenum func, GLint ref, GLuint mask) = NULL;
 static void         (*_glStencilFuncSeparate)(GLenum face, GLenum func, GLint ref, GLuint mask) = NULL;
 static void         (*_glStencilMask)(GLuint mask) = NULL;
@@ -787,7 +787,7 @@ void         glShaderBinary (GLsizei n, const GLuint* shaders, GLenum binaryform
  return (*_glShaderBinary)(n, shaders, binaryformat, binary, length);
 }
 
-void         glShaderSource (GLuint shader, GLsizei count, const GLchar** string, const GLint* length)
+void         glShaderSource (GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length)
 {
  GLES2_DLSYM(glShaderSource);
  return (*_glShaderSource)(shader, count, string, length);
