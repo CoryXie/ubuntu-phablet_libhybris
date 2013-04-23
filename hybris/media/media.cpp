@@ -139,7 +139,7 @@ IMPLEMENT_FUNCTION2(int, android_media_set_preview_texture, MediaPlayerWrapper *
 IMPLEMENT_FUNCTION2(int, android_media_set_volume, MediaPlayerWrapper *, int);
 
 // Getters
-IMPLEMENT_VOID_FUNCTION2(android_media_surface_texture_get_transformation_matrix, MediaPlayerWrapper *, GLfloat*);
+IMPLEMENT_VOID_FUNCTION2(android_media_surface_texture_get_transformation_matrix, MediaPlayerWrapper *, float*);
 IMPLEMENT_FUNCTION2(int, android_media_get_current_position, MediaPlayerWrapper *, int*);
 IMPLEMENT_FUNCTION2(int, android_media_get_duration, MediaPlayerWrapper *, int*);
 IMPLEMENT_FUNCTION2(int, android_media_get_volume, MediaPlayerWrapper *, int*);
