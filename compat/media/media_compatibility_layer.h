@@ -19,8 +19,6 @@
 #ifndef MEDIA_COMPATIBILITY_LAYER_H_
 #define MEDIA_COMPATIBILITY_LAYER_H_
 
-#include <GLES2/gl2.h>
-
 #include <stdint.h>
 #include <unistd.h>
 
@@ -51,7 +49,7 @@ extern "C" {
     int android_media_set_data_source(MediaPlayerWrapper *mp, const char* url);
     int android_media_set_preview_texture(MediaPlayerWrapper *mp, int texture_id);
     void android_media_update_surface_texture(MediaPlayerWrapper *mp);
-    void android_media_surface_texture_get_transformation_matrix(MediaPlayerWrapper *mp, GLfloat*matrix);
+    void android_media_surface_texture_get_transformation_matrix(MediaPlayerWrapper *mp, float*matrix);
     int android_media_play(MediaPlayerWrapper *mp);
     int android_media_pause(MediaPlayerWrapper *mp);
     int android_media_stop(MediaPlayerWrapper *mp);
