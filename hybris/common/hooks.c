@@ -855,6 +855,7 @@ static struct _hook hooks[] = {
     {"putw", putw},
     {"sprintf", sprintf},
     {"snprintf", snprintf},
+    {"vasprintf", vasprintf},
     {"vfprintf", vfprintf},
     {"vsprintf", vsprintf},
     {"vsnprintf", vsnprintf},
