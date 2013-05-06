@@ -18,12 +18,17 @@
 #include "camera_compatibility_layer.h"
 #include "camera_compatibility_layer_capabilities.h"
 #include "camera_compatibility_layer_configuration_translator.h"
+#include "recorder_compatibility_layer.h"
 
 #include <surface_flinger_compatibility_layer_internal.h>
 
 #include <binder/ProcessState.h>
 #include <camera/Camera.h>
 #include <camera/CameraParameters.h>
+
+#include <camera/ICamera.h>
+#include <media/mediarecorder.h>
+
 #include <gui/SurfaceTexture.h>
 
 #undef LOG_TAG
@@ -31,6 +36,7 @@
 #include <utils/KeyedVector.h>
 #include <utils/Log.h>
 
+#include <utils/Log.h>
 
 #define REPORT_FUNCTION() ALOGV("%s \n", __PRETTY_FUNCTION__);
 
@@ -177,6 +183,18 @@ void android_camera_disconnect(CameraControl* control)
     android::Mutex::Autolock al(control->guard);
     control->camera->disconnect();
     control->camera->unlock();
+}
+
+int android_camera_lock(CameraControl* control)
+{
+    android::Mutex::Autolock al(control->guard);
+    return control->camera->lock();
+}
+
+int android_camera_unlock(CameraControl* control)
+{
+    android::Mutex::Autolock al(control->guard);
+    return control->camera->unlock();
 }
 
 void android_camera_delete(CameraControl* control)
@@ -664,3 +682,218 @@ void android_camera_set_rotation(CameraControl* control, int rotation)
     control->camera->setParameters(control->camera_parameters.flatten());
 }
 
+/******************************************************************************
+Video
+******************************************************************************/
+
+void android_camera_enumerate_supported_video_sizes(CameraControl* control, size_callback cb, void* ctx)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+    android::Vector<android::Size> sizes;
+    control->camera_parameters.getSupportedVideoSizes(sizes);
+
+    for(unsigned int i = 0; i < sizes.size(); i++)
+    {
+        cb(ctx, sizes[i].width, sizes[i].height);
+    }
+}
+
+void android_camera_get_video_size(CameraControl* control, int* width, int* height)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+
+    control->camera_parameters.getVideoSize(width, height);
+}
+
+void android_camera_set_video_size(CameraControl* control, int width, int height)
+{
+
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+
+    control->camera_parameters.setVideoSize(width, height);
+    control->camera->setParameters(control->camera_parameters.flatten());
+}
+
+/******************************************************************************
+MediaRecorder
+******************************************************************************/
+
+class MediaRecorderListenerWrapper : public android::MediaRecorderListener
+{
+public:
+    MediaRecorderListenerWrapper()
+    {
+    }
+
+    void notify(int msg, int ext1, int ext2, const android::Parcel *obj)
+    {
+        ALOGV("\tmsg: %d, ext1: %d, ext2: %d \n", msg, ext1, ext2);
+
+        switch(msg)
+        {
+            default:
+                ALOGV("\tUnknown notification\n");
+        }
+    }
+
+private:
+};
+
+struct MediaRecorderWrapper : public android::MediaRecorder
+{
+public:
+    MediaRecorderWrapper()
+        : MediaRecorder()
+    {
+    }
+
+    ~MediaRecorderWrapper()
+    {
+        reset();
+    }
+
+private:
+    android::sp<MediaRecorderListenerWrapper> media_recorder_listener;
+}; // MediaRecorderWrapper
+
+
+MediaRecorderWrapper *android_media_new_recorder()
+{
+    REPORT_FUNCTION()
+
+    MediaRecorderWrapper *mr = new MediaRecorderWrapper;
+    if (mr == NULL)
+    {
+        ALOGE("Failed to create new MediaRecorderWrapper instance.");
+        return NULL;
+    }
+
+    return mr;
+}
+
+int android_recorder_initCheck(MediaRecorderWrapper *mr)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+
+    return mr->initCheck();
+}
+
+int android_recorder_setCamera(MediaRecorderWrapper *mr, CameraControl* control)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+    assert(control);
+
+    return mr->setCamera(control->camera->remote(), control->camera->getRecordingProxy());
+}
+
+// values defined in /frameworks/av/include/media/mediarecorder.h
+int android_recorder_setVideoSource(MediaRecorderWrapper *mr, int vs)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+
+    return mr->setVideoSource(vs);
+}
+
+// values are defined in /system/core/include/system/audio.h
+int android_recorder_setAudioSource(MediaRecorderWrapper *mr, int as)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+
+    return mr->setAudioSource(as);
+}
+
+// values defined in /frameworks/av/include/media/mediarecorder.h
+int android_recorder_setOutputFormat(MediaRecorderWrapper *mr, int of)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+
+    return mr->setOutputFormat(of);
+}
+
+// values defined in /frameworks/av/include/media/mediarecorder.h
+int android_recorder_setVideoEncoder(MediaRecorderWrapper *mr, int ve)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+
+    return mr->setVideoEncoder(ve);
+}
+
+// values defined in /frameworks/av/include/media/mediarecorder.h
+int android_recorder_setAudioEncoder(MediaRecorderWrapper *mr, int ae)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+
+    return mr->setAudioEncoder(ae);
+}
+
+int android_recorder_setOutputFile(MediaRecorderWrapper *mr, int fd)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+
+    return mr->setOutputFile(fd, 0, 0);
+}
+
+int android_recorder_setVideoSize(MediaRecorderWrapper *mr, int width, int height)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+
+    return mr->setVideoSize(width, height);
+}
+
+int android_recorder_setVideoFrameRate(MediaRecorderWrapper *mr, int frames_per_second)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+
+    return mr->setVideoFrameRate(frames_per_second);
+}
+
+int android_recorder_start(MediaRecorderWrapper *mr)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+
+    return mr->start();
+}
+
+int android_recorder_stop(MediaRecorderWrapper *mr)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+
+    return mr->stop();
+}
+
+int android_recorder_prepare(MediaRecorderWrapper *mr)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+
+    return mr->prepare();
+}
+
+int android_recorder_reset(MediaRecorderWrapper *mr)
+{
+    REPORT_FUNCTION()
+    assert(mr);
+
+    return mr->reset();
+}

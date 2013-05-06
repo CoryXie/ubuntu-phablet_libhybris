@@ -11,7 +11,8 @@ LOCAL_MODULE_TAGS := optional
 
 LOCAL_C_INCLUDES := \
 	$(HYBRIS_PATH)/compat/surface_flinger \
-	$(HYBRIS_PATH)/compat/input
+	$(HYBRIS_PATH)/compat/input \
+	frameworks/base/include/media
 
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
@@ -20,7 +21,8 @@ LOCAL_SHARED_LIBRARIES := \
 	libbinder \
 	libhardware \
 	libui \
-	libgui 
+	libgui \
+	libmedia
 
 include $(BUILD_SHARED_LIBRARY)
 

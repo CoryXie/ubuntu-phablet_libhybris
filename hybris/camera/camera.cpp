@@ -18,6 +18,7 @@
 
 #include <camera_compatibility_layer.h>
 #include <camera_compatibility_layer_capabilities.h>
+#include <recorder_compatibility_layer.h>
 
 #include <assert.h>
 #include <dlfcn.h>
@@ -111,6 +112,13 @@ extern "C" {
         CAMERA_DLSYM(&f, #symbol);                              \
         f(_1, _2); }
 
+#define IMPLEMENT_FUNCTION3(return_type, symbol, arg1, arg2, arg3) \
+    return_type symbol(arg1 _1, arg2 _2, arg3 _3)                        \
+    {                                                           \
+        static return_type (*f)(arg1, arg2, arg3) = NULL;             \
+        CAMERA_DLSYM(&f, #symbol);                              \
+        return f(_1, _2, _3); }
+
 #define IMPLEMENT_VOID_FUNCTION3(symbol, arg1, arg2, arg3)      \
     void symbol(arg1 _1, arg2 _2, arg3 _3)                      \
     {                                                           \
@@ -122,6 +130,8 @@ extern "C" {
 IMPLEMENT_FUNCTION0(int, android_camera_get_number_of_devices);
 IMPLEMENT_FUNCTION2(CameraControl*, android_camera_connect_to, CameraType, CameraControlListener*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_disconnect, CameraControl*);
+IMPLEMENT_FUNCTION1(int, android_camera_lock, CameraControl*);
+IMPLEMENT_FUNCTION1(int, android_camera_unlock, CameraControl*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_delete, CameraControl*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_dump_parameters, CameraControl*);
 
@@ -140,6 +150,7 @@ IMPLEMENT_VOID_FUNCTION2(android_camera_set_focus_region, CameraControl*, FocusR
 IMPLEMENT_VOID_FUNCTION1(android_camera_reset_focus_region, CameraControl*);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_preview_fps, CameraControl*, int);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_rotation, CameraControl*, int);
+IMPLEMENT_VOID_FUNCTION3(android_camera_set_video_size, CameraControl*, int, int);
 // Getters
 IMPLEMENT_VOID_FUNCTION2(android_camera_get_effect_mode, CameraControl*, EffectMode*);
 IMPLEMENT_VOID_FUNCTION2(android_camera_get_flash_mode, CameraControl*, FlashMode*);
@@ -152,10 +163,12 @@ IMPLEMENT_VOID_FUNCTION3(android_camera_get_preview_size, CameraControl*, int*, 
 IMPLEMENT_VOID_FUNCTION3(android_camera_get_preview_fps_range, CameraControl*, int*, int*);
 IMPLEMENT_VOID_FUNCTION2(android_camera_get_preview_fps, CameraControl*, int*);
 IMPLEMENT_VOID_FUNCTION2(android_camera_get_preview_texture_transformation, CameraControl*, float*);
+IMPLEMENT_VOID_FUNCTION3(android_camera_get_video_size, CameraControl*, int*, int*);
 
 // Enumerators
 IMPLEMENT_VOID_FUNCTION3(android_camera_enumerate_supported_picture_sizes, CameraControl*, size_callback, void*);
 IMPLEMENT_VOID_FUNCTION3(android_camera_enumerate_supported_preview_sizes, CameraControl*, size_callback, void*);
+IMPLEMENT_VOID_FUNCTION3(android_camera_enumerate_supported_video_sizes, CameraControl*, size_callback, void*);
 
 IMPLEMENT_VOID_FUNCTION1(android_camera_update_preview_texture, CameraControl*);
 
@@ -168,6 +181,23 @@ IMPLEMENT_VOID_FUNCTION2(android_camera_start_zoom, CameraControl*, int32_t);
 IMPLEMENT_VOID_FUNCTION2(android_camera_set_zoom, CameraControl*, int32_t);
 IMPLEMENT_VOID_FUNCTION1(android_camera_stop_zoom, CameraControl*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_take_snapshot, CameraControl*);
+
+// Recorder
+IMPLEMENT_FUNCTION0(MediaRecorderWrapper*, android_media_new_recorder);
+IMPLEMENT_FUNCTION1(int, android_recorder_initCheck, MediaRecorderWrapper*);
+IMPLEMENT_FUNCTION2(int, android_recorder_setCamera, MediaRecorderWrapper*, CameraControl*);
+IMPLEMENT_FUNCTION2(int, android_recorder_setVideoSource, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setAudioSource, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setOutputFormat, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setVideoEncoder, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setAudioEncoder, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setOutputFile, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION3(int, android_recorder_setVideoSize, MediaRecorderWrapper*, int, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setVideoFrameRate, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION1(int, android_recorder_start, MediaRecorderWrapper*);
+IMPLEMENT_FUNCTION1(int, android_recorder_stop, MediaRecorderWrapper*);
+IMPLEMENT_FUNCTION1(int, android_recorder_prepare, MediaRecorderWrapper*);
+IMPLEMENT_FUNCTION1(int, android_recorder_reset, MediaRecorderWrapper*);
 
 #ifdef __cplusplus
 }

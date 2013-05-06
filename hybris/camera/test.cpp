@@ -17,6 +17,7 @@
 
 #include "camera_compatibility_layer.h"
 #include "camera_compatibility_layer_capabilities.h"
+#include "recorder_compatibility_layer.h"
 
 #include <input_stack_compatibility_layer.h>
 #include <input_stack_compatibility_layer_codes_key.h>
@@ -41,6 +42,8 @@
 int shot_counter = 1;
 int32_t current_zoom_level = 1;
 bool new_camera_frame_available = true;
+MediaRecorderWrapper *mr = 0;
+
 EffectMode next_effect()
 {
     static EffectMode current_effect = EFFECT_MODE_NONE;
@@ -146,15 +149,99 @@ void on_new_input_event(Event* event, void* context)
 
         CameraControl* cc = static_cast<CameraControl*>(context);
         
+        int ret;
         switch(event->details.key.key_code)
         {
             case ISCL_KEYCODE_VOLUME_UP:
-                printf("\tZooming in now.\n");
-                android_camera_start_zoom(cc, current_zoom_level+1);
+//                printf("\tZooming in now.\n");
+//                android_camera_start_zoom(cc, current_zoom_level+1);
+                printf("Starting video recording\n");
+
+                android_camera_set_video_size(cc, 1280, 720);
+
+                android_camera_unlock(cc);
+
+                ret = android_recorder_setCamera(mr, cc);
+                if (ret < 0) {
+                    printf("android_recorder_setCamera() failed\n");
+                    return;
+                }
+                //state initial / idle
+                ret = android_recorder_setAudioSource(mr, 5);
+                if (ret < 0) {
+                    printf("android_recorder_setAudioSource() failed\n");
+                    return;
+                }
+                ret = android_recorder_setVideoSource(mr, 1);
+                if (ret < 0) {
+                    printf("android_recorder_setVideoSource() failed\n");
+                    return;
+                }
+                //state initialized
+                ret = android_recorder_setOutputFormat(mr, 2);
+                if (ret < 0) {
+                    printf("android_recorder_setOutputFormat() failed\n");
+                    return;
+                }
+                //state DataSourceConfigured
+                ret = android_recorder_setAudioEncoder(mr, 3);
+                if (ret < 0) {
+                    printf("android_recorder_setAudioEncoder() failed\n");
+                    return;
+                }
+                ret = android_recorder_setVideoEncoder(mr, 2);
+                if (ret < 0) {
+                    printf("android_recorder_setVideoEncoder() failed\n");
+                    return;
+                }
+
+                int fd;
+                fd = open("/root/test_video.avi", O_WRONLY | O_CREAT);
+                if (fd < 0) {
+                    printf("Could not open file for video recording\n");
+                    printf("FD: %i\n", fd);
+                    return;
+                }
+                ret = android_recorder_setOutputFile(mr, fd);
+                if (ret < 0) {
+                    printf("android_recorder_setOutputFile() failed\n");
+                    return;
+                }
+                ret = android_recorder_setVideoFrameRate(mr, 30);
+                if (ret < 0) {
+                    printf("android_recorder_setVideoFrameRate() failed\n");
+                    return;
+                }
+
+                ret = android_recorder_prepare(mr);
+                if (ret < 0) {
+                    printf("android_recorder_prepare() failed\n");
+                    return;
+                }
+                //state prepared
+                ret = android_recorder_start(mr);
+                if (ret < 0) {
+                    printf("android_recorder_start() failed\n");
+                    return;
+                }
                 break;
             case ISCL_KEYCODE_VOLUME_DOWN:
-                printf("\tZooming out now.\n");
-                android_camera_start_zoom(cc, current_zoom_level-1);
+//                printf("\tZooming out now.\n");
+//                android_camera_start_zoom(cc, current_zoom_level-1);
+                printf("Stoping video recording\n");
+                ret = android_recorder_stop(mr);
+                printf("Stoping video recording returned\n");
+                if (ret < 0) {
+                    printf("android_recorder_stop() failed\n");
+                    return;
+                }
+                printf("Stopped video recording\n");
+                ret = android_recorder_reset(mr);
+                if (ret < 0) {
+                    printf("android_recorder_reset() failed\n");
+                    return;
+                }
+                printf("Reset video recorder\n");
                 break;
             case ISCL_KEYCODE_POWER:
                 printf("\tTaking a photo now.\n");
@@ -375,6 +462,8 @@ int main(int argc, char** argv)
 
     listener.context = cc;
 
+    mr = android_media_new_recorder();
+
     AndroidEventListener event_listener;
     event_listener.on_new_event = on_new_input_event;
     event_listener.context = cc;
@@ -385,8 +474,13 @@ int main(int argc, char** argv)
     android_input_stack_start();
         
     android_camera_dump_parameters(cc);
+    printf("Supported picture sizes:\n");
     android_camera_enumerate_supported_picture_sizes(cc, size_cb, NULL);
+    printf("Supported preview sizes:\n");
     android_camera_enumerate_supported_preview_sizes(cc, size_cb, NULL);
+
+    printf("Supported video sizes:\n");
+    android_camera_enumerate_supported_video_sizes(cc, size_cb, NULL);
 
     int min_fps, max_fps, current_fps;
     android_camera_get_preview_fps_range(cc, &min_fps, &max_fps);
@@ -394,17 +488,19 @@ int main(int argc, char** argv)
     android_camera_get_preview_fps(cc, &current_fps);
     printf("Current preview fps range: %d\n", current_fps);
 
-    android_camera_set_preview_size(cc, 960, 720);
+    android_camera_set_preview_size(cc, 1280, 720);
     
     int width, height;
     android_camera_get_preview_size(cc, &width, &height);
     printf("Current preview size: [%d,%d]\n", width, height);
     android_camera_get_picture_size(cc, &width, &height);
     printf("Current picture size: [%d,%d]\n", width, height);
+    android_camera_get_video_size(cc, &width, &height);
+    printf("Current video size: [%d,%d]\n", width, height);
     int zoom;
     android_camera_get_max_zoom(cc, &zoom);
-    printf("Max zoom: %d \n", zoom);
-    android_camera_set_zoom(cc, 10);
+//    printf("Max zoom: %d \n", zoom);
+//    android_camera_set_zoom(cc, 10);
 
     EffectMode effect_mode;
     FlashMode flash_mode;
@@ -435,7 +531,7 @@ int main(int argc, char** argv)
     EGLDisplay disp = sf_client_get_egl_display(cs.client);
     EGLSurface surface = sf_surface_get_egl_surface(cs.surface);
     
-    sf_surface_make_current(cs.surface);    
+    sf_surface_make_current(cs.surface);
     RenderData render_data;
     GLuint preview_texture_id;
     glGenTextures(1, &preview_texture_id);
@@ -487,21 +583,21 @@ int main(int argc, char** argv)
         glEnableVertexAttribArray(render_data.position_loc);
         glEnableVertexAttribArray(render_data.tex_coord_loc);
         // Load the vertex position
-        glVertexAttribPointer(render_data.position_loc, 
-                              3, 
-                              GL_FLOAT, 
-                              GL_FALSE, 
-                              5 * sizeof(GLfloat), 
+        glVertexAttribPointer(render_data.position_loc,
+                              3,
+                              GL_FLOAT,
+                              GL_FALSE,
+                              5 * sizeof(GLfloat),
                               vVertices);
         // Load the texture coordinate
-        glVertexAttribPointer(render_data.tex_coord_loc, 
-                              2, 
+        glVertexAttribPointer(render_data.tex_coord_loc,
+                              2,
                               GL_FLOAT,
-                              GL_FALSE, 
-                              5 * sizeof(GLfloat), 
+                              GL_FALSE,
+                              5 * sizeof(GLfloat),
                               vVertices+3);
         
-        glActiveTexture(GL_TEXTURE0);        
+        glActiveTexture(GL_TEXTURE0);
         // Set the sampler texture unit to 0
         glUniform1i(render_data.sampler_loc, 0);
         glUniform1i(render_data.matrix_loc, 0);
