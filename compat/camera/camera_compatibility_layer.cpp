@@ -25,13 +25,13 @@
 #include <binder/ProcessState.h>
 #include <camera/Camera.h>
 #include <camera/CameraParameters.h>
-
 #include <gui/SurfaceTexture.h>
 
 #undef LOG_TAG
 #define LOG_TAG "CameraCompatibilityLayer"
 #include <utils/KeyedVector.h>
 #include <utils/Log.h>
+
 
 #define REPORT_FUNCTION() ALOGV("%s \n", __PRETTY_FUNCTION__);
 
@@ -668,10 +668,6 @@ void android_camera_set_rotation(CameraControl* control, int rotation)
         rotation);
     control->camera->setParameters(control->camera_parameters.flatten());
 }
-
-/******************************************************************************
-Video
-******************************************************************************/
 
 void android_camera_enumerate_supported_video_sizes(CameraControl* control, size_callback cb, void* ctx)
 {
