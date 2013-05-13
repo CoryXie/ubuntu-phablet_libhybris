@@ -18,7 +18,6 @@
 
 #include <camera_compatibility_layer.h>
 #include <camera_compatibility_layer_capabilities.h>
-#include <recorder_compatibility_layer.h>
 
 #include <assert.h>
 #include <dlfcn.h>
@@ -111,13 +110,6 @@ extern "C" {
         static void (*f)(arg1, arg2) = NULL;                    \
         CAMERA_DLSYM(&f, #symbol);                              \
         f(_1, _2); }
-
-#define IMPLEMENT_FUNCTION3(return_type, symbol, arg1, arg2, arg3) \
-    return_type symbol(arg1 _1, arg2 _2, arg3 _3)                        \
-    {                                                           \
-        static return_type (*f)(arg1, arg2, arg3) = NULL;             \
-        CAMERA_DLSYM(&f, #symbol);                              \
-        return f(_1, _2, _3); }
 
 #define IMPLEMENT_VOID_FUNCTION3(symbol, arg1, arg2, arg3)      \
     void symbol(arg1 _1, arg2 _2, arg3 _3)                      \

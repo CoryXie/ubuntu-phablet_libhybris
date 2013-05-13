@@ -92,7 +92,7 @@ test_media_player: libmediaplayer.so libsf.so libis.so media/test_player.cpp lib
 	$(CXX) -g -o $@ media/test_player.cpp libmediaplayer.so libsf.so libis.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/media -I../compat/input -I../compat/surface_flinger
 
 test_recorder: libmediaplayer.so libcamera.so libsf.so libis.so media/test_recorder.cpp libhybris_ics.so
-	$(CXX) -g -o $@ media/test_recorder.cpp libmediaplayer.so libcamera.so libsf.so libis.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/camera -I../compat/input -I../compat/surface_flinger
+	$(CXX) -g -o $@ media/test_recorder.cpp libmediaplayer.so libcamera.so libsf.so libis.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/media -I../compat/camera -I../compat/input -I../compat/surface_flinger
 
 test_hw: libhardware.so hardware/test.c libhybris_ics.so
 	$(CC) -g -o $@ hardware/test.c libhardware.so libhybris_ics.so  -I .

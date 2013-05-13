@@ -19,16 +19,12 @@
 #include "camera_compatibility_layer.h"
 #include "camera_compatibility_layer_capabilities.h"
 #include "camera_compatibility_layer_configuration_translator.h"
-#include "recorder_compatibility_layer.h"
 
 #include <surface_flinger_compatibility_layer_internal.h>
 
 #include <binder/ProcessState.h>
 #include <camera/Camera.h>
 #include <camera/CameraParameters.h>
-
-#include <camera/ICamera.h>
-#include <media/mediarecorder.h>
 
 #include <gui/SurfaceTexture.h>
 
