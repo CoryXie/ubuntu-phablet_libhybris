@@ -182,23 +182,6 @@ IMPLEMENT_VOID_FUNCTION2(android_camera_set_zoom, CameraControl*, int32_t);
 IMPLEMENT_VOID_FUNCTION1(android_camera_stop_zoom, CameraControl*);
 IMPLEMENT_VOID_FUNCTION1(android_camera_take_snapshot, CameraControl*);
 
-// Recorder
-IMPLEMENT_FUNCTION0(MediaRecorderWrapper*, android_media_new_recorder);
-IMPLEMENT_FUNCTION1(int, android_recorder_initCheck, MediaRecorderWrapper*);
-IMPLEMENT_FUNCTION2(int, android_recorder_setCamera, MediaRecorderWrapper*, CameraControl*);
-IMPLEMENT_FUNCTION2(int, android_recorder_setVideoSource, MediaRecorderWrapper*, int);
-IMPLEMENT_FUNCTION2(int, android_recorder_setAudioSource, MediaRecorderWrapper*, int);
-IMPLEMENT_FUNCTION2(int, android_recorder_setOutputFormat, MediaRecorderWrapper*, int);
-IMPLEMENT_FUNCTION2(int, android_recorder_setVideoEncoder, MediaRecorderWrapper*, int);
-IMPLEMENT_FUNCTION2(int, android_recorder_setAudioEncoder, MediaRecorderWrapper*, int);
-IMPLEMENT_FUNCTION2(int, android_recorder_setOutputFile, MediaRecorderWrapper*, int);
-IMPLEMENT_FUNCTION3(int, android_recorder_setVideoSize, MediaRecorderWrapper*, int, int);
-IMPLEMENT_FUNCTION2(int, android_recorder_setVideoFrameRate, MediaRecorderWrapper*, int);
-IMPLEMENT_FUNCTION1(int, android_recorder_start, MediaRecorderWrapper*);
-IMPLEMENT_FUNCTION1(int, android_recorder_stop, MediaRecorderWrapper*);
-IMPLEMENT_FUNCTION1(int, android_recorder_prepare, MediaRecorderWrapper*);
-IMPLEMENT_FUNCTION1(int, android_recorder_reset, MediaRecorderWrapper*);
-
 #ifdef __cplusplus
 }
 #endif

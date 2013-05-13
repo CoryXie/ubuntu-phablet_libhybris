@@ -15,6 +15,7 @@
  *
  * Authored by: Thomas Voß <thomas.voss@canonical.com>
  */
+#include "camera_control.h"
 #include "camera_compatibility_layer.h"
 #include "camera_compatibility_layer_capabilities.h"
 #include "camera_compatibility_layer_configuration_translator.h"
@@ -36,95 +37,85 @@
 #include <utils/KeyedVector.h>
 #include <utils/Log.h>
 
-#include <utils/Log.h>
-
 #define REPORT_FUNCTION() ALOGV("%s \n", __PRETTY_FUNCTION__);
 
-struct CameraControl : public android::CameraListener,
-    public android::SurfaceTexture::FrameAvailableListener
+
+// From android::SurfaceTexture::FrameAvailableListener
+void CameraControl::onFrameAvailable()
 {
-    android::Mutex guard;
-    CameraControlListener* listener;
-    android::sp<android::Camera> camera;
-    android::CameraParameters camera_parameters;
-    android::sp<android::SurfaceTexture> preview_texture;
+    REPORT_FUNCTION();
+    if (listener)
+        listener->on_preview_texture_needs_update_cb(listener->context);
+}
 
-    // From android::SurfaceTexture::FrameAvailableListener
-    void onFrameAvailable()
+// From android::CameraListener
+void CameraControl::notify(int32_t msg_type, int32_t ext1, int32_t ext2)
+{
+    REPORT_FUNCTION();
+    printf("\text1: %d, ext2: %d \n", ext1, ext2);
+    if (!listener)
+        return;
+
+    switch(msg_type)
     {
-        REPORT_FUNCTION();
-        if (listener)
-            listener->on_preview_texture_needs_update_cb(listener->context);
+    case CAMERA_MSG_ERROR:
+        if (listener->on_msg_error_cb)
+            listener->on_msg_error_cb(listener->context);
+        break;
+    case CAMERA_MSG_SHUTTER:
+        if (listener->on_msg_shutter_cb)
+            listener->on_msg_shutter_cb(listener->context);
+        break;
+    case CAMERA_MSG_ZOOM:
+        if (listener->on_msg_zoom_cb)
+            listener->on_msg_zoom_cb(listener->context, ext1);
+        break;
+    case CAMERA_MSG_FOCUS:
+        if (listener->on_msg_focus_cb)
+            listener->on_msg_focus_cb(listener->context);
+        break;
+    default:
+        break;
+    }
+}
+
+void CameraControl::postData(
+    int32_t msg_type,
+    const android::sp<android::IMemory>& data,
+    camera_frame_metadata_t* metadata)
+{
+    REPORT_FUNCTION();
+    if (!listener)
+        return;
+
+    switch(msg_type)
+    {
+    case CAMERA_MSG_RAW_IMAGE:
+        if (listener->on_data_raw_image_cb)
+            listener->on_data_raw_image_cb(data->pointer(), data->size(), listener->context);
+        break;
+    case CAMERA_MSG_COMPRESSED_IMAGE:
+        if (listener->on_data_compressed_image_cb)
+            listener->on_data_compressed_image_cb(data->pointer(), data->size(), listener->context);
+        break;
+    default:
+        break;
     }
 
-    // From android::CameraListener
-    void notify(int32_t msg_type, int32_t ext1, int32_t ext2)
-    {
-        REPORT_FUNCTION();
-        printf("\text1: %d, ext2: %d \n", ext1, ext2);
-        if (!listener)
-            return;
+    camera->releaseRecordingFrame(data);
+}
 
-        switch(msg_type)
-        {
-        case CAMERA_MSG_ERROR:
-            if (listener->on_msg_error_cb)
-                listener->on_msg_error_cb(listener->context);
-            break;
-        case CAMERA_MSG_SHUTTER:
-            if (listener->on_msg_shutter_cb)
-                listener->on_msg_shutter_cb(listener->context);
-            break;
-        case CAMERA_MSG_ZOOM:
-            if (listener->on_msg_zoom_cb)
-                listener->on_msg_zoom_cb(listener->context, ext1);
-            break;
-        case CAMERA_MSG_FOCUS:
-            if (listener->on_msg_focus_cb)
-                listener->on_msg_focus_cb(listener->context);
-            break;
-        default:
-            break;
-        }
-    }
+void CameraControl::postDataTimestamp(
+    nsecs_t timestamp,
+    int32_t msg_type,
+    const android::sp<android::IMemory>& data)
+{
+    REPORT_FUNCTION();
+    (void) timestamp;
+    (void) msg_type;
+    (void) data;
+}
 
-    void postData(
-        int32_t msg_type,
-        const android::sp<android::IMemory>& data,
-        camera_frame_metadata_t* metadata)
-    {
-        REPORT_FUNCTION()
-        if (!listener)
-            return;
-
-        switch(msg_type)
-        {
-        case CAMERA_MSG_RAW_IMAGE:
-            if (listener->on_data_raw_image_cb)
-                listener->on_data_raw_image_cb(data->pointer(), data->size(), listener->context);
-            break;
-        case CAMERA_MSG_COMPRESSED_IMAGE:
-            if (listener->on_data_compressed_image_cb)
-                listener->on_data_compressed_image_cb(data->pointer(), data->size(), listener->context);
-            break;
-        default:
-            break;
-        }
-
-        camera->releaseRecordingFrame(data);
-    }
-
-    void postDataTimestamp(
-        nsecs_t timestamp,
-        int32_t msg_type,
-        const android::sp<android::IMemory>& data)
-    {
-        REPORT_FUNCTION()
-        (void) timestamp;
-        (void) msg_type;
-        (void) data;
-    }
-};
 namespace
 {
 
@@ -721,179 +712,4 @@ void android_camera_set_video_size(CameraControl* control, int width, int height
 
     control->camera_parameters.setVideoSize(width, height);
     control->camera->setParameters(control->camera_parameters.flatten());
-}
-
-/******************************************************************************
-MediaRecorder
-******************************************************************************/
-
-class MediaRecorderListenerWrapper : public android::MediaRecorderListener
-{
-public:
-    MediaRecorderListenerWrapper()
-    {
-    }
-
-    void notify(int msg, int ext1, int ext2, const android::Parcel *obj)
-    {
-        ALOGV("\tmsg: %d, ext1: %d, ext2: %d \n", msg, ext1, ext2);
-
-        switch(msg)
-        {
-            default:
-                ALOGV("\tUnknown notification\n");
-        }
-    }
-
-private:
-};
-
-struct MediaRecorderWrapper : public android::MediaRecorder
-{
-public:
-    MediaRecorderWrapper()
-        : MediaRecorder()
-    {
-    }
-
-    ~MediaRecorderWrapper()
-    {
-        reset();
-    }
-
-private:
-    android::sp<MediaRecorderListenerWrapper> media_recorder_listener;
-}; // MediaRecorderWrapper
-
-
-MediaRecorderWrapper *android_media_new_recorder()
-{
-    REPORT_FUNCTION()
-
-    MediaRecorderWrapper *mr = new MediaRecorderWrapper;
-    if (mr == NULL)
-    {
-        ALOGE("Failed to create new MediaRecorderWrapper instance.");
-        return NULL;
-    }
-
-    return mr;
-}
-
-int android_recorder_initCheck(MediaRecorderWrapper *mr)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-
-    return mr->initCheck();
-}
-
-int android_recorder_setCamera(MediaRecorderWrapper *mr, CameraControl* control)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-    assert(control);
-
-    return mr->setCamera(control->camera->remote(), control->camera->getRecordingProxy());
-}
-
-// values defined in /frameworks/av/include/media/mediarecorder.h
-int android_recorder_setVideoSource(MediaRecorderWrapper *mr, int vs)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-
-    return mr->setVideoSource(vs);
-}
-
-// values are defined in /system/core/include/system/audio.h
-int android_recorder_setAudioSource(MediaRecorderWrapper *mr, int as)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-
-    return mr->setAudioSource(as);
-}
-
-// values defined in /frameworks/av/include/media/mediarecorder.h
-int android_recorder_setOutputFormat(MediaRecorderWrapper *mr, int of)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-
-    return mr->setOutputFormat(of);
-}
-
-// values defined in /frameworks/av/include/media/mediarecorder.h
-int android_recorder_setVideoEncoder(MediaRecorderWrapper *mr, int ve)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-
-    return mr->setVideoEncoder(ve);
-}
-
-// values defined in /frameworks/av/include/media/mediarecorder.h
-int android_recorder_setAudioEncoder(MediaRecorderWrapper *mr, int ae)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-
-    return mr->setAudioEncoder(ae);
-}
-
-int android_recorder_setOutputFile(MediaRecorderWrapper *mr, int fd)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-
-    return mr->setOutputFile(fd, 0, 0);
-}
-
-int android_recorder_setVideoSize(MediaRecorderWrapper *mr, int width, int height)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-
-    return mr->setVideoSize(width, height);
-}
-
-int android_recorder_setVideoFrameRate(MediaRecorderWrapper *mr, int frames_per_second)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-
-    return mr->setVideoFrameRate(frames_per_second);
-}
-
-int android_recorder_start(MediaRecorderWrapper *mr)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-
-    return mr->start();
-}
-
-int android_recorder_stop(MediaRecorderWrapper *mr)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-
-    return mr->stop();
-}
-
-int android_recorder_prepare(MediaRecorderWrapper *mr)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-
-    return mr->prepare();
-}
-
-int android_recorder_reset(MediaRecorderWrapper *mr)
-{
-    REPORT_FUNCTION()
-    assert(mr);
-
-    return mr->reset();
 }

@@ -4,12 +4,14 @@ include $(CLEAR_VARS)
 HYBRIS_PATH := $(LOCAL_PATH)/../../
 
 LOCAL_SRC_FILES:= \
-	media_compatibility_layer.cpp
+	media_compatibility_layer.cpp \
+	recorder_compatibility_layer.cpp
 
 LOCAL_MODULE:= libmedia_compat_layer
 LOCAL_MODULE_TAGS := optional
 
 LOCAL_C_INCLUDES := \
+	$(HYBRIS_PATH)/compat/camera \
 	$(HYBRIS_PATH)/compat/surface_flinger \
 	$(HYBRIS_PATH)/compat/input \
 	frameworks/base/media/libstagefright/include \
@@ -18,6 +20,7 @@ LOCAL_C_INCLUDES := \
 
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
+	libcamera_client \
 	libutils \
 	libbinder \
 	libhardware \
@@ -30,7 +33,7 @@ include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 
-LOCAL_SRC_FILES:=		\
+LOCAL_SRC_FILES:= \
 	test_player.cpp \
 
 LOCAL_MODULE:= test_player

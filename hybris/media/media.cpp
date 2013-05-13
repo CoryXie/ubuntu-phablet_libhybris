@@ -17,6 +17,7 @@
  */
 
 #include <media_compatibility_layer.h>
+#include <recorder_compatibility_layer.h>
 
 #include <assert.h>
 #include <dlfcn.h>
@@ -117,6 +118,13 @@ extern "C" {
         MEDIA_PLAYER_DLSYM(&f, #symbol);                        \
         f(_1, _2); }
 
+#define IMPLEMENT_FUNCTION3(return_type, symbol, arg1, arg2, arg3) \
+    return_type symbol(arg1 _1, arg2 _2, arg3 _3)                        \
+    {                                                           \
+        static return_type (*f)(arg1, arg2, arg3) = NULL;             \
+        MEDIA_PLAYER_DLSYM(&f, #symbol);                              \
+        return f(_1, _2, _3); }
+
 #define IMPLEMENT_VOID_FUNCTION3(symbol, arg1, arg2, arg3)      \
     void symbol(arg1 _1, arg2 _2, arg3 _3)                      \
     {                                                           \
@@ -150,6 +158,24 @@ IMPLEMENT_VOID_FUNCTION3(android_media_set_video_texture_needs_update_cb, MediaP
 IMPLEMENT_VOID_FUNCTION3(android_media_set_error_cb, MediaPlayerWrapper *, on_msg_error, void*);
 IMPLEMENT_VOID_FUNCTION3(android_media_set_playback_complete_cb, MediaPlayerWrapper *, on_playback_complete, void*);
 IMPLEMENT_VOID_FUNCTION3(android_media_set_media_prepared_cb, MediaPlayerWrapper *, on_media_prepared, void*);
+
+// Recorder
+IMPLEMENT_FUNCTION0(MediaRecorderWrapper*, android_media_new_recorder);
+IMPLEMENT_FUNCTION1(int, android_recorder_initCheck, MediaRecorderWrapper*);
+IMPLEMENT_FUNCTION2(int, android_recorder_setCamera, MediaRecorderWrapper*, CameraControl*);
+IMPLEMENT_FUNCTION2(int, android_recorder_setVideoSource, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setAudioSource, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setOutputFormat, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setVideoEncoder, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setAudioEncoder, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setOutputFile, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION3(int, android_recorder_setVideoSize, MediaRecorderWrapper*, int, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setVideoFrameRate, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setParameters, MediaRecorderWrapper*, const char*);
+IMPLEMENT_FUNCTION1(int, android_recorder_start, MediaRecorderWrapper*);
+IMPLEMENT_FUNCTION1(int, android_recorder_stop, MediaRecorderWrapper*);
+IMPLEMENT_FUNCTION1(int, android_recorder_prepare, MediaRecorderWrapper*);
+IMPLEMENT_FUNCTION1(int, android_recorder_reset, MediaRecorderWrapper*);
 
 #ifdef __cplusplus
 }
