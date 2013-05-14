@@ -124,77 +124,72 @@ int android_recorder_setCamera(MediaRecorderWrapper *mr, CameraControl* control)
 /*!
  * \brief android_recorder_setVideoSource sets the video source.
  * If no video source is set, only audio is recorded.
- * values defined in /frameworks/av/include/media/mediarecorder.h
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param vs
  * \return -1 if an error occured
  */
-int android_recorder_setVideoSource(MediaRecorderWrapper *mr, int vs)
+int android_recorder_setVideoSource(MediaRecorderWrapper *mr, VideoSource vs)
 {
     REPORT_FUNCTION()
     assert(mr);
 
-    return mr->setVideoSource(vs);
+    return mr->setVideoSource((int)vs);
 }
 
 /*!
  * \brief android_recorder_setAudioSource
- * values are defined in /system/core/include/system/audio.h
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param as
  * \return -1 if an error occured
  */
-int android_recorder_setAudioSource(MediaRecorderWrapper *mr, int as)
+int android_recorder_setAudioSource(MediaRecorderWrapper *mr, AudioSource as)
 {
     REPORT_FUNCTION()
     assert(mr);
 
-    return mr->setAudioSource(as);
+    return mr->setAudioSource((int)as);
 }
 
 /*!
  * \brief android_recorder_setOutputFormat
- * values defined in /frameworks/av/include/media/mediarecorder.h
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param of
  * \return -1 if an error occured
  */
-int android_recorder_setOutputFormat(MediaRecorderWrapper *mr, int of)
+int android_recorder_setOutputFormat(MediaRecorderWrapper *mr, OutputFormat of)
 {
     REPORT_FUNCTION()
     assert(mr);
 
-    return mr->setOutputFormat(of);
+    return mr->setOutputFormat((int)of);
 }
 
 /*!
  * \brief android_recorder_setVideoEncoder
- * values defined in /frameworks/av/include/media/mediarecorder.h
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param ve
  * \return -1 if an error occured
  */
-int android_recorder_setVideoEncoder(MediaRecorderWrapper *mr, int ve)
+int android_recorder_setVideoEncoder(MediaRecorderWrapper *mr, VideoEncoder ve)
 {
     REPORT_FUNCTION()
     assert(mr);
 
-    return mr->setVideoEncoder(ve);
+    return mr->setVideoEncoder((int)ve);
 }
 
 /*!
  * \brief android_recorder_setAudioEncoder
- * values defined in /frameworks/av/include/media/mediarecorder.h
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param ae
  * \return -1 if an error occured
  */
-int android_recorder_setAudioEncoder(MediaRecorderWrapper *mr, int ae)
+int android_recorder_setAudioEncoder(MediaRecorderWrapper *mr, AudioEncoder ae)
 {
     REPORT_FUNCTION()
     assert(mr);
 
-    return mr->setAudioEncoder(ae);
+    return mr->setAudioEncoder((int)ae);
 }
 
 /*!

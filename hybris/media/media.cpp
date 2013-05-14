@@ -163,11 +163,11 @@ IMPLEMENT_VOID_FUNCTION3(android_media_set_media_prepared_cb, MediaPlayerWrapper
 IMPLEMENT_FUNCTION0(MediaRecorderWrapper*, android_media_new_recorder);
 IMPLEMENT_FUNCTION1(int, android_recorder_initCheck, MediaRecorderWrapper*);
 IMPLEMENT_FUNCTION2(int, android_recorder_setCamera, MediaRecorderWrapper*, CameraControl*);
-IMPLEMENT_FUNCTION2(int, android_recorder_setVideoSource, MediaRecorderWrapper*, int);
-IMPLEMENT_FUNCTION2(int, android_recorder_setAudioSource, MediaRecorderWrapper*, int);
-IMPLEMENT_FUNCTION2(int, android_recorder_setOutputFormat, MediaRecorderWrapper*, int);
-IMPLEMENT_FUNCTION2(int, android_recorder_setVideoEncoder, MediaRecorderWrapper*, int);
-IMPLEMENT_FUNCTION2(int, android_recorder_setAudioEncoder, MediaRecorderWrapper*, int);
+IMPLEMENT_FUNCTION2(int, android_recorder_setVideoSource, MediaRecorderWrapper*, VideoSource);
+IMPLEMENT_FUNCTION2(int, android_recorder_setAudioSource, MediaRecorderWrapper*, AudioSource);
+IMPLEMENT_FUNCTION2(int, android_recorder_setOutputFormat, MediaRecorderWrapper*, OutputFormat);
+IMPLEMENT_FUNCTION2(int, android_recorder_setVideoEncoder, MediaRecorderWrapper*, VideoEncoder);
+IMPLEMENT_FUNCTION2(int, android_recorder_setAudioEncoder, MediaRecorderWrapper*, AudioEncoder);
 IMPLEMENT_FUNCTION2(int, android_recorder_setOutputFile, MediaRecorderWrapper*, int);
 IMPLEMENT_FUNCTION3(int, android_recorder_setVideoSize, MediaRecorderWrapper*, int, int);
 IMPLEMENT_FUNCTION2(int, android_recorder_setVideoFrameRate, MediaRecorderWrapper*, int);

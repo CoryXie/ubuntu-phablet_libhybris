@@ -114,29 +114,29 @@ void on_new_input_event(Event* event, void* context)
                     return;
                 }
                 //state initial / idle
-                ret = android_recorder_setAudioSource(mr, 5);
+                ret = android_recorder_setAudioSource(mr, ANDROID_AUDIO_SOURCE_CAMCORDER);
                 if (ret < 0) {
                     printf("android_recorder_setAudioSource() failed\n");
                     return;
                 }
-                ret = android_recorder_setVideoSource(mr, 1);
+                ret = android_recorder_setVideoSource(mr, ANDROID_VIDEO_SOURCE_CAMERA);
                 if (ret < 0) {
                     printf("android_recorder_setVideoSource() failed\n");
                     return;
                 }
                 //state initialized
-                ret = android_recorder_setOutputFormat(mr, 2);
+                ret = android_recorder_setOutputFormat(mr, ANDROID_OUTPUT_FORMAT_MPEG_4);
                 if (ret < 0) {
                     printf("android_recorder_setOutputFormat() failed\n");
                     return;
                 }
                 //state DataSourceConfigured
-                ret = android_recorder_setAudioEncoder(mr, 3);
+                ret = android_recorder_setAudioEncoder(mr, ANDROID_AUDIO_ENCODER_AAC);
                 if (ret < 0) {
                     printf("android_recorder_setAudioEncoder() failed\n");
                     return;
                 }
-                ret = android_recorder_setVideoEncoder(mr, 2);
+                ret = android_recorder_setVideoEncoder(mr, ANDROID_VIDEO_ENCODER_H264);
                 if (ret < 0) {
                     printf("android_recorder_setVideoEncoder() failed\n");
                     return;
