@@ -673,6 +673,7 @@ void android_camera_enumerate_supported_video_sizes(CameraControl* control, size
 {
     REPORT_FUNCTION();
     assert(control);
+    assert(cb);
 
     android::Mutex::Autolock al(control->guard);
     android::Vector<android::Size> sizes;

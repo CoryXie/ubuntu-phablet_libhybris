@@ -369,6 +369,10 @@ struct RenderData
 
 int main(int argc, char** argv)
 {
+    printf("Test application for video recording using the camera\n");
+    printf("Recording start with volume up button. And stops with volume down.\n");
+    printf("The result is stored to /root/test_video.avi\n\n");
+
     CameraControlListener listener;
     memset(&listener, 0, sizeof(listener));
     listener.on_msg_error_cb = error_msg_cb;

@@ -74,9 +74,11 @@ private:
     android::sp<MediaRecorderListenerWrapper> media_recorder_listener;
 };
 
+using namespace android;
+
 /*!
  * \brief android_media_new_recorder creates a new MediaRecorder
- * \return New MediaRecorder object
+ * \return New MediaRecorder object, or NULL if the object could not be created.
  */
 MediaRecorderWrapper *android_media_new_recorder()
 {
@@ -95,12 +97,17 @@ MediaRecorderWrapper *android_media_new_recorder()
 /*!
  * \brief android_recorder_initCheck
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_initCheck(MediaRecorderWrapper *mr)
 {
     REPORT_FUNCTION()
-    assert(mr);
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
 
     return mr->initCheck();
 }
@@ -110,13 +117,22 @@ int android_recorder_initCheck(MediaRecorderWrapper *mr)
  * from the camera
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param control Wrapper for the camera (see camera in hybris)
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_setCamera(MediaRecorderWrapper *mr, CameraControl* control)
 {
     REPORT_FUNCTION()
-    assert(mr);
-    assert(control);
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
+    if (control == NULL)
+    {
+        ALOGE("control must not be NULL");
+        return BAD_VALUE;
+    }
 
     return mr->setCamera(control->camera->remote(), control->camera->getRecordingProxy());
 }
@@ -126,82 +142,112 @@ int android_recorder_setCamera(MediaRecorderWrapper *mr, CameraControl* control)
  * If no video source is set, only audio is recorded.
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param vs
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_setVideoSource(MediaRecorderWrapper *mr, VideoSource vs)
 {
     REPORT_FUNCTION()
-    assert(mr);
 
-    return mr->setVideoSource((int)vs);
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
+
+    return mr->setVideoSource(static_cast<int>(vs));
 }
 
 /*!
  * \brief android_recorder_setAudioSource
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param as
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_setAudioSource(MediaRecorderWrapper *mr, AudioSource as)
 {
     REPORT_FUNCTION()
-    assert(mr);
 
-    return mr->setAudioSource((int)as);
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
+
+    return mr->setAudioSource(static_cast<int>(as));
 }
 
 /*!
  * \brief android_recorder_setOutputFormat
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param of
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_setOutputFormat(MediaRecorderWrapper *mr, OutputFormat of)
 {
     REPORT_FUNCTION()
-    assert(mr);
 
-    return mr->setOutputFormat((int)of);
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
+
+    return mr->setOutputFormat(static_cast<int>(of));
 }
 
 /*!
  * \brief android_recorder_setVideoEncoder
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param ve
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_setVideoEncoder(MediaRecorderWrapper *mr, VideoEncoder ve)
 {
     REPORT_FUNCTION()
-    assert(mr);
 
-    return mr->setVideoEncoder((int)ve);
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
+
+    return mr->setVideoEncoder(static_cast<int>(ve));
 }
 
 /*!
  * \brief android_recorder_setAudioEncoder
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param ae
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_setAudioEncoder(MediaRecorderWrapper *mr, AudioEncoder ae)
 {
     REPORT_FUNCTION()
-    assert(mr);
 
-    return mr->setAudioEncoder((int)ae);
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
+
+    return mr->setAudioEncoder(static_cast<int>(ae));
 }
 
 /*!
  * \brief android_recorder_setOutputFile sets the output file to the given file descriptor
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param fd File descriptor of an open file, that the stream can be written to
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_setOutputFile(MediaRecorderWrapper *mr, int fd)
 {
     REPORT_FUNCTION()
-    assert(mr);
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
 
     return mr->setOutputFile(fd, 0, 0);
 }
@@ -211,12 +257,17 @@ int android_recorder_setOutputFile(MediaRecorderWrapper *mr, int fd)
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param width
  * \param height
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_setVideoSize(MediaRecorderWrapper *mr, int width, int height)
 {
     REPORT_FUNCTION()
-    assert(mr);
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
 
     return mr->setVideoSize(width, height);
 }
@@ -225,12 +276,17 @@ int android_recorder_setVideoSize(MediaRecorderWrapper *mr, int width, int heigh
  * \brief android_recorder_setVideoFrameRate
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param frames_per_second
- * \return
+ * \return negative value if an error occured
  */
 int android_recorder_setVideoFrameRate(MediaRecorderWrapper *mr, int frames_per_second)
 {
     REPORT_FUNCTION()
-    assert(mr);
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
 
     return mr->setVideoFrameRate(frames_per_second);
 }
@@ -241,14 +297,19 @@ int android_recorder_setVideoFrameRate(MediaRecorderWrapper *mr, int frames_per_
  * For possible parameters look for example in StagefrightRecorder::setParameter()
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \param parameters list of parameters. format is "parameter1=value;parameter2=value"
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_setParameters(MediaRecorderWrapper *mr, const char* parameters)
 {
     REPORT_FUNCTION()
-    assert(mr);
 
-    android::String8 params(parameters);
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
+
+    String8 params(parameters);
     return mr->setParameters(params);
 }
 
@@ -256,12 +317,17 @@ int android_recorder_setParameters(MediaRecorderWrapper *mr, const char* paramet
  * \brief android_recorder_start starts the recording.
  * The MediaRecorder has to be in state "prepared"
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_start(MediaRecorderWrapper *mr)
 {
     REPORT_FUNCTION()
-    assert(mr);
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
 
     return mr->start();
 }
@@ -269,12 +335,17 @@ int android_recorder_start(MediaRecorderWrapper *mr)
 /*!
  * \brief android_recorder_stop Stops a running recording.
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_stop(MediaRecorderWrapper *mr)
 {
     REPORT_FUNCTION()
-    assert(mr);
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
 
     return mr->stop();
 }
@@ -282,12 +353,17 @@ int android_recorder_stop(MediaRecorderWrapper *mr)
 /*!
  * \brief android_recorder_prepare put the MediaRecorder into state "prepare"
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_prepare(MediaRecorderWrapper *mr)
 {
     REPORT_FUNCTION()
-    assert(mr);
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
 
     return mr->prepare();
 }
@@ -295,12 +371,17 @@ int android_recorder_prepare(MediaRecorderWrapper *mr)
 /*!
  * \brief android_recorder_reset resets the MediaRecorder
  * \param mr MediaRecorderWrapper that is the MediaRecorder object
- * \return -1 if an error occured
+ * \return negative value if an error occured
  */
 int android_recorder_reset(MediaRecorderWrapper *mr)
 {
     REPORT_FUNCTION()
-    assert(mr);
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
 
     return mr->reset();
 }
