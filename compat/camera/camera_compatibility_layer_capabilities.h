@@ -133,8 +133,13 @@ extern "C" {
     void android_camera_set_focus_region(CameraControl* control, FocusRegion* region);
     void android_camera_reset_focus_region(CameraControl* control);
 
-// Set photo metadata
+    // Set photo metadata
     void android_camera_set_rotation(CameraControl* control, int rotation);
+
+    // Video support
+    void android_camera_enumerate_supported_video_sizes(CameraControl* control, size_callback cb, void* ctx);
+    void android_camera_get_video_size(CameraControl* control, int* width, int* height);
+    void android_camera_set_video_size(CameraControl* control, int width, int height);
 
 #ifdef __cplusplus
 }

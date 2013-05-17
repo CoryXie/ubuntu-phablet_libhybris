@@ -83,6 +83,9 @@ extern "C" {
     // Disconnects the camera and deletes the pointer
     void android_camera_disconnect(CameraControl* control);
 
+    int android_camera_lock(CameraControl* control);
+    int android_camera_unlock(CameraControl* control);
+
     // Deletes the CameraControl
     void android_camera_delete(CameraControl* control);
 
