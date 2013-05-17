@@ -15,6 +15,7 @@
  *
  * Authored by: Thomas Voß <thomas.voss@canonical.com>
  */
+#include "camera_control.h"
 #include "camera_compatibility_layer.h"
 #include "camera_compatibility_layer_capabilities.h"
 #include "camera_compatibility_layer_configuration_translator.h"
@@ -34,89 +35,83 @@
 
 #define REPORT_FUNCTION() ALOGV("%s \n", __PRETTY_FUNCTION__);
 
-struct CameraControl : public android::CameraListener,
-    public android::SurfaceTexture::FrameAvailableListener
+
+// From android::SurfaceTexture::FrameAvailableListener
+void CameraControl::onFrameAvailable()
 {
-    android::Mutex guard;
-    CameraControlListener* listener;
-    android::sp<android::Camera> camera;
-    android::CameraParameters camera_parameters;
-    android::sp<android::SurfaceTexture> preview_texture;
+    REPORT_FUNCTION();
+    if (listener)
+        listener->on_preview_texture_needs_update_cb(listener->context);
+}
 
-    // From android::SurfaceTexture::FrameAvailableListener
-    void onFrameAvailable()
+// From android::CameraListener
+void CameraControl::notify(int32_t msg_type, int32_t ext1, int32_t ext2)
+{
+    REPORT_FUNCTION();
+    printf("\text1: %d, ext2: %d \n", ext1, ext2);
+    if (!listener)
+        return;
+
+    switch(msg_type)
     {
-        REPORT_FUNCTION();
-        if (listener)
-            listener->on_preview_texture_needs_update_cb(listener->context);
+    case CAMERA_MSG_ERROR:
+        if (listener->on_msg_error_cb)
+            listener->on_msg_error_cb(listener->context);
+        break;
+    case CAMERA_MSG_SHUTTER:
+        if (listener->on_msg_shutter_cb)
+            listener->on_msg_shutter_cb(listener->context);
+        break;
+    case CAMERA_MSG_ZOOM:
+        if (listener->on_msg_zoom_cb)
+            listener->on_msg_zoom_cb(listener->context, ext1);
+        break;
+    case CAMERA_MSG_FOCUS:
+        if (listener->on_msg_focus_cb)
+            listener->on_msg_focus_cb(listener->context);
+        break;
+    default:
+        break;
+    }
+}
+
+void CameraControl::postData(
+    int32_t msg_type,
+    const android::sp<android::IMemory>& data,
+    camera_frame_metadata_t* metadata)
+{
+    REPORT_FUNCTION();
+    if (!listener)
+        return;
+
+    switch(msg_type)
+    {
+    case CAMERA_MSG_RAW_IMAGE:
+        if (listener->on_data_raw_image_cb)
+            listener->on_data_raw_image_cb(data->pointer(), data->size(), listener->context);
+        break;
+    case CAMERA_MSG_COMPRESSED_IMAGE:
+        if (listener->on_data_compressed_image_cb)
+            listener->on_data_compressed_image_cb(data->pointer(), data->size(), listener->context);
+        break;
+    default:
+        break;
     }
 
-    // From android::CameraListener
-    void notify(int32_t msg_type, int32_t ext1, int32_t ext2)
-    {
-        REPORT_FUNCTION();
-        printf("\text1: %d, ext2: %d \n", ext1, ext2);
-        if (!listener)
-            return;
+    camera->releaseRecordingFrame(data);
+}
 
-        switch(msg_type)
-        {
-        case CAMERA_MSG_ERROR:
-            if (listener->on_msg_error_cb)
-                listener->on_msg_error_cb(listener->context);
-            break;
-        case CAMERA_MSG_SHUTTER:
-            if (listener->on_msg_shutter_cb)
-                listener->on_msg_shutter_cb(listener->context);
-            break;
-        case CAMERA_MSG_ZOOM:
-            if (listener->on_msg_zoom_cb)
-                listener->on_msg_zoom_cb(listener->context, ext1);
-            break;
-        case CAMERA_MSG_FOCUS:
-            if (listener->on_msg_focus_cb)
-                listener->on_msg_focus_cb(listener->context);
-            break;
-        default:
-            break;
-        }
-    }
+void CameraControl::postDataTimestamp(
+    nsecs_t timestamp,
+    int32_t msg_type,
+    const android::sp<android::IMemory>& data)
+{
+    REPORT_FUNCTION();
+    (void) timestamp;
+    (void) msg_type;
+    (void) data;
+}
 
-    void postData(
-        int32_t msg_type,
-        const android::sp<android::IMemory>& data,
-        camera_frame_metadata_t* metadata)
-    {
-        REPORT_FUNCTION()
-        if (!listener)
-            return;
-
-        switch(msg_type)
-        {
-        case CAMERA_MSG_RAW_IMAGE:
-            if (listener->on_data_raw_image_cb)
-                listener->on_data_raw_image_cb(data->pointer(), data->size(), listener->context);
-            break;
-        case CAMERA_MSG_COMPRESSED_IMAGE:
-            if (listener->on_data_compressed_image_cb)
-                listener->on_data_compressed_image_cb(data->pointer(), data->size(), listener->context);
-            break;
-        default:
-            break;
-        }
-    }
-
-    void postDataTimestamp(
-        nsecs_t timestamp,
-        int32_t msg_type,
-        const android::sp<android::IMemory>& data)
-    {
-        REPORT_FUNCTION()
-        (void) timestamp;
-        (void) msg_type;
-        (void) data;
-    }
-};
 namespace
 {
 
@@ -175,6 +170,18 @@ void android_camera_disconnect(CameraControl* control)
     android::Mutex::Autolock al(control->guard);
     control->camera->disconnect();
     control->camera->unlock();
+}
+
+int android_camera_lock(CameraControl* control)
+{
+    android::Mutex::Autolock al(control->guard);
+    return control->camera->lock();
+}
+
+int android_camera_unlock(CameraControl* control)
+{
+    android::Mutex::Autolock al(control->guard);
+    return control->camera->unlock();
 }
 
 void android_camera_delete(CameraControl* control)
@@ -662,3 +669,40 @@ void android_camera_set_rotation(CameraControl* control, int rotation)
     control->camera->setParameters(control->camera_parameters.flatten());
 }
 
+void android_camera_enumerate_supported_video_sizes(CameraControl* control, size_callback cb, void* ctx)
+{
+    REPORT_FUNCTION();
+    assert(control);
+    assert(cb);
+
+    android::Mutex::Autolock al(control->guard);
+    android::Vector<android::Size> sizes;
+    control->camera_parameters.getSupportedVideoSizes(sizes);
+
+    for(unsigned int i = 0; i < sizes.size(); i++)
+    {
+        cb(ctx, sizes[i].width, sizes[i].height);
+    }
+}
+
+void android_camera_get_video_size(CameraControl* control, int* width, int* height)
+{
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+
+    control->camera_parameters.getVideoSize(width, height);
+}
+
+void android_camera_set_video_size(CameraControl* control, int width, int height)
+{
+
+    REPORT_FUNCTION();
+    assert(control);
+
+    android::Mutex::Autolock al(control->guard);
+
+    control->camera_parameters.setVideoSize(width, height);
+    control->camera->setParameters(control->camera_parameters.flatten());
+}

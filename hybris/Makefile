@@ -15,7 +15,7 @@ COMMON_SOURCES=common/strlcpy.c common/hooks.c common/properties.c
 
 ICS_SOURCES=ics/linker.c ics/dlfcn.c ics/rt.c ics/linker_environ.c ics/linker_format.c ics/init.c
 
-all:  libhybris_ics.so libEGL.so.1 libGLESv2.so.2 libcamera.so libmediaplayer.so libhardware.so libis.so libsf.so test_camera test_media_player test_sf test_egl test_hw test_sensors test_glesv2
+all:  libhybris_ics.so libEGL.so.1 libGLESv2.so.2 libcamera.so libmediaplayer.so libhardware.so libis.so libsf.so test_camera test_media_player test_recorder test_sf test_egl test_hw test_sensors test_glesv2
 
 libhybris_ics.so: $(COMMON_SOURCES) $(ICS_SOURCES)
 	$(CC) -g -shared -o $@ -ldl -pthread -fPIC -Iics -Icommon -DLINKER_DEBUG=1 -DLINKER_TEXT_BASE=0xB0000100 -DLINKER_AREA_SIZE=0x01000000 $(ARCHFLAGS) \
@@ -90,6 +90,9 @@ test_camera: libcamera.so libsf.so libis.so camera/test.cpp libhybris_ics.so
 
 test_media_player: libmediaplayer.so libsf.so libis.so media/test_player.cpp libhybris_ics.so
 	$(CXX) -g -o $@ media/test_player.cpp libmediaplayer.so libsf.so libis.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/media -I../compat/input -I../compat/surface_flinger
+
+test_recorder: libmediaplayer.so libcamera.so libsf.so libis.so media/test_recorder.cpp libhybris_ics.so
+	$(CXX) -g -o $@ media/test_recorder.cpp libmediaplayer.so libcamera.so libsf.so libis.so libEGL.so.1 libGLESv2.so.2 libhybris_ics.so  -I../compat/media -I../compat/camera -I../compat/input -I../compat/surface_flinger
 
 test_hw: libhardware.so hardware/test.c libhybris_ics.so
 	$(CC) -g -o $@ hardware/test.c libhardware.so libhybris_ics.so  -I .
