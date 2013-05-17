@@ -104,8 +104,6 @@ struct CameraControl : public android::CameraListener,
         default:
             break;
         }
-
-        camera->releaseRecordingFrame(data);
     }
 
     void postDataTimestamp(
