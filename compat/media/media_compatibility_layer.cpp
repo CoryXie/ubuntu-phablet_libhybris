@@ -401,6 +401,7 @@ int android_media_set_data_source(MediaPlayerWrapper *mp, const char* url)
         return BAD_VALUE;
     }
 
+    mp->reset();
     mp->setSourceFd(fd);
 
     struct stat st;
