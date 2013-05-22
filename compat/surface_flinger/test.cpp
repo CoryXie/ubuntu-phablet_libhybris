@@ -21,6 +21,9 @@
 
 #include <unistd.h>
 
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
 bool setupGraphics();
 void hw_render(EGLDisplay, EGLSurface);
 void hw_step();
