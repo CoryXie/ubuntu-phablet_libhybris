@@ -90,6 +90,14 @@ extern "C" {
         ANDROID_AUDIO_ENCODER_AAC_ELD = 5
     } AudioEncoder;
 
+    // Callback types
+    typedef void (*on_recorder_msg_error)(void *context);
+
+    // Callback setters
+    void android_recorder_set_error_cb(MediaRecorderWrapper *mr, on_recorder_msg_error cb,
+                                       void *context);
+
+    // Main recorder control API
     MediaRecorderWrapper *android_media_new_recorder();
     int android_recorder_initCheck(MediaRecorderWrapper *mr);
     int android_recorder_setCamera(MediaRecorderWrapper *mr, CameraControl* control);
@@ -106,6 +114,8 @@ extern "C" {
     int android_recorder_stop(MediaRecorderWrapper *mr);
     int android_recorder_prepare(MediaRecorderWrapper *mr);
     int android_recorder_reset(MediaRecorderWrapper *mr);
+    int android_recorder_close(MediaRecorderWrapper *mr);
+    int android_recorder_release(MediaRecorderWrapper *mr);
 
 #ifdef __cplusplus
 }

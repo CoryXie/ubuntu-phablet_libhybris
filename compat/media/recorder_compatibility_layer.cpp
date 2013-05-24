@@ -22,6 +22,7 @@
 #include <camera/ICamera.h>
 #include <media/mediarecorder.h>
 
+#define LOG_NDEBUG 0
 #undef LOG_TAG
 #define LOG_TAG "MediaRecorderCompatibilityLayer"
 #include <utils/KeyedVector.h>
@@ -37,21 +38,41 @@ class MediaRecorderListenerWrapper : public android::MediaRecorderListener
 {
 public:
     MediaRecorderListenerWrapper()
+        : error_cb(NULL),
+          error_context(NULL)
     {
     }
 
-    void notify(int msg, int ext1, int ext2, const android::Parcel *obj)
+    void notify(int msg, int ext1, int ext2)
     {
         ALOGV("\tmsg: %d, ext1: %d, ext2: %d \n", msg, ext1, ext2);
 
         switch(msg)
         {
-            default:
-                ALOGV("\tUnknown notification\n");
+        case android::MEDIA_RECORDER_EVENT_ERROR: {
+            ALOGV("\tMEDIA_RECORDER_EVENT_ERROR msg\n");
+            // TODO: Extend this cb to include the error message
+            if (error_cb != NULL)
+                error_cb(error_context);
+            else
+                ALOGE("Failed to signal error to app layer, callback not set.");
+            break;
+        }
+        default:
+            ALOGV("\tUnknown notification\n");
         }
     }
 
+    void setErrorCb(on_recorder_msg_error cb, void *context)
+    {
+        REPORT_FUNCTION();
+        error_cb = cb;
+        error_context = context;
+    }
+
 private:
+    on_recorder_msg_error error_cb;
+    void *error_context;
 };
 
 /*!
@@ -61,8 +82,10 @@ struct MediaRecorderWrapper : public android::MediaRecorder
 {
 public:
     MediaRecorderWrapper()
-        : MediaRecorder()
+        : MediaRecorder(),
+          media_recorder_listener(new MediaRecorderListenerWrapper())
     {
+        setListener(media_recorder_listener);
     }
 
     ~MediaRecorderWrapper()
@@ -70,11 +93,40 @@ public:
         reset();
     }
 
+    void setErrorCb(on_recorder_msg_error cb, void *context)
+    {
+        REPORT_FUNCTION();
+
+        assert(media_recorder_listener != NULL);
+        media_recorder_listener->setErrorCb(cb, context);
+    }
+
 private:
     android::sp<MediaRecorderListenerWrapper> media_recorder_listener;
 };
 
+
 using namespace android;
+
+/*!
+ * \brief android_recorder_set_error_cb
+ * \param mr MediaRecorderWrapper that is the MediaRecorder object
+ * \param cb The callback function
+ * \param context
+ */
+void android_recorder_set_error_cb(MediaRecorderWrapper *mr, on_recorder_msg_error cb,
+                                   void *context)
+{
+    REPORT_FUNCTION()
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return;
+    }
+
+    mr->setErrorCb(cb, context);
+}
 
 /*!
  * \brief android_media_new_recorder creates a new MediaRecorder
@@ -384,4 +436,40 @@ int android_recorder_reset(MediaRecorderWrapper *mr)
     }
 
     return mr->reset();
+}
+
+/*!
+ * \brief android_recorder_close closes the MediaRecorder
+ * \param mr
+ * \return negative value if an error occured
+ */
+int android_recorder_close(MediaRecorderWrapper *mr)
+{
+    REPORT_FUNCTION()
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
+
+    return mr->close();
+}
+
+/*!
+ * \brief android_recorder_release releases the MediaRecorder resources
+ * \param mr
+ * \return negative value if an error occured
+ */
+int android_recorder_release(MediaRecorderWrapper *mr)
+{
+    REPORT_FUNCTION()
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
+
+    return mr->release();
 }
