@@ -22,7 +22,7 @@
 #include <camera/ICamera.h>
 #include <media/mediarecorder.h>
 
-#define LOG_NDEBUG 0
+//#define LOG_NDEBUG 0
 #undef LOG_TAG
 #define LOG_TAG "MediaRecorderCompatibilityLayer"
 #include <utils/KeyedVector.h>
@@ -440,7 +440,7 @@ int android_recorder_reset(MediaRecorderWrapper *mr)
 
 /*!
  * \brief android_recorder_close closes the MediaRecorder
- * \param mr
+ * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \return negative value if an error occured
  */
 int android_recorder_close(MediaRecorderWrapper *mr)
@@ -458,7 +458,8 @@ int android_recorder_close(MediaRecorderWrapper *mr)
 
 /*!
  * \brief android_recorder_release releases the MediaRecorder resources
- * \param mr
+ * This deletes the object. So don't use it after calling this function.
+ * \param mr MediaRecorderWrapper that is the MediaRecorder object
  * \return negative value if an error occured
  */
 int android_recorder_release(MediaRecorderWrapper *mr)
