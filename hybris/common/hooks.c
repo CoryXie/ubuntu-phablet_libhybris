@@ -31,6 +31,7 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/xattr.h>
+#include <grp.h>
 
 #include <netdb.h>
 
@@ -867,6 +868,8 @@ static struct _hook hooks[] = {
     {"gethostbyname", gethostbyname},
     {"gethostbyname2", gethostbyname2},
     {"gethostent", gethostent},
+    /* grp.h */
+    {"getgrgid", getgrgid},
     {NULL, NULL},
 };
 
