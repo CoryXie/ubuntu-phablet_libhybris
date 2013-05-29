@@ -22,6 +22,7 @@
 #include <camera/ICamera.h>
 #include <media/mediarecorder.h>
 
+//#define LOG_NDEBUG 0
 #undef LOG_TAG
 #define LOG_TAG "MediaRecorderCompatibilityLayer"
 #include <utils/KeyedVector.h>
@@ -37,21 +38,41 @@ class MediaRecorderListenerWrapper : public android::MediaRecorderListener
 {
 public:
     MediaRecorderListenerWrapper()
+        : error_cb(NULL),
+          error_context(NULL)
     {
     }
 
-    void notify(int msg, int ext1, int ext2, const android::Parcel *obj)
+    void notify(int msg, int ext1, int ext2)
     {
         ALOGV("\tmsg: %d, ext1: %d, ext2: %d \n", msg, ext1, ext2);
 
         switch(msg)
         {
-            default:
-                ALOGV("\tUnknown notification\n");
+        case android::MEDIA_RECORDER_EVENT_ERROR: {
+            ALOGV("\tMEDIA_RECORDER_EVENT_ERROR msg\n");
+            // TODO: Extend this cb to include the error message
+            if (error_cb != NULL)
+                error_cb(error_context);
+            else
+                ALOGE("Failed to signal error to app layer, callback not set.");
+            break;
+        }
+        default:
+            ALOGV("\tUnknown notification\n");
         }
     }
 
+    void setErrorCb(on_recorder_msg_error cb, void *context)
+    {
+        REPORT_FUNCTION();
+        error_cb = cb;
+        error_context = context;
+    }
+
 private:
+    on_recorder_msg_error error_cb;
+    void *error_context;
 };
 
 /*!
@@ -61,8 +82,10 @@ struct MediaRecorderWrapper : public android::MediaRecorder
 {
 public:
     MediaRecorderWrapper()
-        : MediaRecorder()
+        : MediaRecorder(),
+          media_recorder_listener(new MediaRecorderListenerWrapper())
     {
+        setListener(media_recorder_listener);
     }
 
     ~MediaRecorderWrapper()
@@ -70,11 +93,40 @@ public:
         reset();
     }
 
+    void setErrorCb(on_recorder_msg_error cb, void *context)
+    {
+        REPORT_FUNCTION();
+
+        assert(media_recorder_listener != NULL);
+        media_recorder_listener->setErrorCb(cb, context);
+    }
+
 private:
     android::sp<MediaRecorderListenerWrapper> media_recorder_listener;
 };
 
+
 using namespace android;
+
+/*!
+ * \brief android_recorder_set_error_cb
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
+ * \param cb The callback function to be called when a recording error occurs
+ * \param context
+ */
+void android_recorder_set_error_cb(MediaRecorderWrapper *mr, on_recorder_msg_error cb,
+                                   void *context)
+{
+    REPORT_FUNCTION()
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return;
+    }
+
+    mr->setErrorCb(cb, context);
+}
 
 /*!
  * \brief android_media_new_recorder creates a new MediaRecorder
@@ -96,7 +148,7 @@ MediaRecorderWrapper *android_media_new_recorder()
 
 /*!
  * \brief android_recorder_initCheck
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
  * \return negative value if an error occured
  */
 int android_recorder_initCheck(MediaRecorderWrapper *mr)
@@ -115,7 +167,7 @@ int android_recorder_initCheck(MediaRecorderWrapper *mr)
 /*!
  * \brief android_recorder_setCamera sets the camera object for recording videos
  * from the camera
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
  * \param control Wrapper for the camera (see camera in hybris)
  * \return negative value if an error occured
  */
@@ -140,8 +192,8 @@ int android_recorder_setCamera(MediaRecorderWrapper *mr, CameraControl* control)
 /*!
  * \brief android_recorder_setVideoSource sets the video source.
  * If no video source is set, only audio is recorded.
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
- * \param vs
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
+ * \param vs The video source. It's either the camera of gralloc buffer
  * \return negative value if an error occured
  */
 int android_recorder_setVideoSource(MediaRecorderWrapper *mr, VideoSource vs)
@@ -159,8 +211,8 @@ int android_recorder_setVideoSource(MediaRecorderWrapper *mr, VideoSource vs)
 
 /*!
  * \brief android_recorder_setAudioSource
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
- * \param as
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
+ * \param as The audio source.
  * \return negative value if an error occured
  */
 int android_recorder_setAudioSource(MediaRecorderWrapper *mr, AudioSource as)
@@ -178,8 +230,8 @@ int android_recorder_setAudioSource(MediaRecorderWrapper *mr, AudioSource as)
 
 /*!
  * \brief android_recorder_setOutputFormat
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
- * \param of
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
+ * \param of The output file format
  * \return negative value if an error occured
  */
 int android_recorder_setOutputFormat(MediaRecorderWrapper *mr, OutputFormat of)
@@ -197,8 +249,8 @@ int android_recorder_setOutputFormat(MediaRecorderWrapper *mr, OutputFormat of)
 
 /*!
  * \brief android_recorder_setVideoEncoder
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
- * \param ve
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
+ * \param ve The video encoder sets the codec for the video
  * \return negative value if an error occured
  */
 int android_recorder_setVideoEncoder(MediaRecorderWrapper *mr, VideoEncoder ve)
@@ -216,8 +268,8 @@ int android_recorder_setVideoEncoder(MediaRecorderWrapper *mr, VideoEncoder ve)
 
 /*!
  * \brief android_recorder_setAudioEncoder
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
- * \param ae
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
+ * \param ae The audio encoder sets the codec for the audio
  * \return negative value if an error occured
  */
 int android_recorder_setAudioEncoder(MediaRecorderWrapper *mr, AudioEncoder ae)
@@ -235,7 +287,7 @@ int android_recorder_setAudioEncoder(MediaRecorderWrapper *mr, AudioEncoder ae)
 
 /*!
  * \brief android_recorder_setOutputFile sets the output file to the given file descriptor
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
  * \param fd File descriptor of an open file, that the stream can be written to
  * \return negative value if an error occured
  */
@@ -254,9 +306,9 @@ int android_recorder_setOutputFile(MediaRecorderWrapper *mr, int fd)
 
 /*!
  * \brief android_recorder_setVideoSize
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
- * \param width
- * \param height
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
+ * \param width width for the video to record
+ * \param height height for the video to record
  * \return negative value if an error occured
  */
 int android_recorder_setVideoSize(MediaRecorderWrapper *mr, int width, int height)
@@ -274,8 +326,8 @@ int android_recorder_setVideoSize(MediaRecorderWrapper *mr, int width, int heigh
 
 /*!
  * \brief android_recorder_setVideoFrameRate
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
- * \param frames_per_second
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
+ * \param frames_per_second Frames per second has typical values for a movie clip in 720p is 30
  * \return negative value if an error occured
  */
 int android_recorder_setVideoFrameRate(MediaRecorderWrapper *mr, int frames_per_second)
@@ -295,7 +347,7 @@ int android_recorder_setVideoFrameRate(MediaRecorderWrapper *mr, int frames_per_
  * \brief android_recorder_setParameters sets a parameter. Even those without
  * explicit function.
  * For possible parameters look for example in StagefrightRecorder::setParameter()
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
  * \param parameters list of parameters. format is "parameter1=value;parameter2=value"
  * \return negative value if an error occured
  */
@@ -316,7 +368,7 @@ int android_recorder_setParameters(MediaRecorderWrapper *mr, const char* paramet
 /*!
  * \brief android_recorder_start starts the recording.
  * The MediaRecorder has to be in state "prepared"
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
  * \return negative value if an error occured
  */
 int android_recorder_start(MediaRecorderWrapper *mr)
@@ -334,7 +386,7 @@ int android_recorder_start(MediaRecorderWrapper *mr)
 
 /*!
  * \brief android_recorder_stop Stops a running recording.
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
  * \return negative value if an error occured
  */
 int android_recorder_stop(MediaRecorderWrapper *mr)
@@ -352,7 +404,7 @@ int android_recorder_stop(MediaRecorderWrapper *mr)
 
 /*!
  * \brief android_recorder_prepare put the MediaRecorder into state "prepare"
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
  * \return negative value if an error occured
  */
 int android_recorder_prepare(MediaRecorderWrapper *mr)
@@ -370,7 +422,7 @@ int android_recorder_prepare(MediaRecorderWrapper *mr)
 
 /*!
  * \brief android_recorder_reset resets the MediaRecorder
- * \param mr MediaRecorderWrapper that is the MediaRecorder object
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
  * \return negative value if an error occured
  */
 int android_recorder_reset(MediaRecorderWrapper *mr)
@@ -384,4 +436,41 @@ int android_recorder_reset(MediaRecorderWrapper *mr)
     }
 
     return mr->reset();
+}
+
+/*!
+ * \brief android_recorder_close closes the MediaRecorder
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
+ * \return negative value if an error occured
+ */
+int android_recorder_close(MediaRecorderWrapper *mr)
+{
+    REPORT_FUNCTION()
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
+
+    return mr->close();
+}
+
+/*!
+ * \brief android_recorder_release releases the MediaRecorder resources
+ * This deletes the object. So don't use it after calling this function.
+ * \param mr A MediaRecorderWrapper instance, created by calling android_media_new_recorder()
+ * \return negative value if an error occured
+ */
+int android_recorder_release(MediaRecorderWrapper *mr)
+{
+    REPORT_FUNCTION()
+
+    if (mr == NULL)
+    {
+        ALOGE("mr must not be NULL");
+        return BAD_VALUE;
+    }
+
+    return mr->release();
 }

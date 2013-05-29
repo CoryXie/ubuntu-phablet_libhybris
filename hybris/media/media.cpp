@@ -176,6 +176,11 @@ IMPLEMENT_FUNCTION1(int, android_recorder_start, MediaRecorderWrapper*);
 IMPLEMENT_FUNCTION1(int, android_recorder_stop, MediaRecorderWrapper*);
 IMPLEMENT_FUNCTION1(int, android_recorder_prepare, MediaRecorderWrapper*);
 IMPLEMENT_FUNCTION1(int, android_recorder_reset, MediaRecorderWrapper*);
+IMPLEMENT_FUNCTION1(int, android_recorder_close, MediaRecorderWrapper*);
+IMPLEMENT_FUNCTION1(int, android_recorder_release, MediaRecorderWrapper*);
+
+// Recorder Callbacks
+IMPLEMENT_VOID_FUNCTION3(android_recorder_set_error_cb, MediaRecorderWrapper *, on_recorder_msg_error, void*);
 
 #ifdef __cplusplus
 }
