@@ -1,3 +1,31 @@
+libhybris (0.62-0phablet1) raring; urgency=low
+
+  [ Ricardo Salveti de Araujo ]
+  * common/hooks.c: adding getgrgid to avoid another segfault
+  * common/properties.c: also probe property from kernel cmdline
+    (used by mako)
+  * compat/surface_flinger/test.cpp: fixing test case due gl header
+    changes
+  * gl2.c: updating glShaderSource definition based on latest mesa
+    (fix ftbfs at raring)
+
+  [ Michael Zanetti ]
+  * reset the media player before setting a new stream. Makes skipping
+    in QMediaPlaylist work.
+
+  [ Guenter Schwann ]
+  * First video recording support
+  * Do not call releaseRecordingFrame() after capture (LP: #1169352)
+
+  [ Jim Hodapp ]
+  * Add hook for vasprintf which is needed for the new MediaCodec-based
+    media player backend.
+
+  [ Michael Terry ]
+  * Remove unnecessary GLES header includes
+
+ -- Ricardo Salveti de Araujo <ricardo.salveti@canonical.com>  Tue, 28 May 2013 00:32:37 -0300
+
 libhybris (0.61-0phablet1) quantal; urgency=low
 
   * Changing Canonical's GPL/LGPLv3 code to use Apache v2.0 instead

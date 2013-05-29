@@ -19,6 +19,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#define PROP_NAME_MAX 32
 
 static char *find_key(const char *key)
 {
@@ -53,6 +58,54 @@ static char *find_key(const char *key)
    }
    fclose(f);
    return NULL;
+}
+
+static char *find_key_kernel_cmdline(const char *key)
+{
+    char cmdline[1024];
+    char *ptr;
+    int fd;
+
+    fd = open("/proc/cmdline", O_RDONLY);
+    if (fd >= 0) {
+        int n = read(fd, cmdline, 1023);
+        if (n < 0) n = 0;
+
+        /* get rid of trailing newline, it happens */
+        if (n > 0 && cmdline[n-1] == '\n') n--;
+
+        cmdline[n] = 0;
+        close(fd);
+    } else {
+        cmdline[0] = 0;
+    }
+
+    ptr = cmdline;
+
+    while (ptr && *ptr) {
+        char *x = strchr(ptr, ' ');
+        if (x != 0) *x++ = 0;
+
+        char *name = ptr;
+        ptr = x;
+
+        char *value = strchr(name, '=');
+        int name_len = strlen(name);
+
+        if (value == 0) continue;
+        *value++ = 0;
+        if (name_len == 0) continue;
+
+        if (!strncmp(name, "androidboot.", 12) && name_len > 12) {
+            const char *boot_prop_name = name + 12;
+            char prop[PROP_NAME_MAX];
+            snprintf(prop, sizeof(prop), "ro.%s", boot_prop_name);
+            if (strcmp(prop, key) == 0)
+                return strdup(value);
+        }
+    }
+
+    return NULL;
 }
 
 int property_get(const char *key, char *value, const char *default_value)
@@ -95,24 +148,24 @@ int property_get(const char *key, char *value, const char *default_value)
  }  
 #endif
  if (ret == NULL)
- { 
-    if (default_value != NULL)
-    {
-     strcpy(value, default_value);
-     return strlen(value);
-    }
-    else return 0;
- }  
+ {
+  /* Property might be available via /proc/cmdline */
+  ret = find_key_kernel_cmdline(key);
+ }
+
  if (ret)
  {
   strcpy(value, ret);
   free(ret);
   return strlen(value);
  }
- else
+ else if (default_value != NULL)
  {
-  return 0;
+  strcpy(value, default_value);
+  return strlen(value);
  }
+
+ return 0;
 }
 int property_set(const char *key, const char *value)
 {
